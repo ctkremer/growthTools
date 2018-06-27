@@ -116,6 +116,7 @@ get.gr<-function(x,y,plotQ=F,fpath=NA,id=''){
 #' 
 #' @export
 #' @import minpack.lm
+#' @import zoo
 get.gr.lag<-function(x,y,plotQ=F,fpath=NA,id=''){
   
   data<-data.frame(x=x,y=y)
@@ -162,13 +163,12 @@ get.gr.lag<-function(x,y,plotQ=F,fpath=NA,id=''){
 #' 
 #' @export
 #' @import minpack.lm
+#' @import zoo
 get.gr.sat<-function(x,y,plotQ=F,fpath=NA,id=''){
   
   data<-data.frame(x=x,y=y)
   slopes <- rollapply(data.frame(x=x,y=y), 3, localslope, by.column=F)
   a.guess<-coef(lm(y~x))[[1]]
-  
-  round(log(max(slopes)),5)
   
   fit.sat<-nlsLM(y ~ sat(x,a,logb,B1,s=1E-10),
                  #start = c(B1=mean(x)+(max(x)-mean(x))/2, a=1.5*a.guess, logb=-0.1),
@@ -239,6 +239,22 @@ get.gr.lagsat<-function(x,y,plotQ=F,fpath=NA,id=''){
   return(fit.lagsat)
 }
 
+#' Local Slope function
+#' 
+#' Helper function to calculate and extract the slope of a basic linear regression 
+#' relating y to x; the resulting value is used to obtain a reasonable starting guess
+#' for the slopes of the piecewise linear functions in \code{lag}, \code{sat}, and
+#'  \code{lagsat}
+#' 
+#' @param d A data frame containing two columns, x and y
+#' 
+#' @return Slope of the linear regression
+#' 
+#' @export
+localslope<-function (d) {
+  m <- lm(y~x, as.data.frame(d))
+  return(coef(m)[2])
+}
 
 #' Detect model failure
 #' 
