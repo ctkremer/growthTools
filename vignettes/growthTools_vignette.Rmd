@@ -13,13 +13,14 @@ vignette: >
 
 ## Getting Started
 
+Load essential packages, including `growthTools`.
 
 ```{r message=FALSE}
-# Direct vignette code to use the growthTools package. When ready for release, use the library command; during development, calling devtools::load_all() is suggested:
+# To direct vignette code to use the growthTools package during development, calling devtools::load_all() is suggested. When ready for release, use the library command. 
 # http://stackoverflow.com/questions/35727645/devtools-build-vignette-cant-find-functions
 
-#library(priceTools)
-devtools::load_all()
+#devtools::load_all()
+library(growthTools)
 
 library(ggplot2)
 library(dplyr)
