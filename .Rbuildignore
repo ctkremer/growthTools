@@ -1,0 +1,6 @@
+^README\.Rmd$
+^README-.*\.png$
+^NEWS\.md$
+^TODO\.R$
+^.*\.Rproj$
+^\.Rproj\.user$

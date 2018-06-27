@@ -1,0 +1,22 @@
+Package: growthTools
+Type: Package
+Title: Tools for analyzing time series of microbial abundances to estimate growth rates
+Version: 0.0.0.9000
+Author: Colin T. Kremer
+Maintainer: Colin T. Kremer <kremerco@msu.edu>
+Description: Developed for applications to NSF Dimensions of Biodiviersity grant
+Depends: R (>= 3.2.4), dplyr (>= 0.5.0)
+License: MIT + file LICENSE
+LazyData: TRUE
+RoxygenNote: 5.0.1
+Imports: dplyr,
+    ggplot2,
+    gridExtra,
+    MASS,
+    reshape2,
+    vegan,
+    tidyr,
+    tibble
+Suggests: knitr,
+    rmarkdown
+VignetteBuilder: knitr
