@@ -1,0 +1,116 @@
+---
+title: "growthTools vignette"
+author: "Colin T. Kremer"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to growthTools}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Calculate exponential population growth rates using growthTools
+
+## Getting Started
+
+
+```{r message=FALSE}
+# Direct vignette code to use the growthTools package. When ready for release, use the library command; during development, calling devtools::load_all() is suggested:
+# http://stackoverflow.com/questions/35727645/devtools-build-vignette-cant-find-functions
+
+#library(priceTools)
+devtools::load_all()
+
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+```
+
+
+```{r}
+# Construct example data set:
+sdat<-data.frame(trt=c(rep('A',10),rep('B',10),rep('C',10)),dtime=rep(seq(1,10),3),ln.fluor=c(c(1,1.1,0.9,1,2,3,4,5,5.2,4.7),c(1.1,0.9,1,2,3,4,4.1,4.2,3.7,4)+0.3,c(3.5,3.4,3.6,3.5,3.2,2.2,1.2,0.5,0.4,0.1)))
+```
+
+## Basic example: working with a single time series
+
+We can take a quick look at the abundance time series created in this mock data set:
+
+```{r}
+ggplot(sdat,aes(x=dtime,y=ln.fluor))+
+  geom_point(aes(colour=trt))+theme_bw()+
+  scale_x_continuous('Time')+
+  scale_y_continuous('ln(Abundance)')
+```
+
+
+First, let's focus on applying this technique to a single time series, to get a feel for the methodology:
+
+```{r}
+# subset the data, focusing on population A:
+sdat2<-sdat[sdat$trt=='A',]
+
+# calculate growth rate using all available methods:
+res<-get.growth.rate(sdat2$dtime,sdat2$ln.fluor,plot.best.Q = T,id = 'Population A')
+```
+
+The result (shown in the above plot) indicates that both lagged and saturating portions are present in the time series, as the lagsat model outperforms all of the simpler models. The function also returns the slope (growth rate) obtained from the best model: 
+
+```{r}
+res$best.model
+res$best.slope
+```
+
+It's also possible to access information from the models that were fit, but not the best. For example:
+
+```{r}
+summary(res$models$gr.lag)
+```
+
+Finally, all of the growth rate estimates are retained:
+
+```{r}
+res$slopes
+```
+
+Looking at these, we can see that the growth rate estimates from the linear, lagged, and saturating models are all significantly lower than the estimate from the lagged and saturated model, which captures the correct slope.
+
+
+## Applying this approach to many time series
+
+Often we want to extract growth rates from a whole bunch of individual populations/time series. The \code{get.growth.rate()} function is set up to make automating this process fairly easy, as we will see in this section. This approach takes advantage of \code{dplyr}.
+
+First, we specify the data frame (\code{sdat}) containing all of our time series, then we pipe this to the \code{group_by()} command using the \code{%>%} syntax. The \code{group_by} command from \code{dplyr} is used to identify the column(s) that together identify unique individual time series. For the current example, this is just the treatment column \code{trt}. In a more complicated data set, this might include several columns that identify species, culture conditions, replicates, etc.
+
+The result is a grouped data frame, which we directly pass to the \code{do()} command, again using \code{%>%}. This command applies the \code{get.growth.rate()} function to each individual time series identified by the grouping variables from the previous step. We pass the time column (\code{$dtime}) and the ln(abundance) column (\code{ln.fluor}) to \code{get.growth.rate()}, and can also specify additional options, including the id of each population/time series, and plotting options.
+
+In this instance, we request that the best fitting models are plotted, but leave the file path (\code{fpath}) option as \code{NA}, so the plots are displayed rather than saved to a directory. When working with a larger data set, the number of plots can be unwieldly, so it is recommended that you save rather than immediately display them.
+
+```{r}
+gdat <- sdat %>% group_by(trt) %>% do(grs=get.growth.rate(x=.$dtime,y=.$ln.fluor,id=.$trt,plot.best.Q=T,fpath=NA)) 
+```
+
+The resulting data frame is a complex structure - it contains the columns used for grouping (in this case, just \code{trt}), as well as a new column called \code{grs}. The entries in \code{grs} consist of the result of applying \code{get.growth.rate()} to each time series, including the identity of the best fit model, slope estimates, model contents, etc.
+
+We can process this complex data structure further to obtain say just the best slope (growth rate) estimates:
+
+```{r}
+gdat %>% summarise(trt,mu=grs$best.slope,best.model=grs$best.model)
+```
+
+The result lists each population/time series, the best growth rate estimate (\code{mu}), and the identity of the model that produced this estimate.
+
+
+## Method selection
+
+In some situations it may be desirable to only invoke particular models/methods when estimating growth rate. For example, appropriately detecting lags or saturation requires longer time series, otherwise there's a greater chance of overfitting the data. In these cases, we might prefer to just calculate growth rate using a simple linear regression, and not bother with the more complicated approaches. Here's an example:
+
+```{r}
+# Only use the linear method:
+gdat <- sdat %>% group_by(trt) %>% do(grs=get.growth.rate(.$dtime,.$ln.fluor,.$id,plot.best.Q=T,methods=c('linear'))) %>% summarise(trt,mu=grs$best.slope,best.model=grs$best.model)
+gdat
+```
+
+
+
+
