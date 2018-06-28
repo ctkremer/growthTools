@@ -114,4 +114,23 @@ gdat
 
 
 
+# Fit Thermal Performance Curve to growth rate data
+
+Load data set:
+
+```{r}
+head(gr.ests2)
+```
+
+```{r}
+# Preliminary plotting:
+ggplot(data.frame(gr.ests2[gr.ests2$mu<0.8,]),aes(x=temperature,y=mu))+
+  geom_point(aes(shape=replicate))+
+  geom_hline(yintercept = 0)+
+  stat_smooth(method='gam',formula=y~s(x,k=4))+
+  facet_wrap(~isolate.id,scales='free_y')+
+  theme_bw()
+```
+
+
 
