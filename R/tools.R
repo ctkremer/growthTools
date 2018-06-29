@@ -372,24 +372,24 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
 
 
 # These two functions help to trim data sets to exclude temperature treatments that are well beyond a species' thermal niche, by identifying the minimum and maximum temperatures where positive growth was observed, and determining the next highest (lowest) temperature treatment.
-funky.low<-function(x,y){
-  dat<-data.frame(x,y) 
-  dat2<-dat %>% group_by(x) %>% summarise(max.y=max(y))
-  Ts<-sort(unique(dat2$x))
+#funky.low<-function(x,y){
+#  dat<-data.frame(x,y) 
+#  dat2<-dat %>% group_by(x) %>% summarise(max.y=max(y))
+#  Ts<-sort(unique(dat2$x))
   
-  minT<-min(dat2$x[dat2$max.y>0])
-  res<-Ts[max(c(1,which(Ts==minT)-1))]
+#  minT<-min(dat2$x[dat2$max.y>0])
+#  res<-Ts[max(c(1,which(Ts==minT)-1))]
   
-  return(res)
-}
+#  return(res)
+#}
 
-funky.high<-function(x,y){
-  dat<-data.frame(x,y) 
-  dat2<-dat %>% group_by(x) %>% summarise(max.y=max(y))
-  Ts<-sort(unique(dat2$x))
-  
-  maxT<-max(dat2$x[dat2$max.y>0])
-  res<-Ts[min(c(length(Ts),which(Ts==maxT)+1))]
-  
-  return(res)
-}
+#funky.high<-function(x,y){
+#  dat<-data.frame(x,y) 
+#  dat2<-dat %>% group_by(x) %>% summarise(max.y=max(y))
+#  Ts<-sort(unique(dat2$x))
+#  
+#  maxT<-max(dat2$x[dat2$max.y>0])
+#  res<-Ts[min(c(length(Ts),which(Ts==maxT)+1))]
+#  
+#  return(res)
+#}

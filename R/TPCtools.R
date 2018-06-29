@@ -228,25 +228,21 @@ get.R2<-function(model,obs){
 
 #' Delta method function (modified from emdbook)
 #' 
-#' See ?deltavar in package emdbook. Only change was to replace expr <- as.expression(substitute(fun)) with expr<-fun. This was necessary b/c of problems that arose when
-#' invoking deltavar() inside of another function. Specifically, I wanted to call 
-#' deltavar() each time an outer function was executed, but apply deltavar to a unique
+#' See `?deltavar()` in package emdbook. Only change was to replace `expr <- as.expression(substitute(fun))` with `expr<-fun`. This was necessary b/c of problems that arose when
+#' invoking `deltavar()` inside of another function. Specifically, I wanted to call 
+#' `deltavar()` each time an outer function was executed, but apply deltavar to a unique
 #' set of x-values upon each execution of the outer function. For reasons I don't 
 #' entirely understand, this range of x-values defined within the outer function's 
 #' environment was not being adequately passed to the internal environment of deltavar.
 #' There's probably a classier/more resilient way of fixing this, but in the short 
-#' term, I patched it over by creating deltavar2, and using parse/a custom string in
-#' get.nbcurve.tpc() when deltavar2 is called.
+#' term, I patched it over by creating `deltavar2()`, and using parse/a custom string in
+#' `get.nbcurve.tpc()` when `deltavar2()` is called.
 #' 
 #' @param fun Function to calculate the variance of, given parameter estimates in meanvals
 #' @param vars 'list of variable names: needed if params does not have names, or if some of the values specified in params should be treated as constant'
 #' @param meanval 'possibly named vector of mean values of parameters'
 #' @param Sigma 'numeric vector of variances or variance-covariance matrix'
 #' @param verbose 'print details?'
-#' 
-#' @example
-#' # st<-paste("nbcurve2(c(",paste(xs,collapse=','),"),o,w,a,b)",sep='')
-#' # dvs0<-deltavar2(fun=parse(text=st),meanval=cf,Sigma=vcov(fit))
 #' 
 #' @export
 deltavar2<-function (fun, meanval = NULL, vars, Sigma, verbose = FALSE) 
