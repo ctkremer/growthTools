@@ -192,14 +192,16 @@ get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=
     }
 
     if(!is.na(fpath)){
-      time<-Sys.time()
-      time<-gsub(x = time,pattern = ":",replacement = "_")
+      #time<-Sys.time()
+      #time<-gsub(x = time,pattern = ":",replacement = "_")
       if(is.na(id)){
         full.path<-paste(fpath,"TPC_fit_",time,".pdf",sep='')        
       }else{
-        full.path<-paste(fpath,"TPC_fit_",id,"_",time,".pdf",sep='') 
+        #full.path<-paste(fpath,"TPC_fit_",id,"_",time,".pdf",sep='') 
+        full.path<-paste(fpath,"TPC_fit_",id,".pdf",sep='') 
       }
       ggsave(device = pdf(),filename = full.path,p1,width = 5,height = 4)
+      dev.off()
     }else{
       print(p1)
     }
