@@ -112,6 +112,7 @@ get.tlim<-function(topt,w,b,type='tmin'){
 #' @import emdbook
 get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=NA,id=NA){
   tpc.tmp<-data.frame(mu,temp)
+  id<-id[1]
   
   if(method=='grid.mle2'){
     
@@ -171,9 +172,12 @@ get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=
       geom_hline(yintercept = 0)+
       theme_bw()+
       scale_x_continuous('Temperature (C)')+
-      scale_y_continuous('Growth rate (1/day)')+
-      ggtitle(id)
-
+      scale_y_continuous('Growth rate (1/day)')
+    
+    if(!is.na(id)){
+      p1<-p1+ggtitle(id)
+    }
+    
     if(conf.bandQ){
       ### Confidence bands via the delta method (see Bolker book, pg. 255)  
       st<-paste("nbcurve2(c(",paste(xs,collapse=','),"),o,w,a,b)",sep='')
@@ -193,7 +197,7 @@ get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=
       if(is.na(id)){
         full.path<-paste(fpath,"TPC_fit_",time,".pdf",sep='')        
       }else{
-        full.path<-paste(fpath,"TPC_fit_",id[1],"_",time,".pdf",sep='') 
+        full.path<-paste(fpath,"TPC_fit_",id,"_",time,".pdf",sep='') 
       }
       ggsave(device = pdf(),filename = full.path,p1,width = 5,height = 4)
     }else{
