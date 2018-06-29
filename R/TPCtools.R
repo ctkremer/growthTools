@@ -110,23 +110,23 @@ get.tlim<-function(topt,w,b,type='tmin'){
 #' @import bbmle
 #' @import mleTools
 #' @import emdbook
-get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,fpath=NA){
-  tmp<-data.frame(mu,temp)
+get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=NA,id=NA){
+  tpc.tmp<-data.frame(mu,temp)
   
   if(method=='grid.mle2'){
     
     # set up search of a grid of parameter guesses
     grids<-list(o=seq(15,25,5),w=seq(15,40,5))
-    start<-list(o=NA,w=NA,a=-1.11,b=0.05,s=10)
+    start<-list(o=NA,w=NA,a=-1.11,b=0.05,s=log(2))
     
-    fit0<-grid.mle2(minuslogl=mu~dnorm(mean=nbcurve2(temp,o,w,a,b),sd=s),
-                    grids=grids,start=start,data=tmp)
+    fit0<-grid.mle2(minuslogl=mu~dnorm(mean=nbcurve2(temp,o,w,a,b),sd=exp(s)),
+                    grids=grids,start=start,data=tpc.tmp)
     cfg<-coef(fit0$res.best) # this seemed to be throwing problems b/c of an issue with accessing mle2...?
 
     # polish best fit model, using formual interface:
     guesses<-as.list(cfg)
-    fit<-mle2(mu~dnorm(mean=nbcurve2(temp,o,w,a,b),sd=s),
-              start=guesses,data=tmp)
+    fit<-mle2(mu~dnorm(mean=nbcurve2(temp,o,w,a,b),sd=exp(s)),
+              start=guesses,data=tpc.tmp)
   }
   
   if(method=='mle2'){
@@ -134,8 +134,8 @@ get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,fpath=NA){
     w.guess <- diff(range(tmp$temp))
     a.guess <- -1.11
     b.guess <- 0.05
-    fit<-mle2(mu~dnorm(mean=nbcurve2(temp,o,w,a,b),sd=s),
-              start=list(o=o.guess,w=w.guess,a=a.guess,b=b.guess,s=2),data=tmp)
+    fit<-mle2(mu~dnorm(mean=nbcurve2(temp,o,w,a,b),sd=exp(s)),
+              start=list(o=o.guess,w=w.guess,a=a.guess,b=b.guess,s=log(2)),data=tmp)
   }
   
   # pull out parameters
@@ -147,7 +147,7 @@ get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,fpath=NA){
   tmax<-get.tlim(cf$o,cf$w,cf$b,type='tmax')
   
   # calculate R2
-  rsqr<-get.R2(fit,tmp$mu)
+  rsqr<-get.R2(fit,tpc.tmp$mu)
 
   # Calculate confidence intervals using the delta method (see Bolker book, pg 255)
   #   ... why is this useful? really, we'd like CI's on the x-axis position of these traits
@@ -160,23 +160,42 @@ get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,fpath=NA){
   
   # Plot results:
   if(plotQ){
-    xs<-seq(min(tmp$temp),max(tmp$temp),0.1)
+    xs<-seq(min(tpc.tmp$temp),max(tpc.tmp$temp),0.1)
     new.data<-data.frame(temp=xs)
     new.data$mu<-predict(fit,newdata=new.data)
     
-    # confidence bands via the delta method (see Bolker book, pg. 255)
-    #dvs<-suppressWarnings(deltavar(fun=nbcurve2(xs,o,w,a,b),meanval=cf,Sigma=vcov(fit)))
-    #new.data$ml.ci<-1.96*sqrt(dvs)
-    
     # plot it out
-    p1<-ggplot(tmp,aes(x=temp,y=mu))+
-        geom_point()+
-        #geom_ribbon(data=new.data,aes(ymin=mu-ml.ci,ymax=mu+ml.ci),alpha=0.2)+
-        geom_line(data=new.data)+
-        geom_hline(yintercept = 0)+
-        theme_bw()
+    p1<-ggplot(tpc.tmp,aes(x=temp,y=mu))+
+      geom_point()+
+      geom_line(data=new.data)+
+      geom_hline(yintercept = 0)+
+      theme_bw()+
+      scale_x_continuous('Temperature (C)')+
+      scale_y_continuous('Growth rate (1/day)')+
+      ggtitle(id)
+
+    if(conf.bandQ){
+      ### Confidence bands via the delta method (see Bolker book, pg. 255)  
+      st<-paste("nbcurve2(c(",paste(xs,collapse=','),"),o,w,a,b)",sep='')
+      dvs0<-suppressWarnings(deltavar2(fun=parse(text=st),meanval=cf,Sigma=vcov(fit)))
+      
+      # Better approach? Pass correct local environment to deltavar... BUSTED
+      #dvs0<-deltavar3(fun=nbcurve2(xs,o,w,a,b),meanval=cf,Sigma = vcov(fit),cenv=current.env)
+      #dvs0<-suppressWarnings(deltavar(fun=nbcurve2(xs,o,w,a,b),meanval=cf,Sigma=vcov(fit)))
+      
+      new.data$ml.ci<-1.96*sqrt(dvs0)
+      p1<-p1+geom_ribbon(data=new.data,aes(ymin=mu-ml.ci,ymax=mu+ml.ci),alpha=0.2)
+    }
+
     if(!is.na(fpath)){
-      ggsave(paste(fpath,"TPC_fit.pdf",sep=""),p1)
+      time<-Sys.time()
+      time<-gsub(x = time,pattern = ":",replacement = "_")
+      if(is.na(id)){
+        full.path<-paste(fpath,"TPC_fit_",time,".pdf",sep='')        
+      }else{
+        full.path<-paste(fpath,"TPC_fit_",id[1],"_",time,".pdf",sep='') 
+      }
+      ggsave(device = pdf(),filename = full.path,p1,width = 5,height = 4)
     }else{
       print(p1)
     }
@@ -203,5 +222,73 @@ get.R2<-function(model,obs){
   rsqr
 }
 
-
-
+#' Delta method function (modified from emdbook)
+#' 
+#' See ?deltavar in package emdbook. Only change was to replace expr <- as.expression(substitute(fun)) with expr<-fun. This was necessary b/c of problems that arose when
+#' invoking deltavar() inside of another function. Specifically, I wanted to call 
+#' deltavar() each time an outer function was executed, but apply deltavar to a unique
+#' set of x-values upon each execution of the outer function. For reasons I don't 
+#' entirely understand, this range of x-values defined within the outer function's 
+#' environment was not being adequately passed to the internal environment of deltavar.
+#' There's probably a classier/more resilient way of fixing this, but in the short 
+#' term, I patched it over by creating deltavar2, and using parse/a custom string in
+#' get.nbcurve.tpc() when deltavar2 is called.
+#' 
+#' @param fun Function to calculate the variance of, given parameter estimates in meanvals
+#' @param vars 'list of variable names: needed if params does not have names, or if some of the values specified in params should be treated as constant'
+#' @param meanval 'possibly named vector of mean values of parameters'
+#' @param Sigma 'numeric vector of variances or variance-covariance matrix'
+#' @param verbose 'print details?'
+#' 
+#' @example
+#' # st<-paste("nbcurve2(c(",paste(xs,collapse=','),"),o,w,a,b)",sep='')
+#' # dvs0<-deltavar2(fun=parse(text=st),meanval=cf,Sigma=vcov(fit))
+#' 
+#' @export
+deltavar2<-function (fun, meanval = NULL, vars, Sigma, verbose = FALSE) 
+{
+  #expr <- as.expression(substitute(fun))    
+  expr<-fun  # Changed by CTK
+  nvals <- length(eval(expr, envir = as.list(meanval)))
+  vecexp <- nvals > 1
+  if (missing(vars)) {
+    if (missing(meanval) || is.null(names(meanval))) 
+      stop("must specify either variable names or named values for means")
+    vars <- names(meanval)
+  }
+  derivs <- try(lapply(vars, D, expr = expr), silent = TRUE)
+  symbderivs <- TRUE
+  if (inherits(derivs, "try-error")) {
+    if (length(grep("is not in the derivatives table", derivs))) {
+      symbderivs <- FALSE
+      warning("some symbols not in derivative table, using numeric derivatives")
+      nderivs <- with(as.list(meanval), numericDeriv(expr[[1]], 
+                                                     theta = vars))
+      nderivs <- attr(nderivs, "gradient")
+    }
+    else {
+      stop(paste("Error within derivs:", derivs))
+    }
+  }
+  else {
+    nderivs <- sapply(derivs, eval, envir = as.list(meanval))
+  }
+  if (verbose) {
+    if (symbderivs) {
+      cat("symbolic derivs:\n")
+      print(derivs)
+    }
+    cat("value of derivs:\n")
+    print(nderivs)
+  }
+  if (!is.matrix(Sigma) && length(Sigma) > 1) 
+    Sigma <- diag(Sigma)
+  if (vecexp && is.list(nderivs)) 
+    nderivs <- do.call("cbind", nderivs)
+  if (is.matrix(nderivs)) {
+    r <- apply(nderivs, 1, function(z) c(z %*% Sigma %*% 
+                                           matrix(z)))
+  }
+  else r <- c(nderivs %*% Sigma %*% matrix(nderivs))
+  r
+}
