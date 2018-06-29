@@ -156,12 +156,12 @@ fpath<-'/Users/colin/Research/Software/growthTools/user/'
 res <- sp1b %>% group_by(isolate.id,dilution) %>% do(tpcs=get.nbcurve.tpc(.$temperature,.$mu,method='grid.mle2',plotQ=T,conf.bandQ=T,fpath=fpath,id=.$dilution))
 ```
 
-You can also turn off plotting all together, or only the confidence bands:
+You can also turn off plotting all together, or turn off only the confidence bands:
 
 ```{r}
 res <- sp1b %>% group_by(isolate.id,dilution) %>% do(tpcs=get.nbcurve.tpc(.$temperature,.$mu,method='grid.mle2',plotQ=T,conf.bandQ=F,fpath=NA,id=.$dilution))
 
-res <- sp1b %>% group_by(isolate.id,dilution) %>% do(tpcs=get.nbcurve.tpc(.$temperature,.$mu,method='grid.mle2',plotQ=F,conf.bandQ=F,fpath=NA,id=.$dilution))
+sp1b %>% group_by(isolate.id,dilution) %>% do(tpcs=get.nbcurve.tpc(.$temperature,.$mu,method='grid.mle2',plotQ=F,conf.bandQ=F,fpath=NA,id=.$dilution))
 ```
 
 After executing any of these, you can use `summarise` to recover parameter estimates and other diagnostic information corresponding to each curve fit.
@@ -181,21 +181,10 @@ table(example_TPC_data[,c('isolate.id','dilution')])
 # create informative ID column for each combo of unique strain and dilution period:
 example_TPC_data$id<-paste(example_TPC_data$isolate.id,example_TPC_data$dilution)
 
-res2 <- sp1b %>% group_by(isolate.id,dilution) %>% do(tpcs=get.nbcurve.tpc(.$temperature,.$mu,method='grid.mle2',plotQ=F,conf.bandQ=F,fpath=NA,id=.$id))
+res2 <- example_TPC_data %>% group_by(isolate.id,dilution) %>% do(tpcs=get.nbcurve.tpc(.$temperature,.$mu,method='grid.mle2',plotQ=F,conf.bandQ=F,fpath=NA,id=.$id))
 
-res2 %>% summarise(isolate.id,dilution,topt=tpcs$o,tmin=tpcs$tmin,tmax=tpcs$tmax,rsqr=tpcs$rsqr,a=exp(tpcs$a),b=tpcs$b,w=tpcs$w)
-
-```
-
-
-```{r}
-# Preliminary plotting:
-ggplot(data.frame(gr.ests2[gr.ests2$mu<0.8,]),aes(x=temperature,y=mu))+
-  geom_point(aes(shape=replicate))+
-  geom_hline(yintercept = 0)+
-  stat_smooth(method='gam',formula=y~s(x,k=4))+
-  facet_wrap(~isolate.id,scales='free_y')+
-  theme_bw()
+clean.res <- res2 %>% summarise(isolate.id,dilution,topt=tpcs$o,tmin=tpcs$tmin,tmax=tpcs$tmax,rsqr=tpcs$rsqr,a=exp(tpcs$a),b=tpcs$b,w=tpcs$w)
+data.frame(clean.res)
 ```
 
 
