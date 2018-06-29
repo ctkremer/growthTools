@@ -151,10 +151,10 @@ This approach also allows a fair amount of customization. For example, we can sa
 
 ```{r}
 # or saving resulting plots:
-fpath<-'/Users/colin/Research/Software/growthTools/user/'
+#fpath<-'/Users/colin/Research/Software/growthTools/user/'
 
 # provide an explicit fpath to invoke plot saving; when `id` is also provided, this column will be used to produce the plot's title, as well as included in the file name.
-res <- sp1b %>% group_by(isolate.id,dilution) %>% do(tpcs=get.nbcurve.tpc(.$temperature,.$mu,method='grid.mle2',plotQ=T,conf.bandQ=T,fpath=fpath,id=.$dilution))
+#res <- sp1b %>% group_by(isolate.id,dilution) %>% do(tpcs=get.nbcurve.tpc(.$temperature,.$mu,method='grid.mle2',plotQ=T,conf.bandQ=T,fpath=fpath,id=.$dilution))
 ```
 
 You can also turn off plotting all together, or turn off only the confidence bands:
