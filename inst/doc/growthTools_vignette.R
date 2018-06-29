@@ -1,9 +1,9 @@
 ## ----message=FALSE-------------------------------------------------------
-# Direct vignette code to use the growthTools package. When ready for release, use the library command; during development, calling devtools::load_all() is suggested:
+# To direct vignette code to use the growthTools package during development, calling devtools::load_all() is suggested. When ready for release, use the library command. 
 # http://stackoverflow.com/questions/35727645/devtools-build-vignette-cant-find-functions
 
-#library(priceTools)
-devtools::load_all()
+#devtools::load_all()
+library(growthTools)
 
 library(ggplot2)
 library(dplyr)
@@ -46,4 +46,50 @@ gdat %>% summarise(trt,mu=grs$best.slope,best.model=grs$best.model)
 # Only use the linear method:
 gdat <- sdat %>% group_by(trt) %>% do(grs=get.growth.rate(x=.$dtime,y=.$ln.fluor,id=.$trt,plot.best.Q=T,methods=c('linear'))) %>% summarise(trt,mu=grs$best.slope,best.model=grs$best.model)
 gdat
+
+## ------------------------------------------------------------------------
+head(example_TPC_data)
+
+## ------------------------------------------------------------------------
+# Single data set:
+sp1 <- example_TPC_data %>% filter(isolate.id=='CH30_4_RI_03' & dilution==1)
+
+# obtain Norberg curve parameters, using a grid search algorithm to consider a range of possible initial parameter values, and plot the results
+nbcurve.traits<-get.nbcurve.tpc(sp1$temperature,sp1$mu,method='grid.mle2',plotQ=T,conf.bandQ = T,fpath=NA)
+data.frame(nbcurve.traits)
+
+## ----echo=F--------------------------------------------------------------
+# First, let's look at an example with multiple dilutions but the same strain:
+sp1b <- example_TPC_data %>% filter(isolate.id=='CH30_4_RI_03')
+
+# apply get.nbcurve to the entire data set, grouping by isolate and dilution
+res <- sp1b %>% group_by(isolate.id,dilution) %>% do(tpcs=get.nbcurve.tpc(.$temperature,.$mu,method='grid.mle2',plotQ=T,conf.bandQ=T,fpath=NA,id=.$dilution))
+
+
+## ------------------------------------------------------------------------
+# or saving resulting plots:
+fpath<-'/Users/colin/Research/Software/growthTools/user/'
+
+# provide an explicit fpath to invoke plot saving; when `id` is also provided, this column will be used to produce the plot's title, as well as included in the file name.
+res <- sp1b %>% group_by(isolate.id,dilution) %>% do(tpcs=get.nbcurve.tpc(.$temperature,.$mu,method='grid.mle2',plotQ=T,conf.bandQ=T,fpath=fpath,id=.$dilution))
+
+## ------------------------------------------------------------------------
+res <- sp1b %>% group_by(isolate.id,dilution) %>% do(tpcs=get.nbcurve.tpc(.$temperature,.$mu,method='grid.mle2',plotQ=T,conf.bandQ=F,fpath=NA,id=.$dilution))
+
+sp1b %>% group_by(isolate.id,dilution) %>% do(tpcs=get.nbcurve.tpc(.$temperature,.$mu,method='grid.mle2',plotQ=F,conf.bandQ=F,fpath=NA,id=.$dilution))
+
+## ------------------------------------------------------------------------
+# process results
+res %>% summarise(isolate.id,dilution,topt=tpcs$o,tmin=tpcs$tmin,tmax=tpcs$tmax,rsqr=tpcs$rsqr,a=exp(tpcs$a),b=tpcs$b,w=tpcs$w)
+
+## ------------------------------------------------------------------------
+table(example_TPC_data[,c('isolate.id','dilution')])
+
+# create informative ID column for each combo of unique strain and dilution period:
+example_TPC_data$id<-paste(example_TPC_data$isolate.id,example_TPC_data$dilution)
+
+res2 <- example_TPC_data %>% group_by(isolate.id,dilution) %>% do(tpcs=get.nbcurve.tpc(.$temperature,.$mu,method='grid.mle2',plotQ=F,conf.bandQ=F,fpath=NA,id=.$id))
+
+clean.res <- res2 %>% summarise(isolate.id,dilution,topt=tpcs$o,tmin=tpcs$tmin,tmax=tpcs$tmax,rsqr=tpcs$rsqr,a=exp(tpcs$a),b=tpcs$b,w=tpcs$w)
+data.frame(clean.res)
 
