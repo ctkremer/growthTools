@@ -6,7 +6,6 @@
 
 # - currently focus is on Norberg fits
 # - expand to include double exponential
-# - expand using dplyr approaches to make automation over multiple species easier
 # - allow user-selected parametric equations and fitting algorithms
 
 #----------------------------------------------------------------#
