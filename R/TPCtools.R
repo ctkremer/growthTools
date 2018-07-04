@@ -156,7 +156,9 @@ get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=
   
   # save output:
   #vec<-c(cf,rsqr,tmin,tmax,focal.ci)
+  vcov.mat<-vcov(fit)
   vec<-as.list(c(cf,rsqr=rsqr,tmin=tmin,tmax=tmax))
+  vec$vcov<-vcov.mat
   
   # Plot results:
   if(plotQ){
@@ -180,7 +182,7 @@ get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=
     if(conf.bandQ){
       ### Confidence bands via the delta method (see Bolker book, pg. 255)  
       st<-paste("nbcurve2(c(",paste(xs,collapse=','),"),o,w,a,b)",sep='')
-      dvs0<-suppressWarnings(deltavar2(fun=parse(text=st),meanval=cf,Sigma=vcov(fit)))
+      dvs0<-suppressWarnings(deltavar2(fun=parse(text=st),meanval=cf,Sigma=vcov.mat))
       
       # Better approach? Pass correct local environment to deltavar... BUSTED
       #dvs0<-deltavar3(fun=nbcurve2(xs,o,w,a,b),meanval=cf,Sigma = vcov(fit),cenv=current.env)
