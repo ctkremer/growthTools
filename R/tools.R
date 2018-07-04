@@ -348,6 +348,7 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
   # format output:
   result<-list(best.slope=slope.ests[[best.mod.id]],
                best.model=as.character(mod.names[[best.mod.id]]),
+               best.model.rsqr=get.R2(mod.list[[best.mod.id]],y),
                best.model.contents=list(mod.list[[best.mod.id]]),
                slopes=slope.ests,
                models=list(gr=gr,gr.lag=gr.lag,gr.sat=gr.sat,gr.lagsat=gr.lagsat))
