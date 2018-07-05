@@ -97,6 +97,27 @@ get.tlim<-function(topt,w,b,type='tmin'){
 }
 
 
+#' Double exponential model
+#' 
+#' Re-parameterized from Thomas et al. 2016 to depend explicitly on Topt
+#'
+#' @param temp Temperature(s) to calculate growth rate at
+#' @param topt Optimum temperature (where growth rate is highest)
+#' @param b1 Birth rate at 0 Celsius
+#' @param b2 Temperature scaling of birth rate, > 0
+#' @param d0 Temperature-independent death rate
+#' @param d2 Temperature scaling of death rate, > 0 (and d2 > b2)
+#'
+#' @return Growth rate at one or more temperatures
+#' 
+#' @export   
+decurve<-function(temp,topt,b1,b2,d0,d2){
+  res <- b1*exp(b2*temp) - (d0 + ((b1*b2)/d2)*exp((b2-d2)*topt)*exp(d2*temp))
+  res
+}
+
+
+
 #' Fit Norberg curve to growth rate vs. temperature data
 #' 
 #' @param temp Temperature
