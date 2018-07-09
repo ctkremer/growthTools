@@ -122,19 +122,21 @@ decurve<-function(temp,topt,b1,b2,d0,d2){
 #' 
 #' @param temp Temperature
 #' @param mu Exponential growth rate
-#' @param method Specify which fitting algorithm to use, 'mle2' or 'grid.mle2'
+#' @param fit.method Specify which fitting algorithm to use, 'mle2' or 'grid.mle2'
 #' @param plotQ Should regression be visualized?
+#' @param conf.bandQ Should we calculate a confidence band around the regression? logical.
 #' @param fpath If visual requested, and valid file path provided here, plot will be saved as a .pdf file. Default is NA.
+#' @param id Character string providing any information ID'ing the specifc curve being fit; used to label plots, if any are requested. Default is NA.
 #' 
 #' @export
 #' @import bbmle
 #' @import mleTools
 #' @import emdbook
-get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=NA,id=NA){
+get.nbcurve.tpc<-function(temp,mu,fit.method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=NA,id=NA){
   tpc.tmp<-data.frame(mu,temp)
   id<-id[1]
   
-  if(method=='grid.mle2'){
+  if(fit.method=='grid.mle2'){
     
     # set up search of a grid of parameter guesses
     grids<-list(o=seq(15,25,5),w=seq(15,40,5))
@@ -150,7 +152,7 @@ get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=
               start=guesses,data=tpc.tmp)
   }
   
-  if(method=='mle2'){
+  if(fit.method=='mle2'){
     o.guess <- tmp$temp[tmp$mu==max(tmp$mu)]
     w.guess <- diff(range(tmp$temp))
     a.guess <- -1.11
@@ -175,10 +177,13 @@ get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=
   #focal.dvs<-suppressWarnings(deltavar(fun=nbcurve2(c(cf$o,tmin,tmax),o,w,a,b),meanval=cf,Sigma=vcov(fit)))
   #focal.ci<-1.96*sqrt(focal.dvs)
   
+  # simple Fisher confidence intervals:
+  ciF<-confint(fit)
+  
   # save output:
   #vec<-c(cf,rsqr,tmin,tmax,focal.ci)
   vcov.mat<-vcov(fit)
-  vec<-as.list(c(cf,rsqr=rsqr,tmin=tmin,tmax=tmax))
+  vec<-as.list(c(cf,rsqr=rsqr,tmin=tmin,tmax=tmax,ciF=ciF))
   vec$vcov<-vcov.mat
   
   # Plot results:
@@ -232,6 +237,9 @@ get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=
   # Finished, return relevant stats.  
   return(vec)
 }
+
+
+
 
 #' Calculate R2 for an mle2 model
 #' 
