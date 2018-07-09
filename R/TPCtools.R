@@ -178,7 +178,7 @@ get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=
   #focal.ci<-1.96*sqrt(focal.dvs)
   
   # simple Fisher confidence intervals:
-  ciF<-mleTools::confint.FI(fit)
+  ciF<-ci.FI(fit)
   
   # save output:
   #vec<-c(cf,rsqr,tmin,tmax,focal.ci)
