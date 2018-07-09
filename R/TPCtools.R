@@ -132,11 +132,11 @@ decurve<-function(temp,topt,b1,b2,d0,d2){
 #' @import bbmle
 #' @import mleTools
 #' @import emdbook
-get.nbcurve.tpc<-function(temp,mu,fit.method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=NA,id=NA){
+get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=NA,id=NA){
   tpc.tmp<-data.frame(mu,temp)
   id<-id[1]
   
-  if(fit.method=='grid.mle2'){
+  if(method=='grid.mle2'){
     
     # set up search of a grid of parameter guesses
     grids<-list(o=seq(15,25,5),w=seq(15,40,5))
@@ -152,7 +152,7 @@ get.nbcurve.tpc<-function(temp,mu,fit.method='grid.mle2',plotQ=F,conf.bandQ=T,fp
               start=guesses,data=tpc.tmp)
   }
   
-  if(fit.method=='mle2'){
+  if(method=='mle2'){
     o.guess <- tmp$temp[tmp$mu==max(tmp$mu)]
     w.guess <- diff(range(tmp$temp))
     a.guess <- -1.11
