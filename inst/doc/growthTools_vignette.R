@@ -2,12 +2,13 @@
 # To direct vignette code to use the growthTools package during development, calling devtools::load_all() is suggested. When ready for release, use the library command. 
 # http://stackoverflow.com/questions/35727645/devtools-build-vignette-cant-find-functions
 
-#devtools::load_all()
-library(growthTools)
+devtools::load_all()
+#library(growthTools)
 
 library(ggplot2)
 library(dplyr)
 library(tidyr)
+library(mleTools)
 
 ## ------------------------------------------------------------------------
 # Construct example data set:
@@ -68,10 +69,10 @@ res <- sp1b %>% group_by(isolate.id,dilution) %>% do(tpcs=get.nbcurve.tpc(.$temp
 
 ## ------------------------------------------------------------------------
 # or saving resulting plots:
-fpath<-'/Users/colin/Research/Software/growthTools/user/'
+#fpath<-'/Users/colin/Research/Software/growthTools/user/'
 
 # provide an explicit fpath to invoke plot saving; when `id` is also provided, this column will be used to produce the plot's title, as well as included in the file name.
-res <- sp1b %>% group_by(isolate.id,dilution) %>% do(tpcs=get.nbcurve.tpc(.$temperature,.$mu,method='grid.mle2',plotQ=T,conf.bandQ=T,fpath=fpath,id=.$dilution))
+#res <- sp1b %>% group_by(isolate.id,dilution) %>% do(tpcs=get.nbcurve.tpc(.$temperature,.$mu,method='grid.mle2',plotQ=T,conf.bandQ=T,fpath=fpath,id=.$dilution))
 
 ## ------------------------------------------------------------------------
 res <- sp1b %>% group_by(isolate.id,dilution) %>% do(tpcs=get.nbcurve.tpc(.$temperature,.$mu,method='grid.mle2',plotQ=T,conf.bandQ=F,fpath=NA,id=.$dilution))
