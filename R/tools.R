@@ -372,7 +372,6 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
                  gr.lag=get.gr.lag(x,y,plotQ=T,fpath=fpath,id=id[1]),
                  gr.sat=get.gr.sat(x,y,plotQ=T,fpath=fpath,id=id[1]),
                  gr.lagsat=get.gr.lagsat(x,y,plotQ=T,fpath=fpath,id=id[1]))
-      dev.off()
     }
   }else{
     result<-list(best.slope=NA,
