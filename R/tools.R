@@ -303,70 +303,84 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
   gr<-gr.lag<-gr.sat<-gr.lagsat<-NA
   slope.gr<-slope.gr.lag<-slope.gr.sat<-slope.gr.lagsat<-NA
   
-  # Fill data structures for each given method, if requested by user:
-  if('linear' %in% methods){
-    gr<-get.gr(x,y) 
-    slope.gr<-coef(gr)[[2]]
-    modlist$gr<-gr
+  if(length(x)==2){
+    print("Caution: only two time points, high risk of over-fitting")
   }
-  if('lag' %in% methods){
-    gr.lag<-try(get.gr.lag(x,y))  
-    slope.gr.lag<-ifelse(prod(class(gr.lag)!='try-error'),
+  
+  if(length(x)>=2){
+  
+    # Fill data structures for each given method, if requested by user:
+    if('linear' %in% methods){
+      gr<-get.gr(x,y) 
+      slope.gr<-coef(gr)[[2]]
+      modlist$gr<-gr
+    }
+    if('lag' %in% methods){
+      gr.lag<-try(get.gr.lag(x,y))  
+      slope.gr.lag<-ifelse(prod(class(gr.lag)!='try-error'),
                          exp(coef(gr.lag)[3]),NA)
-    modlist$gr.lag<-gr.lag
-  }
-  if('sat' %in% methods){
-    gr.sat<-try(get.gr.sat(x,y))
-    slope.gr.sat<-ifelse(prod(class(gr.sat)!='try-error'),
+      modlist$gr.lag<-gr.lag
+    }
+    if('sat' %in% methods){
+      gr.sat<-try(get.gr.sat(x,y))
+      slope.gr.sat<-ifelse(prod(class(gr.sat)!='try-error'),
                          exp(coef(gr.sat)[3]),NA)
-    modlist$gr.sat<-gr.sat
-  }
-  if('lagsat' %in% methods){
-    gr.lagsat<-try(get.gr.lagsat(x,y))
-    slope.gr.lagsat<-ifelse(prod(class(gr.lagsat)!='try-error'),
+      modlist$gr.sat<-gr.sat
+    }
+    if('lagsat' %in% methods){
+      gr.lagsat<-try(get.gr.lagsat(x,y))
+      slope.gr.lagsat<-ifelse(prod(class(gr.lagsat)!='try-error'),
                             exp(coef(gr.lagsat)[4]),NA)
-    modlist$gr.lagsat<-gr.lagsat
-  }
+      modlist$gr.lagsat<-gr.lagsat
+    }
   
-  # determine which fits occured and were successful
-  successful.fits<-sapply(modlist,detect)
+    # determine which fits occured and were successful
+    successful.fits<-sapply(modlist,detect)
   
-  if(sum(successful.fits)==0){
-    print('Error! All results for requested methods failed!')
-    break();
-  }
+    if(sum(successful.fits)==0){
+      print('Error! All results for requested methods failed!')
+      break();
+    }
   
-  # assemble model names, contents, and slopes, but only for successful fits
-  mod.names<-c('gr','gr.lag','gr.sat','gr.lagsat')[successful.fits]
-  mod.list<-list(gr,gr.lag,gr.sat,gr.lagsat)[successful.fits]
-  slope.ests<-c(slope.gr,slope.gr.lag,slope.gr.sat,slope.gr.lagsat)[successful.fits]
+    # assemble model names, contents, and slopes, but only for successful fits
+    mod.names<-c('gr','gr.lag','gr.sat','gr.lagsat')[successful.fits]
+    mod.list<-list(gr,gr.lag,gr.sat,gr.lagsat)[successful.fits]
+    slope.ests<-c(slope.gr,slope.gr.lag,slope.gr.sat,slope.gr.lagsat)[successful.fits]
   
-  # compare successful models
-  aictab<-AICtab(mod.list,mnames = mod.names)
-  best.mod.id<-which(mod.names==attr(aictab,"row.names")[1])
+    # compare successful models
+    aictab<-AICtab(mod.list,mnames = mod.names)
+    best.mod.id<-which(mod.names==attr(aictab,"row.names")[1])
   
-  # format output:
-  result<-list(best.slope=slope.ests[[best.mod.id]],
+    # format output:
+    result<-list(best.slope=slope.ests[[best.mod.id]],
                best.model=as.character(mod.names[[best.mod.id]]),
                best.model.rsqr=get.R2(mod.list[[best.mod.id]],y),
                best.model.contents=list(mod.list[[best.mod.id]]),
                slopes=slope.ests,
                models=list(gr=gr,gr.lag=gr.lag,gr.sat=gr.sat,gr.lagsat=gr.lagsat))
-  #print(result)
+    #print(result)
   
-  if(plot.best.Q){
-    if(!is.na(fpath)){
-      fpath<-paste(fpath,id[1],'.pdf',sep='')
-    }
+    if(plot.best.Q){
+      if(!is.na(fpath)){
+        fpath<-paste(fpath,id[1],'.pdf',sep='')
+      }
     
-    # want to show the best model in the requested model set... given methods options.
-    # no model can end up in the model set if not requested, so this should be o.k. as written
-    gigo<-switch(result$best.model,
+      # want to show the best model in the requested model set... given methods options.
+      # no model can end up in the model set if not requested, so this should be o.k. as written
+      gigo<-switch(result$best.model,
                  gr=get.gr(x,y,plotQ=T,fpath=fpath,id=id[1]),
                  gr.lag=get.gr.lag(x,y,plotQ=T,fpath=fpath,id=id[1]),
                  gr.sat=get.gr.sat(x,y,plotQ=T,fpath=fpath,id=id[1]),
                  gr.lagsat=get.gr.lagsat(x,y,plotQ=T,fpath=fpath,id=id[1]))
-    dev.off()
+      dev.off()
+    }
+  }else{
+    result<-list(best.slope=NA,
+                 best.model=NA,
+                 best.model.rsqr=NA,
+                 best.model.contents=list(NA),
+                 slopes=NA,
+                 models=list(gr=NA,gr.lag=NA,gr.sat=NA,gr.lagsat=NA))
   }
   
   return(result)
