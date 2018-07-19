@@ -375,7 +375,7 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
     }
   }else{
     result<-list(best.slope=NA,
-                 best.model=NA,
+                 best.model="NA",
                  best.model.rsqr=NA,
                  best.model.contents=list(NA),
                  slopes=NA,
