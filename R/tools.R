@@ -284,7 +284,7 @@ detect<-function(x){
 #' @param methods Must be a character vector containing one or more of \code{'linear'}, \code{'lag'}, \code{'sat'}, or \code{'lagsat'}
 #' @param id Label corresponding to the population/strain/species of interest; used to determine the title and file name of saved plot, if any.
 #' 
-#' @return A data frame containing the identity of the best model, the content of the best model, the estimated slopes of the increasing linear portion of the regressions (ie, exponential growth rate), and the full list of all models fit.
+#' @return A data frame containing the identity of the best model, the content of the best model, the estimated slopes of the increasing linear portion of the regressions (ie, exponential growth rate), the standard errors associated with these slopes, and the full list of all models fit.
 #' 
 #' 
 #' @examples 
@@ -302,6 +302,7 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
   class(modlist$gr)<-class(modlist$gr.lag)<-class(modlist$gr.sat)<-class(modlist$gr.lagsat)<-'try-error'
   gr<-gr.lag<-gr.sat<-gr.lagsat<-NA
   slope.gr<-slope.gr.lag<-slope.gr.sat<-slope.gr.lagsat<-NA
+  se.gr<-se.gr.lag<-se.gr.sat<-se.gr.lagsat<-NA
   
   if(length(x)==2){
     print("Caution: only two time points, high risk of over-fitting")
@@ -313,24 +314,31 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
     if('linear' %in% methods){
       gr<-get.gr(x,y) 
       slope.gr<-coef(gr)[[2]]
+      se.gr<-sqrt(diag(vcov(gr)))['x']
       modlist$gr<-gr
     }
     if('lag' %in% methods){
       gr.lag<-try(get.gr.lag(x,y))  
       slope.gr.lag<-ifelse(prod(class(gr.lag)!='try-error'),
                          exp(coef(gr.lag)[3]),NA)
+      se.gr.lag<-ifelse(prod(class(gr.lag)!='try-error'),
+                        sqrt(diag(vcov(gr.lag)))['logb'],NA)
       modlist$gr.lag<-gr.lag
     }
     if('sat' %in% methods){
       gr.sat<-try(get.gr.sat(x,y))
       slope.gr.sat<-ifelse(prod(class(gr.sat)!='try-error'),
                          exp(coef(gr.sat)[3]),NA)
+      se.gr.sat<-ifelse(prod(class(gr.sat)!='try-error'),
+             sqrt(diag(vcov(gr.sat)))['logb'],NA)
       modlist$gr.sat<-gr.sat
     }
     if('lagsat' %in% methods){
       gr.lagsat<-try(get.gr.lagsat(x,y))
       slope.gr.lagsat<-ifelse(prod(class(gr.lagsat)!='try-error'),
                             exp(coef(gr.lagsat)[4]),NA)
+      se.gr.lagsat<-ifelse(prod(class(gr.lagsat)!='try-error'),
+                        sqrt(diag(vcov(gr.lagsat)))['logb'],NA)
       modlist$gr.lagsat<-gr.lagsat
     }
   
@@ -346,18 +354,21 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
     mod.names<-c('gr','gr.lag','gr.sat','gr.lagsat')[successful.fits]
     mod.list<-list(gr,gr.lag,gr.sat,gr.lagsat)[successful.fits]
     slope.ests<-c(slope.gr,slope.gr.lag,slope.gr.sat,slope.gr.lagsat)[successful.fits]
-  
+    se.ests<-unname(c(se.gr,se.gr.lag,se.gr.sat,se.gr.lagsat)[successful.fits])
+      
     # compare successful models
     aictab<-AICtab(mod.list,mnames = mod.names)
     best.mod.id<-which(mod.names==attr(aictab,"row.names")[1])
   
     # format output:
     result<-list(best.slope=slope.ests[[best.mod.id]],
-               best.model=as.character(mod.names[[best.mod.id]]),
-               best.model.rsqr=get.R2(mod.list[[best.mod.id]],y),
-               best.model.contents=list(mod.list[[best.mod.id]]),
-               slopes=slope.ests,
-               models=list(gr=gr,gr.lag=gr.lag,gr.sat=gr.sat,gr.lagsat=gr.lagsat))
+                 best.se=se.ests[[best.mod.id]],
+                 best.model=as.character(mod.names[[best.mod.id]]),
+                 best.model.rsqr=get.R2(mod.list[[best.mod.id]],y),
+                 best.model.contents=list(mod.list[[best.mod.id]]),
+                 slopes=slope.ests,
+                 ses=se.ests,
+                 models=list(gr=gr,gr.lag=gr.lag,gr.sat=gr.sat,gr.lagsat=gr.lagsat))
     #print(result)
   
     if(plot.best.Q){
@@ -375,10 +386,12 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
     }
   }else{
     result<-list(best.slope=NA,
+                 best.se=NA,
                  best.model="NA",
                  best.model.rsqr=NA,
                  best.model.contents=list(NA),
                  slopes=NA,
+                 ses=NA,
                  models=list(gr=NA,gr.lag=NA,gr.sat=NA,gr.lagsat=NA))
   }
   
