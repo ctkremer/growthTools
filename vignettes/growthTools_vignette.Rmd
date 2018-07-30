@@ -77,6 +77,13 @@ res$slopes
 
 Looking at these, we can see that the growth rate estimates from the linear, lagged, and saturating models are all significantly lower than the estimate from the lagged and saturated model, which captures the correct slope.
 
+This is also reflected in the standard error values associated with each slope estimate, obtained via:
+
+```{r}
+res$bes.se
+res$ses
+```
+
 
 ## Applying this approach to many time series
 
@@ -89,15 +96,15 @@ The result is a grouped data frame, which we directly pass to the `do()` command
 In this instance, we request that the best fitting models are plotted, but leave the file path (`fpath`) option as `NA`, so the plots are displayed rather than saved to a directory. When working with a larger data set, the number of plots can be unwieldly, so it is recommended that you save rather than immediately display them.
 
 ```{r}
-gdat <- sdat %>% group_by(trt) %>% do(grs=get.growth.rate(x=.$dtime,y=.$ln.fluor,id=.$trt,plot.best.Q=T,fpath=NA)) 
+gdat <- sdat %>% group_by(trt) %>% do(grs=get.growth.rate(x=.$dtime,y=.$ln.fluor,id=.$trt,plot.best.Q=T,fpath=NA))  
 ```
 
 The resulting data frame is a complex structure - it contains the columns used for grouping (in this case, just `trt`), as well as a new column called `grs`. The entries in `grs` consist of the result of applying `get.growth.rate()` to each time series, including the identity of the best fit model, slope estimates, model contents, etc.
 
-We can process this complex data structure further to obtain say just the best slope (growth rate) estimates:
+We can process this complex data structure further to obtain say just the best slope (growth rate) estimates, the identity of the best model, and the standard error associated with the growth rate estimate:
 
 ```{r}
-gdat %>% summarise(trt,mu=grs$best.slope,best.model=grs$best.model)
+gdat %>% summarise(trt,mu=grs$best.slope,best.model=grs$best.model,best.se=grs$best.se)
 ```
 
 The result lists each population/time series, the best growth rate estimate (`mu`), and the identity of the model that produced this estimate.
