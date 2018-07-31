@@ -3,6 +3,7 @@
 export(decurve)
 export(deltavar2)
 export(get.R2)
+export(get.decurve.tpc)
 export(get.gr)
 export(get.gr.lag)
 export(get.gr.lagsat)

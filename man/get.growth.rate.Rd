@@ -21,7 +21,7 @@ get.growth.rate(x, y, id, plot.best.Q = F, fpath = NA,
 \item{methods}{Must be a character vector containing one or more of \code{'linear'}, \code{'lag'}, \code{'sat'}, or \code{'lagsat'}}
 }
 \value{
-A data frame containing the identity of the best model, the content of the best model, the estimated slopes of the increasing linear portion of the regressions (ie, exponential growth rate), and the full list of all models fit.
+A data frame containing the identity of the best model, the content of the best model, the estimated slopes of the increasing linear portion of the regressions (ie, exponential growth rate), the standard errors associated with these slopes, and the full list of all models fit.
 }
 \description{
 This meta-function takes a time series of abundance, and attempts to extract an 
