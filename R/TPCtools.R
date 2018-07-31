@@ -146,19 +146,20 @@ get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=
                     grids=grids,start=start,data=tpc.tmp)
     cfg<-coef(fit0$res.best) # this seemed to be throwing problems b/c of an issue with accessing mle2...?
 
-    # polish best fit model, using formual interface:
+    # polish best fit model, using formula interface:
     guesses<-as.list(cfg)
     fit<-mle2(mu~dnorm(mean=nbcurve2(temp,o,w,a,b),sd=exp(s)),
               start=guesses,data=tpc.tmp)
   }
   
   if(method=='mle2'){
-    o.guess <- tmp$temp[tmp$mu==max(tmp$mu)]
+    print("Caution: this option not fully beta tested... 7/30/18")
+    o.guess <- tpc.tmp$temp[tpc.tmp$mu==max(tpc.tmp$mu)]
     w.guess <- diff(range(tmp$temp))
     a.guess <- -1.11
     b.guess <- 0.05
     fit<-mle2(mu~dnorm(mean=nbcurve2(temp,o,w,a,b),sd=exp(s)),
-              start=list(o=o.guess,w=w.guess,a=a.guess,b=b.guess,s=log(2)),data=tmp)
+              start=list(o=o.guess,w=w.guess,a=a.guess,b=b.guess,s=log(2)),data=tpc.tmp)
   }
   
   # pull out parameters
@@ -238,6 +239,128 @@ get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=
   # Finished, return relevant stats.  
   return(vec)
 }
+
+
+
+
+
+#' Fit Double Exponential curve to growth rate vs. temperature data
+#' 
+#' @param temp Temperature
+#' @param mu Exponential growth rate
+#' @param fit.method Specify which fitting algorithm to use, 'mle2' or 'grid.mle2'
+#' @param plotQ Should regression be visualized?
+#' @param conf.bandQ Should we calculate a confidence band around the regression? logical.
+#' @param fpath If visual requested, and valid file path provided here, plot will be saved as a .pdf file. Default is NA.
+#' @param id Character string providing any information ID'ing the specifc curve being fit; used to label plots, if any are requested. Default is NA.
+#' 
+#' @export
+#' @import bbmle
+#' @import mleTools
+#' @import emdbook
+get.decurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=NA,id=NA){
+  tpc.tmp<-data.frame(mu,temp)
+  id<-id[1]
+  
+  if(method=='grid.mle2'){
+    
+    # set up search of a grid of parameter guesses
+    grids<-list(b1=seq(0.01,0.41,0.2),b2=seq(0.1,0.5,0.2),d0=log(seq(0.01,0.11,0.05)),d2=seq(0.1,0.7,0.2))
+    start<-list(topt=tpc.tmp$temp[tpc.tmp$mu==max(tpc.tmp$mu)],b1=NA,b2=NA,d0=NA,d2=NA,s=log(2))
+    
+    fit0<-grid.mle2(minuslogl=mu~dnorm(mean=decurve(temp,topt,b1,b2,exp(d0),d2),sd=exp(s)),
+                    grids=grids,start=start,data=tpc.tmp)
+    cfg<-coef(fit0$res.best) # this seemed to be throwing problems b/c of an issue with accessing mle2...?
+    
+    # polish best fit model, using formula interface:
+    guesses<-as.list(cfg)
+    guesses$d0<-exp(guesses$d0)
+    fit<-mle2(mu~dnorm(mean=decurve(temp,topt,b1,b2,d0,d2),sd=exp(s)),
+              start=guesses,data=tpc.tmp,control=list(maxit=0))
+  }
+
+  if(method=='mle2'){
+    print("Caution: this option not fully beta tested... 7/30/18")
+    topt.guess <- tpc.tmp$temp[tpc.tmp$mu==max(tpc.tmp$mu)]
+    b1.guess <- 0.09
+    b2.guess <- 0.15
+    d0.guess <- 0.03
+    d2.guess <- 0.18
+    fit<-mle2(mu~dnorm(mean=decurve(temp,topt,b1,b2,d0,d2),sd=exp(s)),
+              start=list(topt=topt.guess,b1=b1.guess,b2=b2.guess,d0=d0.guess,d2=d2.guess,s=log(2)),data=tpc.tmp)
+  }
+  
+  # pull out parameters
+  cf<-as.list(coef(fit))
+
+  # additional responses/traits:
+  objective<-function(x){
+    decurve(x,cf$topt,cf$b1,cf$b2,cf$d0,cf$d2)
+  }
+  tmax<-uniroot(f = objective,interval = c(cf$topt,1.5*(cf$topt-log(cf$d2/cf$b2)/(cf$b2-cf$d2))))$root
+  tmin<-uniroot(f = objective,interval = c(1.5*(log(cf$d0/cf$b1)/cf$b2),cf$topt))$root  
+
+  # calculate R2
+  rsqr<-get.R2(fit,tpc.tmp$mu)
+  
+  # simple Fisher confidence intervals:
+  ciF<-ci.FI(fit)
+  
+  # save output:
+  #vec<-c(cf,rsqr,tmin,tmax,focal.ci)
+  vcov.mat<-vcov(fit)
+  vec<-as.list(c(cf,rsqr=rsqr,tmin=tmin,tmax=tmax))
+  vec$ciF<-ciF
+  vec$vcov<-vcov.mat
+  
+  # Plot results:
+  if(plotQ){
+    xs<-seq(min(tpc.tmp$temp),max(tpc.tmp$temp),0.1)
+    new.data<-data.frame(temp=xs)
+    new.data$mu<-predict(fit,newdata=new.data)
+    
+    # plot it out
+    p1<-ggplot(tpc.tmp,aes(x=temp,y=mu))+
+      geom_point()+
+      geom_line(data=new.data)+
+      geom_hline(yintercept = 0)+
+      theme_bw()+
+      scale_x_continuous('Temperature (C)')+
+      scale_y_continuous('Growth rate (1/day)')
+    
+    if(!is.na(id)){
+      p1<-p1+ggtitle(id)
+    }
+    
+    if(conf.bandQ){
+      ### Confidence bands via the delta method (see Bolker book, pg. 255)  
+      st<-paste("decurve(c(",paste(xs,collapse=','),"),topt,b1,b2,d0,d2)",sep='')
+      dvs0<-suppressWarnings(deltavar2(fun=parse(text=st),meanval=cf,Sigma=vcov.mat))
+      
+      new.data$ml.ci<-1.96*sqrt(dvs0)
+      p1<-p1+geom_ribbon(data=new.data,aes(ymin=mu-ml.ci,ymax=mu+ml.ci),alpha=0.2)
+    }
+    
+    if(!is.na(fpath)){
+      #time<-Sys.time()
+      #time<-gsub(x = time,pattern = ":",replacement = "_")
+      if(is.na(id)){
+        full.path<-paste(fpath,"TPC_fit_",time,".pdf",sep='')        
+      }else{
+        #full.path<-paste(fpath,"TPC_fit_",id,"_",time,".pdf",sep='') 
+        full.path<-paste(fpath,"TPC_fit_",id,".pdf",sep='') 
+      }
+      ggsave(device = pdf(),filename = full.path,p1,width = 5,height = 4)
+      dev.off()
+    }else{
+      print(p1)
+    }
+  }
+  
+  # Finished, return relevant stats.  
+  return(vec)
+}
+
 
 
 
