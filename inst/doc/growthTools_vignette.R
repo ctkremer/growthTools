@@ -38,10 +38,14 @@ summary(res$models$gr.lag)
 res$slopes
 
 ## ------------------------------------------------------------------------
-gdat <- sdat %>% group_by(trt) %>% do(grs=get.growth.rate(x=.$dtime,y=.$ln.fluor,id=.$trt,plot.best.Q=T,fpath=NA)) 
+res$bes.se
+res$ses
 
 ## ------------------------------------------------------------------------
-gdat %>% summarise(trt,mu=grs$best.slope,best.model=grs$best.model)
+gdat <- sdat %>% group_by(trt) %>% do(grs=get.growth.rate(x=.$dtime,y=.$ln.fluor,id=.$trt,plot.best.Q=T,fpath=NA))  
+
+## ------------------------------------------------------------------------
+gdat %>% summarise(trt,mu=grs$best.slope,best.model=grs$best.model,best.se=grs$best.se)
 
 ## ------------------------------------------------------------------------
 # Only use the linear method:
@@ -75,13 +79,33 @@ res <- sp1b %>% group_by(isolate.id,dilution) %>% do(tpcs=get.nbcurve.tpc(.$temp
 #res <- sp1b %>% group_by(isolate.id,dilution) %>% do(tpcs=get.nbcurve.tpc(.$temperature,.$mu,method='grid.mle2',plotQ=T,conf.bandQ=T,fpath=fpath,id=.$dilution))
 
 ## ------------------------------------------------------------------------
-res <- sp1b %>% group_by(isolate.id,dilution) %>% do(tpcs=get.nbcurve.tpc(.$temperature,.$mu,method='grid.mle2',plotQ=T,conf.bandQ=F,fpath=NA,id=.$dilution))
+nb.res <- sp1b %>% group_by(isolate.id,dilution) %>% do(tpcs=get.nbcurve.tpc(.$temperature,.$mu,method='grid.mle2',plotQ=T,conf.bandQ=F,fpath=NA,id=.$dilution))
 
 sp1b %>% group_by(isolate.id,dilution) %>% do(tpcs=get.nbcurve.tpc(.$temperature,.$mu,method='grid.mle2',plotQ=F,conf.bandQ=F,fpath=NA,id=.$dilution))
 
 ## ------------------------------------------------------------------------
 # process results
-res %>% summarise(isolate.id,dilution,topt=tpcs$o,tmin=tpcs$tmin,tmax=tpcs$tmax,rsqr=tpcs$rsqr,a=exp(tpcs$a),b=tpcs$b,w=tpcs$w)
+nb.res2<-nb.res %>% summarise(isolate.id,dilution,topt=tpcs$o,tmin=tpcs$tmin,tmax=tpcs$tmax,rsqr=tpcs$rsqr,a=exp(tpcs$a),b=tpcs$b,w=tpcs$w)
+
+nb.res2
+
+## ----echo=F--------------------------------------------------------------
+de.res <- sp1b %>% group_by(isolate.id,dilution) %>% do(tpcs=get.decurve.tpc(.$temperature,.$mu,method='grid.mle2',plotQ=T,conf.bandQ=T,fpath=NA,id=.$dilution))
+
+de.res2 <- de.res %>% summarise(isolate.id,dilution,topt=tpcs$topt,tmin=tpcs$tmin,tmax=tpcs$tmax,rsqr=tpcs$rsqr,b1=tpcs$b1,b2=tpcs$b2,d0=tpcs$d0,d2=tpcs$d2)
+
+de.res2
+
+## ------------------------------------------------------------------------
+library(reshape2)
+
+nb.res3<-melt(nb.res2,id.vars=c('isolate.id','dilution'))
+de.res3<-melt(de.res2,id.vars=c('isolate.id','dilution'))
+res2<-rbind(data.frame(type='nb',nb.res3),data.frame(type='de',de.res3))
+
+ggplot(res2[res2$variable=='rsqr',],aes(x=type,y=value))+
+  geom_boxplot(aes(fill=type))+
+  scale_y_continuous(limits=c(0,1))
 
 ## ------------------------------------------------------------------------
 table(example_TPC_data[,c('isolate.id','dilution')])

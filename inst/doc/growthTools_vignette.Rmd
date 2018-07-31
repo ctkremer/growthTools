@@ -77,6 +77,13 @@ res$slopes
 
 Looking at these, we can see that the growth rate estimates from the linear, lagged, and saturating models are all significantly lower than the estimate from the lagged and saturated model, which captures the correct slope.
 
+This is also reflected in the standard error values associated with each slope estimate, obtained via:
+
+```{r}
+res$bes.se
+res$ses
+```
+
 
 ## Applying this approach to many time series
 
@@ -89,15 +96,15 @@ The result is a grouped data frame, which we directly pass to the `do()` command
 In this instance, we request that the best fitting models are plotted, but leave the file path (`fpath`) option as `NA`, so the plots are displayed rather than saved to a directory. When working with a larger data set, the number of plots can be unwieldly, so it is recommended that you save rather than immediately display them.
 
 ```{r}
-gdat <- sdat %>% group_by(trt) %>% do(grs=get.growth.rate(x=.$dtime,y=.$ln.fluor,id=.$trt,plot.best.Q=T,fpath=NA)) 
+gdat <- sdat %>% group_by(trt) %>% do(grs=get.growth.rate(x=.$dtime,y=.$ln.fluor,id=.$trt,plot.best.Q=T,fpath=NA))  
 ```
 
 The resulting data frame is a complex structure - it contains the columns used for grouping (in this case, just `trt`), as well as a new column called `grs`. The entries in `grs` consist of the result of applying `get.growth.rate()` to each time series, including the identity of the best fit model, slope estimates, model contents, etc.
 
-We can process this complex data structure further to obtain say just the best slope (growth rate) estimates:
+We can process this complex data structure further to obtain say just the best slope (growth rate) estimates, the identity of the best model, and the standard error associated with the growth rate estimate:
 
 ```{r}
-gdat %>% summarise(trt,mu=grs$best.slope,best.model=grs$best.model)
+gdat %>% summarise(trt,mu=grs$best.slope,best.model=grs$best.model,best.se=grs$best.se)
 ```
 
 The result lists each population/time series, the best growth rate estimate (`mu`), and the identity of the model that produced this estimate.
@@ -125,7 +132,7 @@ head(example_TPC_data)
 
 This data set contains information on the growth rate (mu) of one focal strain of a diatom (isolate.id) collected from Narragannsett Bay, RI in 2017. This isolate was grown at a range of differen temperatures, over three separate dilution periods, and replicated three times at each level. The final column, 'best.model' reflects the model used to provide the growth rate estimates, using functions from the `growthTools` package as described in the preceding section.
 
-Now, we can use the function `get.nbcurve.tpc()` to fit thermal performance curves (using the re-parameterized Norberg function - see `nbcurve2()`) to the growth rate data. This is easily done for a single dilution period:
+Now, we can use the function `get.nbcurve.tpc()` to fit thermal performance curves (using the re-parameterized Norberg function - see `?nbcurve2()`) to the growth rate data. This is easily done for a single dilution period:
 
 ```{r}
 # Single data set:
@@ -160,7 +167,7 @@ This approach also allows a fair amount of customization. For example, we can sa
 You can also turn off plotting all together, or turn off only the confidence bands:
 
 ```{r}
-res <- sp1b %>% group_by(isolate.id,dilution) %>% do(tpcs=get.nbcurve.tpc(.$temperature,.$mu,method='grid.mle2',plotQ=T,conf.bandQ=F,fpath=NA,id=.$dilution))
+nb.res <- sp1b %>% group_by(isolate.id,dilution) %>% do(tpcs=get.nbcurve.tpc(.$temperature,.$mu,method='grid.mle2',plotQ=T,conf.bandQ=F,fpath=NA,id=.$dilution))
 
 sp1b %>% group_by(isolate.id,dilution) %>% do(tpcs=get.nbcurve.tpc(.$temperature,.$mu,method='grid.mle2',plotQ=F,conf.bandQ=F,fpath=NA,id=.$dilution))
 ```
@@ -169,8 +176,41 @@ After executing any of these, you can use `summarise` to recover parameter estim
 
 ```{r}
 # process results
-res %>% summarise(isolate.id,dilution,topt=tpcs$o,tmin=tpcs$tmin,tmax=tpcs$tmax,rsqr=tpcs$rsqr,a=exp(tpcs$a),b=tpcs$b,w=tpcs$w)
+nb.res2<-nb.res %>% summarise(isolate.id,dilution,topt=tpcs$o,tmin=tpcs$tmin,tmax=tpcs$tmax,rsqr=tpcs$rsqr,a=exp(tpcs$a),b=tpcs$b,w=tpcs$w)
+
+nb.res2
 ```
+
+## Double exponential model:
+
+The package also allows fitting an alternative parametric equation, known currently as the double exponential model, to thermal performance curves. Details on this model can be found in Thomas et al. 2017 Global Change Biology. In brief, it models net population growth rate as the difference between two processes that depend exponentially on temperature: birth and death.
+
+Right now, model fitting using this approach is pretty slow; this model is a 5 parameter model (Norberg uses 4 parameters), and several of the parameter estimates tend to covary strongly, so convergence takes many iterations of the optimization algorithm. There are ways to speed things up (by providing a smaller grid of initial parameter guesses to grid.mle2 behind the scenes), but this comes at an elevated risk of finding a local rather than globally optimal set of parameter estimates.
+
+You can access this functionality the same way as fitting the Norberg curve, but using `get.decurve.tpc()` inside of the `dplyr` command:
+
+```{r,echo=F}
+de.res <- sp1b %>% group_by(isolate.id,dilution) %>% do(tpcs=get.decurve.tpc(.$temperature,.$mu,method='grid.mle2',plotQ=T,conf.bandQ=T,fpath=NA,id=.$dilution))
+
+de.res2 <- de.res %>% summarise(isolate.id,dilution,topt=tpcs$topt,tmin=tpcs$tmin,tmax=tpcs$tmax,rsqr=tpcs$rsqr,b1=tpcs$b1,b2=tpcs$b2,d0=tpcs$d0,d2=tpcs$d2)
+
+de.res2
+```
+
+It should also be straightforward to fit both types of model to your data, then try to decide which model performs best, using criteria such as R2 or AIC. Here's a basic visual comparison: 
+
+```{r}
+library(reshape2)
+
+nb.res3<-melt(nb.res2,id.vars=c('isolate.id','dilution'))
+de.res3<-melt(de.res2,id.vars=c('isolate.id','dilution'))
+res2<-rbind(data.frame(type='nb',nb.res3),data.frame(type='de',de.res3))
+
+ggplot(res2[res2$variable=='rsqr',],aes(x=type,y=value))+
+  geom_boxplot(aes(fill=type))+
+  scale_y_continuous(limits=c(0,1))
+```
+
 
 ## Allow for multiple grouping variables:
 
