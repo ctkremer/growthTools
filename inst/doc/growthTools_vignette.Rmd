@@ -189,7 +189,7 @@ Right now, model fitting using this approach is pretty slow; this model is a 5 p
 
 You can access this functionality the same way as fitting the Norberg curve, but using `get.decurve.tpc()` inside of the `dplyr` command:
 
-```{r,echo=F}
+```{r,warning=F}
 de.res <- sp1b %>% group_by(isolate.id,dilution) %>% do(tpcs=get.decurve.tpc(.$temperature,.$mu,method='grid.mle2',plotQ=T,conf.bandQ=T,fpath=NA,id=.$dilution))
 
 de.res2 <- de.res %>% summarise(isolate.id,dilution,topt=tpcs$topt,tmin=tpcs$tmin,tmax=tpcs$tmax,rsqr=tpcs$rsqr,b1=tpcs$b1,b2=tpcs$b2,d0=tpcs$d0,d2=tpcs$d2)
@@ -216,7 +216,7 @@ ggplot(res2[res2$variable=='rsqr',],aes(x=type,y=value))+
 
 We could also apply this approach to a larger data set, with more species and additional grouping variables:
 
-```{r}
+```{r,warning=F}
 table(example_TPC_data[,c('isolate.id','dilution')])
 
 # create informative ID column for each combo of unique strain and dilution period:

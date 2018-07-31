@@ -89,7 +89,7 @@ nb.res2<-nb.res %>% summarise(isolate.id,dilution,topt=tpcs$o,tmin=tpcs$tmin,tma
 
 nb.res2
 
-## ----echo=F--------------------------------------------------------------
+## ----warning=F-----------------------------------------------------------
 de.res <- sp1b %>% group_by(isolate.id,dilution) %>% do(tpcs=get.decurve.tpc(.$temperature,.$mu,method='grid.mle2',plotQ=T,conf.bandQ=T,fpath=NA,id=.$dilution))
 
 de.res2 <- de.res %>% summarise(isolate.id,dilution,topt=tpcs$topt,tmin=tpcs$tmin,tmax=tpcs$tmax,rsqr=tpcs$rsqr,b1=tpcs$b1,b2=tpcs$b2,d0=tpcs$d0,d2=tpcs$d2)
@@ -107,7 +107,7 @@ ggplot(res2[res2$variable=='rsqr',],aes(x=type,y=value))+
   geom_boxplot(aes(fill=type))+
   scale_y_continuous(limits=c(0,1))
 
-## ------------------------------------------------------------------------
+## ----warning=F-----------------------------------------------------------
 table(example_TPC_data[,c('isolate.id','dilution')])
 
 # create informative ID column for each combo of unique strain and dilution period:
