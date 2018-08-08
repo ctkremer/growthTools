@@ -139,8 +139,10 @@ get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=
   if(method=='grid.mle2'){
     
     # set up search of a grid of parameter guesses
-    grids<-list(o=seq(15,25,5),w=seq(15,40,5))
-    start<-list(o=NA,w=NA,a=-1.11,b=0.05,s=log(2))
+    #grids<-list(o=seq(15,25,5),w=seq(15,40,5))
+    #start<-list(o=NA,w=NA,a=-1.11,b=0.05,s=log(2))
+    grids<-list(o=seq(15,35,5),w=seq(15,40,5),a=seq(-0.5,-2,-0.5),b=c(-0.05,0,0.05))
+    start<-list(o=NA,w=NA,a=NA,b=NA,s=log(2))
     
     fit0<-grid.mle2(minuslogl=mu~dnorm(mean=nbcurve2(temp,o,w,a,b),sd=exp(s)),
                     grids=grids,start=start,data=tpc.tmp)
