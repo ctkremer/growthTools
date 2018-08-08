@@ -317,6 +317,9 @@ get.decurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=
   vec<-as.list(c(cf,rsqr=rsqr,tmin=tmin,tmax=tmax))
   vec$ciF<-ciF
   vec$vcov<-vcov.mat
+  vec$n<-nrow(tpc.tmp)
+  vec$logLik<-logLik(fit)
+  vec$aic<-AIC(fit)
   
   # Plot results:
   if(plotQ){
