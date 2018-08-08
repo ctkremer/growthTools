@@ -2,7 +2,6 @@
 
 # - allow for weighted regression based on reported standard error values
 # - combine nbcurve and nbcurve2 into a single function that depends on either copt or opt (see alternative parameterizations of distributions, e.g.)
-# - add sample size and logLik values to output from get.__curve.tpc functions, to support subsequent model comparison?
 
 # NOTES:
 
@@ -15,3 +14,5 @@
 
 # during active development
 #devtools::load_all()  # re-load all files in /R
+
+# devtools::build_vignettes()
