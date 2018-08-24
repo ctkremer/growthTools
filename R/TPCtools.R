@@ -291,7 +291,7 @@ get.decurve.tpc<-function(temp,mu,method='grid.mle2',start.method='general.grid'
     
     if(start.method=='general.grid'){
       tpc.tmp.tb<-tpc.tmp %>% group_by(temp) %>% summarise(mu=mean(mu))
-      topt.guess<-tpc.tmp.tb$temp[tpc.tmp.tb$mu==max(tpc.tmp.tb$mu)]
+      topt.guess<-mean(tpc.tmp.tb$temp[tpc.tmp.tb$mu==max(tpc.tmp.tb$mu)])
       
       # set up search of a grid of parameter guesses
       grids<-list(b1=log(seq(0.01,0.41,0.2)),b2=log(seq(0.1,0.5,0.2)),
@@ -312,7 +312,7 @@ get.decurve.tpc<-function(temp,mu,method='grid.mle2',start.method='general.grid'
       
       # guess topt
       tpc.tmp.tb<-tpc.tmp %>% group_by(temp) %>% summarise(mu=mean(mu))
-      topt.guess<-tpc.tmp.tb$temp[tpc.tmp.tb$mu==max(tpc.tmp.tb$mu)]
+      topt.guess<-mean(tpc.tmp.tb$temp[tpc.tmp.tb$mu==max(tpc.tmp.tb$mu)])
       
       # guess phi
       gam.tmp<-gam(mu~s(temp,k=4),data=tpc.tmp)
