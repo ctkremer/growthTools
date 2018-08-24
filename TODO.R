@@ -2,6 +2,7 @@
 
 # - allow for weighted regression based on reported standard error values
 # - combine nbcurve and nbcurve2 into a single function that depends on either copt or opt (see alternative parameterizations of distributions, e.g.)
+# - check out how warnings() are handled in mle2; can I bundle together error messages from iterated get.decurve.tpc() in a similar fashion?
 
 # NOTES:
 
