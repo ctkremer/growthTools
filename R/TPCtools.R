@@ -117,6 +117,25 @@ decurve<-function(temp,topt,b1,b2,d0,d2){
 }
 
 
+#' Double exponential model, phi version
+#' 
+#' Alternate parameterization for Topt and phi (see mathematica notebook)
+#'
+#' @param temp Temperature(s) to calculate growth rate at
+#' @param topt Optimum temperature (where growth rate is highest)
+#' @param phi Birth rate at 0 Celsius
+#' @param b2 Temperature scaling of birth rate, > 0
+#' @param d0 Temperature-independent death rate
+#' @param d2 Temperature scaling of death rate, > 0 (and d2 > b2)
+#'
+#' @return Growth rate at one or more temperatures
+#' 
+#' @export   
+decurve2<-function(temp,topt,phi,b2,d0,d2){
+  res <- (phi/(b2*(b2-d2)))*exp(b2*(temp-topt))-(d0+(phi/(d2*(b2-d2)))*exp(d2*(temp-topt)))
+  res
+}
+
 
 #' Fit Norberg curve to growth rate vs. temperature data
 #' 
@@ -263,24 +282,67 @@ get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=
 #' @import bbmle
 #' @import mleTools
 #' @import emdbook
-get.decurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=NA,id=NA){
+#' @import mgcv
+get.decurve.tpc<-function(temp,mu,method='grid.mle2',start.method='general.grid',plotQ=F,conf.bandQ=T,fpath=NA,id=NA){
   tpc.tmp<-data.frame(mu,temp)
   id<-id[1]
   
   if(method=='grid.mle2'){
     
-    # set up search of a grid of parameter guesses
-    grids<-list(b1=seq(0.01,0.41,0.2),b2=seq(0.1,0.5,0.2),d0=log(seq(0.01,0.11,0.05)),d2=seq(0.1,0.7,0.2))
-    start<-list(topt=tpc.tmp$temp[tpc.tmp$mu==max(tpc.tmp$mu)],b1=NA,b2=NA,d0=NA,d2=NA,s=log(2))
+    if(start.method=='general.grid'){
+      tpc.tmp.tb<-tpc.tmp %>% group_by(temp) %>% summarise(mu=mean(mu))
+      topt.guess<-tpc.tmp.tb$temp[tpc.tmp.tb$mu==max(tpc.tmp.tb$mu)]
+      
+      # set up search of a grid of parameter guesses
+      grids<-list(b1=log(seq(0.01,0.41,0.2)),b2=log(seq(0.1,0.5,0.2)),
+                  d0=log(seq(0.01,0.11,0.05)),d2=log(seq(0.1,0.7,0.2)))
+      start<-list(topt=topt.guess,b1=NA,b2=NA,d0=NA,d2=NA,s=log(2))
+      
+      fit0<-grid.mle2(minuslogl=mu~dnorm(mean=decurve(temp,topt,exp(b1),exp(b2),exp(d0),exp(d2)),
+                                         sd=exp(s)),
+                      grids=grids,start=start,data=tpc.tmp)
+      cfg<-as.list(coef(fit0$res.best))
+      
+      # extract parameters for polished fit
+      guesses<-as.list(cfg)
+      guesses<-list(topt=cfg$topt,b1=exp(cfg$b1),b2=exp(cfg$b2),d0=exp(cfg$d0),d2=exp(cfg$d2),s=exp(cfg$s))
+    }
     
-    fit0<-grid.mle2(minuslogl=mu~dnorm(mean=decurve(temp,topt,b1,b2,exp(d0),d2),sd=exp(s)),
-                    grids=grids,start=start,data=tpc.tmp)
-    cfg<-coef(fit0$res.best) # this seemed to be throwing problems b/c of an issue with accessing mle2...?
+    if(start.method=='smart.grid'){
+      
+      # guess topt
+      tpc.tmp.tb<-tpc.tmp %>% group_by(temp) %>% summarise(mu=mean(mu))
+      topt.guess<-tpc.tmp.tb$temp[tpc.tmp.tb$mu==max(tpc.tmp.tb$mu)]
+      
+      # guess phi
+      gam.tmp<-gam(mu~s(temp,k=4),data=tpc.tmp)
+      h<-0.1
+      pd<-predict(gam.tmp,newdata=data.frame(temp=c(topt.guess-h,topt.guess,topt.guess+h)))
+      phi.guess<-fd2.central(pd,h)
+      
+      # could introduce a d0.guess, if negative growth rates are present at 
+      # multiple low temperatures
+      
+      # set up search of a grid of parameter guesses
+      #   - could consider the merits of moving expand.grid outside of grid.mle2, to allow thinning based on know relationships (ie, d2 > b2)?
+      #   - or, add new capacity 'rules' that are passed to grid.mle2, and applied internally to the expand.grid list... hmm. Pass these as 'formula' object
+      grids<-list(phi=c(0.8*phi.guess,phi.guess,1.2*phi.guess),b2=log(seq(0.1,0.5,0.2)),
+                  d0=log(seq(0.01,0.11,0.05)),d2=log(seq(0.1,0.7,0.2)))
+      start<-list(topt=topt.guess,phi=NA,b2=NA,d0=NA,d2=NA,s=log(2))
+      
+      # execute fit
+      fit0<-grid.mle2(minuslogl=mu~dnorm(mean=decurve2(temp,topt,phi,exp(b2),exp(d0),exp(d2)),
+                                         sd=exp(s)),
+                      grids=grids,start=start,data=tpc.tmp)
+      cfg<-as.list(coef(fit0$res.best))
+
+      # extract parameters for polish fit, converting back to decurve parameters:
+      b1.g<-cfg$phi/(exp(cfg$b2)*(exp(cfg$b2)-exp(cfg$d2))*exp(exp(cfg$b2)*cfg$topt))
+      guesses<-list(topt=cfg$topt,b1=b1.g,b2=exp(cfg$b2),d0=exp(cfg$d0),d2=exp(cfg$d2),s=exp(cfg$s))
+    }
     
-    # polish best fit model, using formula interface:
-    guesses<-as.list(cfg)
-    guesses$d0<-exp(guesses$d0)
-    fit<-mle2(mu~dnorm(mean=decurve(temp,topt,b1,b2,d0,d2),sd=exp(s)),
+    # polish best fit model using formula interface
+    fit<-mle2(mu~dnorm(mean=decurve(temp,topt,b1,b2,d0,d2),sd=s),
               start=guesses,data=tpc.tmp,control=list(maxit=0))
   }
 
@@ -297,13 +359,26 @@ get.decurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=
   
   # pull out parameters
   cf<-as.list(coef(fit))
-
+  
   # additional responses/traits:
   objective<-function(x){
     decurve(x,cf$topt,cf$b1,cf$b2,cf$d0,cf$d2)
   }
-  tmax<-uniroot(f = objective,interval = c(cf$topt,1.5*(cf$topt-log(cf$d2/cf$b2)/(cf$b2-cf$d2))))$root
-  tmin<-uniroot(f = objective,interval = c(1.5*(log(cf$d0/cf$b1)/cf$b2),cf$topt))$root  
+  #tmax<-uniroot(f = objective,interval = c(cf$topt,1.5*(cf$topt-log(cf$d2/cf$b2)/(cf$b2-cf$d2))))$root
+  #tmin<-uniroot(f = objective,interval = c(1.5*(log(cf$d0/cf$b1)/cf$b2),cf$topt))$root  
+  rt1<-try(uniroot(f = objective,interval = c(cf$topt,100))$root)
+  if(inherits(rt1,'try-error')){
+    tmax<-NA
+  }else{
+    tmax<-rt1
+  }
+  
+  rt2<-try(uniroot(f = objective,interval = c(-400,cf$topt))$root)
+  if(inherits(rt2,'try-error')){
+    tmin<-NA
+  }else{
+    tmin<-rt2
+  }
 
   # calculate R2
   rsqr<-get.R2(fit,tpc.tmp$mu)
@@ -455,4 +530,16 @@ deltavar2<-function (fun, meanval = NULL, vars, Sigma, verbose = FALSE)
   }
   else r <- c(nderivs %*% Sigma %*% matrix(nderivs))
   r
+}
+
+
+
+#' Approximate 2nd derivative (finite difference)
+#' 
+#' @param fx A vector of 3 function values, f(x-h), f(x), f(x+h)
+#' @param h The step size used in the finite difference calculation
+#' 
+#' @export
+fd2.central<-function(fx,h){
+  (fx[3]-2*fx[2]+fx[1])/(h^2)
 }
