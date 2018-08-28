@@ -291,11 +291,17 @@ detect<-function(x){
 #' 
 #' @export
 #' @import bbmle
-get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag','sat','lagsat')){
+get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag','sat','lagsat'),verbose=FALSE){
+  
+  # thin vectors if abundance measure is NA
+  x<-x[!is.na(y)]
+  y<-y[!is.na(y)]
   
   if(sum(methods %in% c('linear','lag','sat','lagsat'))==0){
     print('Error! None of the specified methods matched a currently implemented approach')
   }
+  
+  if(verbose){print(paste('data set id = ',id))}
   
   # Initialize empty data structures
   modlist<-list(gr=NA,gr.lag=NA,gr.sat=NA,gr.lagsat=NA)
@@ -304,11 +310,12 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
   slope.gr<-slope.gr.lag<-slope.gr.sat<-slope.gr.lagsat<-NA
   se.gr<-se.gr.lag<-se.gr.sat<-se.gr.lagsat<-NA
   
-  if(length(x)==2){
-    print("Caution: only two time points, high risk of over-fitting")
+  if(length(unique(x))==2){
+    print('Caution: only two unique time points, high risk of over-fitting. Methods other than "linear" are likely to fail')
   }
   
-  if(length(x)>=2){
+  # if there are more than two unique time points with data:
+  if(length(unique(x))>=2){
   
     # Fill data structures for each given method, if requested by user:
     if('linear' %in% methods){
@@ -385,6 +392,8 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
                  gr.lagsat=get.gr.lagsat(x,y,plotQ=T,fpath=fpath,id=id[1]))
     }
   }else{
+    print("Warning: fewer than two unique time points provided")
+    
     result<-list(best.slope=NA,
                  best.se=NA,
                  best.model="NA",
