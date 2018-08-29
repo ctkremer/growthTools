@@ -5,7 +5,7 @@
 \title{Extract exponential growth rate from a time series of ln(population abundance)}
 \usage{
 get.growth.rate(x, y, id, plot.best.Q = F, fpath = NA,
-  methods = c("linear", "lag", "sat", "lagsat"))
+  methods = c("linear", "lag", "sat", "lagsat"), verbose = FALSE)
 }
 \arguments{
 \item{x}{Time steps}
