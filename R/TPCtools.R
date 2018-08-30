@@ -146,13 +146,17 @@ decurve2<-function(temp,topt,phi,b2,d0,d2){
 #' @param conf.bandQ Should we calculate a confidence band around the regression? logical.
 #' @param fpath If visual requested, and valid file path provided here, plot will be saved as a .pdf file. Default is NA.
 #' @param id Character string providing any information ID'ing the specifc curve being fit; used to label plots, if any are requested. Default is NA.
+#' @param ... Additional arguments passed to grid.mle2
 #' 
 #' @export
 #' @import bbmle
 #' @import mleTools
 #' @import emdbook
-get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=NA,id=NA){
-  tpc.tmp<-data.frame(mu,temp)
+get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=NA,id=NA,...){
+  tpc.tmp<-na.omit(data.frame(mu,temp))
+  if(length(unique(tpc.tmp<=4))){
+    print("Caution in get.nbcurve.tpc - focal data set has <=4 unique temperatures, risk of overfitting is high!")
+  }
   id<-id[1]
   
   if(method=='grid.mle2'){
@@ -160,11 +164,11 @@ get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=
     # set up search of a grid of parameter guesses
     #grids<-list(o=seq(15,25,5),w=seq(15,40,5))
     #start<-list(o=NA,w=NA,a=-1.11,b=0.05,s=log(2))
-    grids<-list(o=seq(15,35,5),w=seq(15,40,5),a=seq(-0.5,-2,-0.5),b=c(-0.05,0,0.05))
+    grids<-list(o=seq(15,35,5),w=seq(10,40,5),a=seq(-0.5,-3,-0.5),b=c(-0.05,0,0.05))
     start<-list(o=NA,w=NA,a=NA,b=NA,s=log(2))
     
     fit0<-grid.mle2(minuslogl=mu~dnorm(mean=nbcurve2(temp,o,w,a,b),sd=exp(s)),
-                    grids=grids,start=start,data=tpc.tmp)
+                    grids=grids,start=start,data=tpc.tmp,...)
     cfg<-coef(fit0$res.best) # this seemed to be throwing problems b/c of an issue with accessing mle2...?
 
     # polish best fit model, using formula interface:
