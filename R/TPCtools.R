@@ -154,7 +154,8 @@ decurve2<-function(temp,topt,phi,b2,d0,d2){
 #' @import emdbook
 get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=NA,id=NA,...){
   tpc.tmp<-na.omit(data.frame(mu,temp))
-  if(length(unique(tpc.tmp<=4))){
+  
+  if(length(unique(tpc.tmp$temp))<=4){
     print("Caution in get.nbcurve.tpc - focal data set has <=4 unique temperatures, risk of overfitting is high!")
   }
   id<-id[1]
