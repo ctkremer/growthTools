@@ -288,9 +288,13 @@ get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=
 #' @import mleTools
 #' @import emdbook
 #' @import mgcv
-get.decurve.tpc<-function(temp,mu,method='grid.mle2',start.method='general.grid',plotQ=F,conf.bandQ=T,fpath=NA,id=NA){
-  tpc.tmp<-data.frame(mu,temp)
+get.decurve.tpc<-function(temp,mu,method='grid.mle2',start.method='general.grid',plotQ=F,conf.bandQ=T,fpath=NA,id=NA,...){
+  tpc.tmp<-na.omit(data.frame(mu,temp))
   id<-id[1]
+  
+  if(length(unique(tpc.tmp$temp))<=5){
+    print("Caution in get.nbcurve.tpc - focal data set has <=5 unique temperatures, risk of overfitting is high!")
+  }
   
   if(method=='grid.mle2'){
     
@@ -305,7 +309,7 @@ get.decurve.tpc<-function(temp,mu,method='grid.mle2',start.method='general.grid'
       
       fit0<-grid.mle2(minuslogl=mu~dnorm(mean=decurve(temp,topt,exp(b1),exp(b2),exp(d0),exp(d2)),
                                          sd=exp(s)),
-                      grids=grids,start=start,data=tpc.tmp)
+                      grids=grids,start=start,data=tpc.tmp,...)
       cfg<-as.list(coef(fit0$res.best))
       
       # extract parameters for polished fit

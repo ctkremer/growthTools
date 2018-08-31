@@ -6,7 +6,7 @@
 \usage{
 get.decurve.tpc(temp, mu, method = "grid.mle2",
   start.method = "general.grid", plotQ = F, conf.bandQ = T, fpath = NA,
-  id = NA)
+  id = NA, ...)
 }
 \arguments{
 \item{temp}{Temperature}
