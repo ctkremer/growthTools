@@ -379,6 +379,14 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
         slope.n.gr.lagsat <- length(x[x<=b2.cutoff & x >=b1.cutoff])  # how many obs btwn cutoffs
         slope.r2.gr.lagsat <- 1-sum((pds.lagsat-obs.lagsat)^2)/sum((obs.lagsat-mean(obs.lagsat))^2)  # r2
         se.gr.lagsat <- sqrt(diag(vcov(gr.lagsat)))['logb']
+        
+        # if exponential portion is based on fewer than 3 observations, re-classify this fit as
+        # resulting in an error. This removes it from consideration as a 'best model', allowing
+        # a different model to succeed.
+        if(slope.n.gr.lagsat<3){
+          class(gr.lagsat)<-'try-error'          
+        }
+
       }else{
         slope.gr.lagsat <- NA
         slope.n.gr.lagsat <- NA
