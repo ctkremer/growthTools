@@ -324,7 +324,7 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
       gr<-get.gr(x,y) 
       slope.gr<-coef(gr)[[2]]
       slope.n.gr<-length(x)
-      slope.r2.gr<-NA
+      slope.r2.gr<-get.R2(gr,y)
       se.gr<-sqrt(diag(vcov(gr)))['x']
       modlist$gr<-gr
     }
