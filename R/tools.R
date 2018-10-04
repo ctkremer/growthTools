@@ -368,7 +368,7 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
     }
     if('lagsat' %in% methods){
       gr.lagsat<-try(get.gr.lagsat(x,y))
-      if(prod(class(gr.sat)!='try-error')){
+      if(prod(class(gr.lagsat)!='try-error')){
         b1.cutoff <- coef(gr.lagsat)[1]  # where does exponential phase begin?
         b2.cutoff <- coef(gr.lagsat)[2]  # where does exponential phase end?
         pds.lagsat <- predict(gr.lagsat)[x<=b2.cutoff & x >=b1.cutoff] # predictions btwn cutoffs
