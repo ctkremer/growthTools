@@ -331,7 +331,7 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
     if('lag' %in% methods){
       gr.lag<-try(get.gr.lag(x,y))  
       if(prod(class(gr.lag)!='try-error')){
-        b1.cutoff <- coef(gr.lag)[1]  # where does exponential phase begin?
+        b1.cutoff <- coef(gr.lag)[1]-0.1  # where does exponential phase begin?
         pds.lag <- predict(gr.lag)[x>=b1.cutoff] # predicted values above this cutoff
         obs.lag <- y[x>=b1.cutoff] # observed values above this cutoff
         
@@ -350,7 +350,7 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
     if('sat' %in% methods){
       gr.sat<-try(get.gr.sat(x,y))
       if(prod(class(gr.sat)!='try-error')){
-        b2.cutoff <- coef(gr.sat)[1]  # where does exponential phase end?
+        b2.cutoff <- coef(gr.sat)[1]+0.1  # where does exponential phase end?
         pds.sat <- predict(gr.sat)[x<=b2.cutoff] # predicted values below this cutoff
         obs.sat <- y[x<=b2.cutoff] # observed values below this cutoff
         
@@ -369,8 +369,8 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
     if('lagsat' %in% methods){
       gr.lagsat<-try(get.gr.lagsat(x,y))
       if(prod(class(gr.lagsat)!='try-error')){
-        b1.cutoff <- coef(gr.lagsat)[1]  # where does exponential phase begin?
-        b2.cutoff <- coef(gr.lagsat)[2]  # where does exponential phase end?
+        b1.cutoff <- coef(gr.lagsat)[1]-0.1  # where does exponential phase begin?
+        b2.cutoff <- coef(gr.lagsat)[2]+0.1  # where does exponential phase end?
         pds.lagsat <- predict(gr.lagsat)[x<=b2.cutoff & x >=b1.cutoff] # predictions btwn cutoffs
         obs.lagsat <- y[x<=b2.cutoff & x >=b1.cutoff] # observed values between cutoffs
         
