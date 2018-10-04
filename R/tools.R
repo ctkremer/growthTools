@@ -399,7 +399,7 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
     # assemble model names, contents, and slopes, but only for successful fits
     mod.names<-c('gr','gr.lag','gr.sat','gr.lagsat')[successful.fits]
     mod.list<-list(gr,gr.lag,gr.sat,gr.lagsat)[successful.fits]
-    slope.ests<-c(slope.gr,slope.gr.lag,slope.gr.sat,slope.gr.lagsat)[successful.fits]
+    slope.ests<-unname(c(slope.gr,slope.gr.lag,slope.gr.sat,slope.gr.lagsat)[successful.fits])
     se.ests<-unname(c(se.gr,se.gr.lag,se.gr.sat,se.gr.lagsat)[successful.fits])
     slope.n.vals<-c(slope.n.gr,slope.n.gr.lag,slope.n.gr.sat,slope.n.gr.lagsat)[successful.fits]
     slope.r2.vals<-c(slope.r2.gr,slope.r2.gr.lag,slope.r2.gr.sat,slope.r2.gr.lagsat)[successful.fits]
