@@ -339,6 +339,13 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
         slope.n.gr.lag <- length(x[x>=b1.cutoff])  # how many observations above cutoff
         slope.r2.gr.lag <- 1-sum((pds.lag-obs.lag)^2)/sum((obs.lag-mean(obs.lag))^2)  # r2
         se.gr.lag <- sqrt(diag(vcov(gr.lag)))['logb']
+        
+        # if exponential portion is based on fewer than 3 observations, re-classify this fit as
+        # resulting in an error. This removes it from consideration as a 'best model', allowing
+        # a different model to succeed.
+        if(slope.n.gr.lag<3){
+          class(gr.lag)<-'try-error'          
+        }
       }else{
         slope.gr.lag<-NA
         slope.n.gr.lag<-NA
@@ -358,6 +365,13 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
         slope.n.gr.sat <- length(x[x<=b2.cutoff])  # how many observations below cutoff
         slope.r2.gr.sat <- 1-sum((pds.sat-obs.sat)^2)/sum((obs.sat-mean(obs.sat))^2)  # r2
         se.gr.sat <- sqrt(diag(vcov(gr.sat)))['logb']
+        
+        # if exponential portion is based on fewer than 3 observations, re-classify this fit as
+        # resulting in an error. This removes it from consideration as a 'best model', allowing
+        # a different model to succeed.
+        if(slope.n.gr.sat<3){
+          class(gr.sat)<-'try-error'          
+        }
       }else{
         slope.gr.sat <- NA
         slope.n.gr.sat <- NA
