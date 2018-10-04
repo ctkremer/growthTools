@@ -152,6 +152,7 @@ decurve2<-function(temp,topt,phi,b2,d0,d2){
 #' @import bbmle
 #' @import mleTools
 #' @import emdbook
+#' @import ggplot2
 get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=NA,id=NA,...){
   tpc.tmp<-na.omit(data.frame(mu,temp))
   
@@ -288,6 +289,7 @@ get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=
 #' @import mleTools
 #' @import emdbook
 #' @import mgcv
+#' @import ggplot2
 get.decurve.tpc<-function(temp,mu,method='grid.mle2',start.method='general.grid',plotQ=F,conf.bandQ=T,fpath=NA,id=NA,...){
   tpc.tmp<-na.omit(data.frame(mu,temp))
   id<-id[1]
