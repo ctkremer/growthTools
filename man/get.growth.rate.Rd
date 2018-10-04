@@ -5,7 +5,8 @@
 \title{Extract exponential growth rate from a time series of ln(population abundance)}
 \usage{
 get.growth.rate(x, y, id, plot.best.Q = F, fpath = NA,
-  methods = c("linear", "lag", "sat", "lagsat"), verbose = FALSE)
+  methods = c("linear", "lag", "sat", "lagsat"), internal.r2.cutoff = 0,
+  verbose = FALSE)
 }
 \arguments{
 \item{x}{Time steps}
@@ -19,6 +20,8 @@ get.growth.rate(x, y, id, plot.best.Q = F, fpath = NA,
 \item{fpath}{character; if best model is to be plotted, provide the file path for saving the plot}
 
 \item{methods}{Must be a character vector containing one or more of \code{'linear'}, \code{'lag'}, \code{'sat'}, or \code{'lagsat'}}
+
+\item{internal.r2.cutoff}{control parameter specifying the R2 criteria that may be applied to drop fits where the number of observations in the exponential portion is equal to 3. The default value of zero permits all fits of 3 obs to be considered.}
 }
 \value{
 A data frame containing the identity of the best model, the content of the best model, the estimated slopes of the increasing linear portion of the regressions (ie, exponential growth rate), the standard errors associated with these slopes, and the full list of all models fit.

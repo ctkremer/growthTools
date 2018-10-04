@@ -283,6 +283,7 @@ detect<-function(x){
 #' @param fpath character; if best model is to be plotted, provide the file path for saving the plot
 #' @param methods Must be a character vector containing one or more of \code{'linear'}, \code{'lag'}, \code{'sat'}, or \code{'lagsat'}
 #' @param id Label corresponding to the population/strain/species of interest; used to determine the title and file name of saved plot, if any.
+#' @param internal.r2.cutoff control parameter specifying the R2 criteria that may be applied to drop fits where the number of observations in the exponential portion is equal to 3. The default value of zero permits all fits of 3 obs to be considered.
 #' 
 #' @return A data frame containing the identity of the best model, the content of the best model, the estimated slopes of the increasing linear portion of the regressions (ie, exponential growth rate), the standard errors associated with these slopes, and the full list of all models fit.
 #' 
@@ -291,7 +292,7 @@ detect<-function(x){
 #' 
 #' @export
 #' @import bbmle
-get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag','sat','lagsat'),verbose=FALSE){
+get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag','sat','lagsat'),internal.r2.cutoff=0,verbose=FALSE){
   
   # thin vectors if abundance measure is NA
   x<-x[!is.na(y)]
@@ -343,7 +344,7 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
         # if exponential portion is based on fewer than 3 observations, re-classify this fit as
         # resulting in an error. This removes it from consideration as a 'best model', allowing
         # a different model to succeed.
-        if(slope.n.gr.lag<3  | (slope.n.gr.lag==3 & slope.r2.gr.lag<0.97)){
+        if(slope.n.gr.lag<3  | (slope.n.gr.lag==3 & slope.r2.gr.lag<internal.r2.cutoff)){
           class(gr.lag)<-'try-error'          
         }
       }else{
@@ -369,7 +370,7 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
         # if exponential portion is based on fewer than 3 observations, re-classify this fit as
         # resulting in an error. This removes it from consideration as a 'best model', allowing
         # a different model to succeed.
-        if(slope.n.gr.sat<3 | (slope.n.gr.sat==3 & slope.r2.gr.sat<0.97)){
+        if(slope.n.gr.sat<3 | (slope.n.gr.sat==3 & slope.r2.gr.sat<internal.r2.cutoff)){
           class(gr.sat)<-'try-error'          
         }
       }else{
@@ -397,7 +398,7 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
         # if exponential portion is based on fewer than 3 observations, re-classify this fit as
         # resulting in an error. This removes it from consideration as a 'best model', allowing
         # a different model to succeed.
-        if(slope.n.gr.lagsat<3  | (slope.n.gr.lagsat==3 & slope.r2.gr.lagsat<0.97)){
+        if(slope.n.gr.lagsat<3  | (slope.n.gr.lagsat==3 & slope.r2.gr.lagsat<internal.r2.cutoff)){
           class(gr.lagsat)<-'try-error'          
         }
 
