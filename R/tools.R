@@ -35,7 +35,7 @@ sqfunc<-function(x,b,s){
 #' 
 #' @param x Time variable
 #' @param a Initial abundance at time = 0
-#' @param logb ln(slope) of the increasing linear portion of the time series
+#' @param b slope of the increasing linear portion of the time series, must be >=0
 #' @param B1 Time point where abundance starts to increase (leaves lag phase)
 #' @param B2 Time point where abundance stops increasing (saturates)
 #' @param s Smoothing parameter; as this term -> 0, these continuous functions approach true piecewise equations
@@ -49,20 +49,20 @@ sqfunc<-function(x,b,s){
 #' curve(lagsat(x,5.1,0,4,8,s=1E-10),0,10,col='blue',add=T)
 #' 
 #' @export
-lagsat<-function(x,a,logb,B1,B2,s=1E-10){
-  a + (1/2)*exp(logb)*(B2-B1) + sqfunc(B1-x,exp(logb),s) - sqfunc(B2-x,exp(logb),s)
+lagsat<-function(x,a,b,B1,B2,s=1E-10){
+  a + (1/2)*b*(B2-B1) + sqfunc(B1-x,b,s) - sqfunc(B2-x,b,s)
 }
 
 #' @describeIn lagsat Lagged increasing linear function
 #' @export
-lag<-function(x,a,logb,B1,s=1E-10){
-  sqfunc(B1-x,exp(logb),s)-(exp(logb)/2)*(B1-x)+a
+lag<-function(x,a,b,B1,s=1E-10){
+  sqfunc(B1-x,b,s)-(b/2)*(B1-x)+a
 }
 
 #' @describeIn lagsat Saturating linear function
 #' @export
-sat<-function(x,a,logb,B2,s=1E-10){
-  a + (1/2)*exp(logb)*(B2) + sqfunc(-x,exp(logb),s) - sqfunc(B2-x,exp(logb),s)
+sat<-function(x,a,b,B2,s=1E-10){
+  a + (1/2)*b*(B2) + sqfunc(-x,b,s) - sqfunc(B2-x,b,s)
 }
 
 #' Extract exponential growth rate assuming exponential growth
@@ -122,26 +122,23 @@ get.gr.lag<-function(x,y,plotQ=F,fpath=NA,id=''){
   data<-data.frame(x=x,y=y)
   #slopes <- rollapply(data, 3, localslope, by.column=F)
   
-  fit.lag<-nlsLM(y ~ lag(x,a,logb,B1,s=1E-10),
-                 start = c(B1=mean(x)-(mean(x)-min(x))/2, a=min(y), logb=0),data = data,
+  fit.lag<-nlsLM(y ~ lag(x,a,b,B1,s=1E-10),
+                 start = c(B1=mean(x)-(mean(x)-min(x))/2, a=min(y), b=1),data = data,
+                 lower = c(B1=-Inf,a=-Inf,b=0),
                  control = nls.control(maxiter=1000, warnOnly=TRUE))
   cfs<-data.frame(t(coef(fit.lag)))
-  
-  #start=c(B1=4,B2=8,a=1,logb=0),
-  #start = c(B1=mean(x), a=min(y)+1E-10, logb=log(max(slopes))),
-  #start = c(B1=min(x)+1E-10, B2=max(x)-1E-10, a=min(y)+1E-10, logb=log(max(slopes))),
   
   if(plotQ){
     if(!is.na(fpath)){
       pdf(fpath)
       plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-      curve(lag(x,cfs$a,cfs$logb,cfs$B1,s=1E-10),min(x),max(x),add=T,col='blue')
-      curve(lag(x,cfs$a,cfs$logb,cfs$B1,s=1E-10),cfs$B1,max(x),add=T,col='red')
+      curve(lag(x,cfs$a,cfs$b,cfs$B1,s=1E-10),min(x),max(x),add=T,col='blue')
+      curve(lag(x,cfs$a,cfs$b,cfs$B1,s=1E-10),cfs$B1,max(x),add=T,col='red')
       dev.off()
     }else{
       plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-      curve(lag(x,cfs$a,cfs$logb,cfs$B1,s=1E-10),min(x),max(x),add=T,col='blue')
-      curve(lag(x,cfs$a,cfs$logb,cfs$B1,s=1E-10),cfs$B1,max(x),add=T,col='red')
+      curve(lag(x,cfs$a,cfs$b,cfs$B1,s=1E-10),min(x),max(x),add=T,col='blue')
+      curve(lag(x,cfs$a,cfs$b,cfs$B1,s=1E-10),cfs$B1,max(x),add=T,col='red')
     }
   }
   return(fit.lag)
@@ -172,11 +169,10 @@ get.gr.sat<-function(x,y,plotQ=F,fpath=NA,id=''){
   slopes <- rollapply(data.frame(x=x,y=y), 3, localslope, by.column=F)
   a.guess<-coef(lm(y~x))[[1]]
   
-  fit.sat<-nlsLM(y ~ sat(x,a,logb,B1,s=1E-10),
-                 #start = c(B1=mean(x)+(max(x)-mean(x))/2, a=1.5*a.guess, logb=-0.1),
-                 #start=c(B1=9,a=-0.2933,logb=0),
-                 start=c(B1=mean(x)+(max(x)-mean(x))/2,a=a.guess,logb=round(log(max(slopes)),5)),
+  fit.sat<-nlsLM(y ~ sat(x,a,b,B1,s=1E-10),
+                 start=c(B1=mean(x)+(max(x)-mean(x))/2,a=a.guess,b=round(max(slopes),5)),
                  data = data,
+                 lower = c(B1=-Inf,a=-Inf,b=0),
                  control = nls.control(maxiter=1000, warnOnly=TRUE))
   cfs<-data.frame(t(coef(fit.sat)))
   
@@ -184,13 +180,13 @@ get.gr.sat<-function(x,y,plotQ=F,fpath=NA,id=''){
     if(!is.na(fpath)){
       pdf(fpath)
       plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-      curve(sat(x,cfs$a,cfs$logb,cfs$B1,s=1E-10),min(x),max(x),add=T,col='blue')
-      curve(sat(x,cfs$a,cfs$logb,cfs$B1,s=1E-10),min(x),cfs$B1,add=T,col='red')
+      curve(sat(x,cfs$a,cfs$b,cfs$B1,s=1E-10),min(x),max(x),add=T,col='blue')
+      curve(sat(x,cfs$a,cfs$b,cfs$B1,s=1E-10),min(x),cfs$B1,add=T,col='red')
       dev.off()
     }else{
       plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-      curve(sat(x,cfs$a,cfs$logb,cfs$B1,s=1E-10),min(x),max(x),add=T,col='blue')
-      curve(sat(x,cfs$a,cfs$logb,cfs$B1,s=1E-10),min(x),cfs$B1,add=T,col='red')
+      curve(sat(x,cfs$a,cfs$b,cfs$B1,s=1E-10),min(x),max(x),add=T,col='blue')
+      curve(sat(x,cfs$a,cfs$b,cfs$B1,s=1E-10),min(x),cfs$B1,add=T,col='red')
     }
   }
   return(fit.sat)
@@ -223,9 +219,10 @@ get.gr.lagsat<-function(x,y,plotQ=F,fpath=NA,id=''){
   #a.guess<-coef(lm(y~x))[[1]]
   # round(log(max(slopes)),5)
   
-  fit.lagsat<-nlsLM(y ~ lagsat(x,a,logb,B1,B2,s=1E-10),
-                    start = c(B1=mean(x)-(mean(x)-min(x))/2,B2=mean(x)+(max(x)-mean(x))/2, a=min(y)+0.1, logb=0),
+  fit.lagsat<-nlsLM(y ~ lagsat(x,a,b,B1,B2,s=1E-10),
+                    start = c(B1=mean(x)-(mean(x)-min(x))/2,B2=mean(x)+(max(x)-mean(x))/2, a=min(y)+0.1, b=1),
                     data = data,
+                    lower = c(B1=-Inf,B2=-Inf,a=-Inf,b=0),
                     control = nls.control(maxiter=1000, warnOnly=TRUE))
   cfs<-data.frame(t(coef(fit.lagsat)))
   
@@ -233,13 +230,13 @@ get.gr.lagsat<-function(x,y,plotQ=F,fpath=NA,id=''){
     if(!is.na(fpath)){
       pdf(fpath)
       plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-      curve(lagsat(x,cfs$a,cfs$logb,cfs$B1,cfs$B2,s=1E-10),min(x),max(x),add=T,col='blue')
-      curve(lagsat(x,cfs$a,cfs$logb,cfs$B1,cfs$B2,s=1E-10),cfs$B1,cfs$B2,add=T,col='red')
+      curve(lagsat(x,cfs$a,cfs$b,cfs$B1,cfs$B2,s=1E-10),min(x),max(x),add=T,col='blue')
+      curve(lagsat(x,cfs$a,cfs$b,cfs$B1,cfs$B2,s=1E-10),cfs$B1,cfs$B2,add=T,col='red')
       dev.off()
     }else{
       plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-      curve(lagsat(x,cfs$a,cfs$logb,cfs$B1,cfs$B2,s=1E-10),min(x),max(x),add=T,col='blue')
-      curve(lagsat(x,cfs$a,cfs$logb,cfs$B1,cfs$B2,s=1E-10),cfs$B1,cfs$B2,add=T,col='red')
+      curve(lagsat(x,cfs$a,cfs$b,cfs$B1,cfs$B2,s=1E-10),min(x),max(x),add=T,col='blue')
+      curve(lagsat(x,cfs$a,cfs$b,cfs$B1,cfs$B2,s=1E-10),cfs$B1,cfs$B2,add=T,col='red')
     }
   }
   return(fit.lagsat)
@@ -343,10 +340,10 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
         pds.lag <- predict(gr.lag)[x>=b1.cutoff] # predicted values above this cutoff
         obs.lag <- y[x>=b1.cutoff] # observed values above this cutoff
         
-        slope.gr.lag <- exp(coef(gr.lag)[3])
+        slope.gr.lag <- unname(coef(gr.lag)['b'])
         slope.n.gr.lag <- length(x[x>=b1.cutoff])  # how many observations above cutoff
         slope.r2.gr.lag <- 1-sum((pds.lag-obs.lag)^2)/sum((obs.lag-mean(obs.lag))^2)  # r2
-        se.gr.lag <- sqrt(diag(vcov(gr.lag)))['logb']
+        se.gr.lag <- sqrt(diag(vcov(gr.lag)))['b']
         
         # if exponential portion is based on fewer than 3 observations, re-classify this fit as
         # resulting in an error. This removes it from consideration as a 'best model', allowing
@@ -369,10 +366,10 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
         pds.sat <- predict(gr.sat)[x<=b2.cutoff] # predicted values below this cutoff
         obs.sat <- y[x<=b2.cutoff] # observed values below this cutoff
         
-        slope.gr.sat <- exp(coef(gr.sat)[3])
+        slope.gr.sat <- unname(coef(gr.sat)['b'])
         slope.n.gr.sat <- length(x[x<=b2.cutoff])  # how many observations below cutoff
         slope.r2.gr.sat <- 1-sum((pds.sat-obs.sat)^2)/sum((obs.sat-mean(obs.sat))^2)  # r2
-        se.gr.sat <- sqrt(diag(vcov(gr.sat)))['logb']
+        se.gr.sat <- sqrt(diag(vcov(gr.sat)))['b']
         
         # if exponential portion is based on fewer than 3 observations, re-classify this fit as
         # resulting in an error. This removes it from consideration as a 'best model', allowing
@@ -397,10 +394,10 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
         obs.lagsat <- y[x<=b2.cutoff & x >=b1.cutoff] # observed values between cutoffs
         
         
-        slope.gr.lagsat <- exp(coef(gr.lagsat)[4])
+        slope.gr.lagsat <- unname(coef(gr.lagsat)['b'])
         slope.n.gr.lagsat <- length(x[x<=b2.cutoff & x >=b1.cutoff])  # how many obs btwn cutoffs
         slope.r2.gr.lagsat <- 1-sum((pds.lagsat-obs.lagsat)^2)/sum((obs.lagsat-mean(obs.lagsat))^2)  # r2
-        se.gr.lagsat <- sqrt(diag(vcov(gr.lagsat)))['logb']
+        se.gr.lagsat <- sqrt(diag(vcov(gr.lagsat)))['b']
         
         # if exponential portion is based on fewer than 3 observations, re-classify this fit as
         # resulting in an error. This removes it from consideration as a 'best model', allowing

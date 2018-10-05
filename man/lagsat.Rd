@@ -6,18 +6,18 @@
 \alias{sat}
 \title{Equations for modeling abundace time series}
 \usage{
-lagsat(x, a, logb, B1, B2, s = 1e-10)
+lagsat(x, a, b, B1, B2, s = 1e-10)
 
-lag(x, a, logb, B1, s = 1e-10)
+lag(x, a, b, B1, s = 1e-10)
 
-sat(x, a, logb, B2, s = 1e-10)
+sat(x, a, b, B2, s = 1e-10)
 }
 \arguments{
 \item{x}{Time variable}
 
 \item{a}{Initial abundance at time = 0}
 
-\item{logb}{ln(slope) of the increasing linear portion of the time series}
+\item{b}{slope of the increasing linear portion of the time series, must be >=0}
 
 \item{B1}{Time point where abundance starts to increase (leaves lag phase)}
 
