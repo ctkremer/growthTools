@@ -155,8 +155,9 @@ decurve2<-function(temp,topt,phi,b2,d0,d2){
 #' @import ggplot2
 get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=NA,id=NA,...){
   tpc.tmp<-na.omit(data.frame(mu,temp))
+  ntemps<-length(unique(tpc.tmp$temp))
   
-  if(length(unique(tpc.tmp$temp))<=4){
+  if(ntemps<=4){
     print("Caution in get.nbcurve.tpc - focal data set has <=4 unique temperatures, risk of overfitting is high!")
   }
   id<-id[1]
@@ -214,7 +215,8 @@ get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=
   vec<-as.list(c(cf,rsqr=rsqr,tmin=tmin,tmax=tmax))
   vec$ciF<-ciF
   vec$vcov<-vcov.mat
-  vec$n<-nrow(tpc.tmp)
+  vec$nobs<-nrow(tpc.tmp)
+  vec$ntemps<-ntemps
   vec$logLik<-logLik(fit)
   vec$aic<-AIC(fit)
   
