@@ -289,6 +289,7 @@ detect<-function(x){
 #' @param fpath character; if best model is to be plotted, provide the file path for saving the plot
 #' @param methods Must be a character vector containing one or more of \code{'linear'}, \code{'lag'}, \code{'sat'}, or \code{'lagsat'}
 #' @param id Label corresponding to the population/strain/species of interest; used to determine the title and file name of saved plot, if any.
+#' @param model.selection control parameter to specify which IC metric to use in model selection; default is AICc, which corrects for small sample sizes and converges asymptotically on AIC.
 #' @param internal.r2.cutoff control parameter specifying the R2 criteria that may be applied to drop fits where the number of observations in the exponential portion is equal to 3. The default value of zero permits all fits of 3 obs to be considered.
 #' 
 #' @return A data frame containing the identity of the best model, the content of the best model, the estimated slopes of the increasing linear portion of the regressions (ie, exponential growth rate), the standard errors associated with these slopes, and the full list of all models fit.
@@ -298,7 +299,7 @@ detect<-function(x){
 #' 
 #' @export
 #' @import bbmle
-get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag','sat','lagsat'),internal.r2.cutoff=0,verbose=FALSE){
+get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag','sat','lagsat'),model.selection=c('AICc'),internal.r2.cutoff=0,verbose=FALSE){
   
   # thin vectors if abundance measure is NA
   x<-x[!is.na(y)]
@@ -434,8 +435,13 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
     slope.r2.vals<-c(slope.r2.gr,slope.r2.gr.lag,slope.r2.gr.sat,slope.r2.gr.lagsat)[successful.fits]
       
     # compare successful models
-    aictab<-AICtab(mod.list,mnames = mod.names)
-    best.mod.id<-which(mod.names==attr(aictab,"row.names")[1])
+    switch(model.selection,
+           AIC={ictab<-AICtab(mod.list,mnames = mod.names)},
+           AICc={ictab<-AICctab(mod.list,mnames = mod.names)},
+           BIC={ictab<-BICtab(mod.list,mnames = mod.names)},
+           print("Error! Invalid IC method selected in get.nbcurve()"))
+  
+    best.mod.id<-which(mod.names==attr(ictab,"row.names")[1])
     
     # impose QC based on slope.n and slope.r2 here? or outside of function...
       
