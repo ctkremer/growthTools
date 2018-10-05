@@ -20,7 +20,7 @@ get.nbcurve.tpc(temp, mu, method = "grid.mle2", plotQ = F, conf.bandQ = T,
 
 \item{id}{Character string providing any information ID'ing the specifc curve being fit; used to label plots, if any are requested. Default is NA.}
 
-\item{...}{Additional arguments passed to grid.mle2}
+\item{...}{Additional arguments passed to grid.mle2 (e.g., control=list(maxit=2000))}
 
 \item{fit.method}{Specify which fitting algorithm to use, 'mle2' or 'grid.mle2'}
 }
