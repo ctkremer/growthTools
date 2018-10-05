@@ -136,12 +136,12 @@ get.gr.lag<-function(x,y,plotQ=F,fpath=NA,id=''){
       pdf(fpath)
       plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
       curve(lag(x,cfs$a,cfs$logb,cfs$B1,s=1E-10),min(x),max(x),add=T,col='blue')
-      curve(lag(x,cfs$a,cfs$logb,cfs$B1,s=1E-10),cfs$b1,max(x),add=T,col='red')
+      curve(lag(x,cfs$a,cfs$logb,cfs$B1,s=1E-10),cfs$B1,max(x),add=T,col='red')
       dev.off()
     }else{
       plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
       curve(lag(x,cfs$a,cfs$logb,cfs$B1,s=1E-10),min(x),max(x),add=T,col='blue')
-      curve(lag(x,cfs$a,cfs$logb,cfs$B1,s=1E-10),cfs$b1,max(x),add=T,col='red')
+      curve(lag(x,cfs$a,cfs$logb,cfs$B1,s=1E-10),cfs$B1,max(x),add=T,col='red')
     }
   }
   return(fit.lag)
