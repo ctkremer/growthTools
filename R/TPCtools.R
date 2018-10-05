@@ -146,7 +146,7 @@ decurve2<-function(temp,topt,phi,b2,d0,d2){
 #' @param conf.bandQ Should we calculate a confidence band around the regression? logical.
 #' @param fpath If visual requested, and valid file path provided here, plot will be saved as a .pdf file. Default is NA.
 #' @param id Character string providing any information ID'ing the specifc curve being fit; used to label plots, if any are requested. Default is NA.
-#' @param ... Additional arguments passed to grid.mle2
+#' @param ... Additional arguments passed to grid.mle2 (e.g., control=list(maxit=2000))
 #' 
 #' @export
 #' @import bbmle
