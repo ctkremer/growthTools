@@ -135,11 +135,13 @@ get.gr.lag<-function(x,y,plotQ=F,fpath=NA,id=''){
     if(!is.na(fpath)){
       pdf(fpath)
       plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-      curve(lag(x,cfs$a,cfs$logb,cfs$B1,s=1E-10),min(x),max(x),add=T,col='red')
+      curve(lag(x,cfs$a,cfs$logb,cfs$B1,s=1E-10),min(x),max(x),add=T,col='blue')
+      curve(lag(x,cfs$a,cfs$logb,cfs$B1,s=1E-10),cfs$b1,max(x),add=T,col='red')
       dev.off()
     }else{
       plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-      curve(lag(x,cfs$a,cfs$logb,cfs$B1,s=1E-10),min(x),max(x),add=T,col='red')
+      curve(lag(x,cfs$a,cfs$logb,cfs$B1,s=1E-10),min(x),max(x),add=T,col='blue')
+      curve(lag(x,cfs$a,cfs$logb,cfs$B1,s=1E-10),cfs$b1,max(x),add=T,col='red')
     }
   }
   return(fit.lag)
@@ -182,11 +184,13 @@ get.gr.sat<-function(x,y,plotQ=F,fpath=NA,id=''){
     if(!is.na(fpath)){
       pdf(fpath)
       plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-      curve(sat(x,cfs$a,cfs$logb,cfs$B1,s=1E-10),min(x),max(x),add=T,col='red')
+      curve(sat(x,cfs$a,cfs$logb,cfs$B1,s=1E-10),min(x),max(x),add=T,col='blue')
+      curve(sat(x,cfs$a,cfs$logb,cfs$B1,s=1E-10),min(x),cfs$B1,add=T,col='red')
       dev.off()
     }else{
       plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-      curve(sat(x,cfs$a,cfs$logb,cfs$B1,s=1E-10),min(x),max(x),add=T,col='red')
+      curve(sat(x,cfs$a,cfs$logb,cfs$B1,s=1E-10),min(x),max(x),add=T,col='blue')
+      curve(sat(x,cfs$a,cfs$logb,cfs$B1,s=1E-10),min(x),cfs$B1,add=T,col='red')
     }
   }
   return(fit.sat)
@@ -229,11 +233,13 @@ get.gr.lagsat<-function(x,y,plotQ=F,fpath=NA,id=''){
     if(!is.na(fpath)){
       pdf(fpath)
       plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-      curve(lagsat(x,cfs$a,cfs$logb,cfs$B1,cfs$B2,s=1E-10),min(x),max(x),add=T,col='red')
+      curve(lagsat(x,cfs$a,cfs$logb,cfs$B1,cfs$B2,s=1E-10),min(x),max(x),add=T,col='blue')
+      curve(lagsat(x,cfs$a,cfs$logb,cfs$B1,cfs$B2,s=1E-10),cfs$B1,cfs$B2,add=T,col='red')
       dev.off()
     }else{
       plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-      curve(lagsat(x,cfs$a,cfs$logb,cfs$B1,cfs$B2,s=1E-10),min(x),max(x),add=T,col='red')
+      curve(lagsat(x,cfs$a,cfs$logb,cfs$B1,cfs$B2,s=1E-10),min(x),max(x),add=T,col='blue')
+      curve(lagsat(x,cfs$a,cfs$logb,cfs$B1,cfs$B2,s=1E-10),cfs$B1,cfs$B2,add=T,col='red')
     }
   }
   return(fit.lagsat)
