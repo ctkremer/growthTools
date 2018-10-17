@@ -146,6 +146,7 @@ decurve2<-function(temp,topt,phi,b2,d0,d2){
 #' @param conf.bandQ Should we calculate a confidence band around the regression? logical.
 #' @param fpath If visual requested, and valid file path provided here, plot will be saved as a .pdf file. Default is NA.
 #' @param id Character string providing any information ID'ing the specifc curve being fit; used to label plots, if any are requested. Default is NA.
+#' @param suppress.grid.mle2.warnings logical; should warnings arising from grid.mle2 invocation be suppressed (TRUE), or displayed (FALSE)? Default is TRUE.
 #' @param ... Additional arguments passed to grid.mle2 (e.g., control=list(maxit=2000))
 #' 
 #' @export
@@ -153,7 +154,7 @@ decurve2<-function(temp,topt,phi,b2,d0,d2){
 #' @import mleTools
 #' @import emdbook
 #' @import ggplot2
-get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=NA,id=NA,...){
+get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=NA,id=NA,suppress.grid.mle2.warnings=TRUE,...){
   tpc.tmp<-na.omit(data.frame(mu,temp))
   ntemps<-length(unique(tpc.tmp$temp))
   
@@ -170,8 +171,14 @@ get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=
     grids<-list(o=seq(15,35,5),w=seq(10,40,5),a=seq(-0.5,-3,-0.5),b=c(-0.05,0,0.05))
     start<-list(o=NA,w=NA,a=NA,b=NA,s=log(2))
     
-    fit0<-grid.mle2(minuslogl=mu~dnorm(mean=nbcurve2(temp,o,w,a,b),sd=exp(s)),
-                    grids=grids,start=start,data=tpc.tmp,...)
+    if(suppress.grid.mle2.warnings){
+      fit0<-suppressWarnings(grid.mle2(minuslogl=mu~dnorm(mean=nbcurve2(temp,o,w,a,b),
+                                                          sd=exp(s)),
+                                       grids=grids,start=start,data=tpc.tmp,...))
+    }else{
+      fit0<-grid.mle2(minuslogl=mu~dnorm(mean=nbcurve2(temp,o,w,a,b),sd=exp(s)),
+                                       grids=grids,start=start,data=tpc.tmp,...)
+    }
     cfg<-coef(fit0$res.best) # this seemed to be throwing problems b/c of an issue with accessing mle2...?
 
     # polish best fit model, using formula interface:
@@ -285,6 +292,8 @@ get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=
 #' @param conf.bandQ Should we calculate a confidence band around the regression? logical.
 #' @param fpath If visual requested, and valid file path provided here, plot will be saved as a .pdf file. Default is NA.
 #' @param id Character string providing any information ID'ing the specifc curve being fit; used to label plots, if any are requested. Default is NA.
+#' @param suppress.grid.mle2.warnings logical; should warnings arising from grid.mle2 invocation be suppressed (TRUE), or displayed (FALSE)? Default is TRUE.
+#' @param ... Additional arguments passed to grid.mle2 (e.g., control=list(maxit=2000))
 #' 
 #' @export
 #' @import bbmle
@@ -292,7 +301,7 @@ get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=
 #' @import emdbook
 #' @import mgcv
 #' @import ggplot2
-get.decurve.tpc<-function(temp,mu,method='grid.mle2',start.method='general.grid',plotQ=F,conf.bandQ=T,fpath=NA,id=NA,...){
+get.decurve.tpc<-function(temp,mu,method='grid.mle2',start.method='general.grid',plotQ=F,conf.bandQ=T,fpath=NA,id=NA,suppress.grid.mle2.warnings=TRUE,...){
   tpc.tmp<-na.omit(data.frame(mu,temp))
   id<-id[1]
   
@@ -311,9 +320,11 @@ get.decurve.tpc<-function(temp,mu,method='grid.mle2',start.method='general.grid'
                   d0=log(seq(0.01,0.11,0.05)),d2=log(seq(0.1,0.7,0.2)))
       start<-list(topt=topt.guess,b1=NA,b2=NA,d0=NA,d2=NA,s=log(2))
       
-      fit0<-grid.mle2(minuslogl=mu~dnorm(mean=decurve(temp,topt,exp(b1),exp(b2),exp(d0),exp(d2)),
-                                         sd=exp(s)),
-                      grids=grids,start=start,data=tpc.tmp,...)
+      if(suppress.grid.mle2.warnings){
+        fit0<-suppressWarnings(grid.mle2(minuslogl=mu~dnorm(mean=decurve(temp,topt,exp(b1),exp(b2),exp(d0),exp(d2)),sd=exp(s)),grids=grids,start=start,data=tpc.tmp,...))
+      }else{
+        fit0<-grid.mle2(minuslogl=mu~dnorm(mean=decurve(temp,topt,exp(b1),exp(b2),exp(d0),exp(d2)),sd=exp(s)),grids=grids,start=start,data=tpc.tmp,...)
+      }
       cfg<-as.list(coef(fit0$res.best))
       
       # extract parameters for polished fit
@@ -344,9 +355,11 @@ get.decurve.tpc<-function(temp,mu,method='grid.mle2',start.method='general.grid'
       start<-list(topt=topt.guess,phi=NA,b2=NA,d0=NA,d2=NA,s=log(2))
       
       # execute fit
-      fit0<-grid.mle2(minuslogl=mu~dnorm(mean=decurve2(temp,topt,phi,exp(b2),exp(d0),exp(d2)),
-                                         sd=exp(s)),
-                      grids=grids,start=start,data=tpc.tmp)
+      if(suppress.grid.mle2.warnings){
+        fit0<-suppressWarnings(grid.mle2(minuslogl=mu~dnorm(mean=decurve2(temp,topt,phi,exp(b2),exp(d0),exp(d2)),sd=exp(s)),grids=grids,start=start,data=tpc.tmp))
+      }else{
+        fit0<-grid.mle2(minuslogl=mu~dnorm(mean=decurve2(temp,topt,phi,exp(b2),exp(d0),exp(d2)),sd=exp(s)),grids=grids,start=start,data=tpc.tmp)
+      }
       cfg<-as.list(coef(fit0$res.best))
 
       # extract parameters for polish fit, converting back to decurve parameters:

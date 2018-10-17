@@ -5,7 +5,7 @@
 \title{Fit Norberg curve to growth rate vs. temperature data}
 \usage{
 get.nbcurve.tpc(temp, mu, method = "grid.mle2", plotQ = F, conf.bandQ = T,
-  fpath = NA, id = NA, ...)
+  fpath = NA, id = NA, suppress.grid.mle2.warnings = TRUE, ...)
 }
 \arguments{
 \item{temp}{Temperature}
@@ -19,6 +19,8 @@ get.nbcurve.tpc(temp, mu, method = "grid.mle2", plotQ = F, conf.bandQ = T,
 \item{fpath}{If visual requested, and valid file path provided here, plot will be saved as a .pdf file. Default is NA.}
 
 \item{id}{Character string providing any information ID'ing the specifc curve being fit; used to label plots, if any are requested. Default is NA.}
+
+\item{suppress.grid.mle2.warnings}{logical; should warnings arising from grid.mle2 invocation be suppressed (TRUE), or displayed (FALSE)? Default is TRUE.}
 
 \item{...}{Additional arguments passed to grid.mle2 (e.g., control=list(maxit=2000))}
 
