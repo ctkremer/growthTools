@@ -12,7 +12,7 @@ library(mleTools)
 
 ## ------------------------------------------------------------------------
 # Construct example data set:
-sdat<-data.frame(trt=c(rep('A',10),rep('B',10),rep('C',10)),dtime=rep(seq(1,10),3),ln.fluor=c(c(1,1.1,0.9,1,2,3,4,5,5.2,4.7),c(1.1,0.9,1,2,3,4,4.1,4.2,3.7,4)+0.3,c(3.5,3.4,3.6,3.5,3.2,2.2,1.2,0.5,0.4,0.1)))
+sdat<-data.frame(trt=c(rep('A',10),rep('B',10),rep('C',10),rep('D',10)),dtime=rep(seq(1,10),4),ln.fluor=c(c(1,1.1,0.9,1,2,3,4,5,5.2,4.7),c(1.1,0.9,1,2,3,4,4.1,4.2,3.7,4)+0.3,c(3.5,3.4,3.6,3.5,3.2,2.2,1.2,0.5,0.4,0.1),c(5.5,4.5,3.5,2.5,1.5,0,0.2,-0.1,0,-0.1)))
 
 ## ------------------------------------------------------------------------
 ggplot(sdat,aes(x=dtime,y=ln.fluor))+
@@ -20,7 +20,7 @@ ggplot(sdat,aes(x=dtime,y=ln.fluor))+
   scale_x_continuous('Time')+
   scale_y_continuous('ln(Abundance)')
 
-## ------------------------------------------------------------------------
+## ----error=FALSE---------------------------------------------------------
 # subset the data, focusing on population A:
 sdat2<-sdat[sdat$trt=='A',]
 
@@ -32,30 +32,55 @@ res$best.model
 res$best.slope
 
 ## ------------------------------------------------------------------------
+res$best.model.rsqr
+
+## ------------------------------------------------------------------------
+res$best.se
+
+## ------------------------------------------------------------------------
+res$best.model.slope.n
+res$best.model.slope.r2
+
+## ------------------------------------------------------------------------
 summary(res$models$gr.lag)
 
 ## ------------------------------------------------------------------------
 res$slopes
+res$ses
+res$slope.rs
+res$slope.ns
 
 ## ------------------------------------------------------------------------
-res$bes.se
+res$best.se
 res$ses
 
-## ------------------------------------------------------------------------
+## ----error=FALSE---------------------------------------------------------
 gdat <- sdat %>% group_by(trt) %>% do(grs=get.growth.rate(x=.$dtime,y=.$ln.fluor,id=.$trt,plot.best.Q=T,fpath=NA))  
 
 ## ------------------------------------------------------------------------
 gdat %>% summarise(trt,mu=grs$best.slope,best.model=grs$best.model,best.se=grs$best.se)
 
 ## ------------------------------------------------------------------------
+gdat %>% summarise(trt,mu=grs$best.slope,best.model=grs$best.model,best.se=grs$best.se,best.R2=grs$best.model.rsqr,nobs.exp=grs$best.model.slope.n)
+
+## ------------------------------------------------------------------------
 # Only use the linear method:
-gdat <- sdat %>% group_by(trt) %>% do(grs=get.growth.rate(x=.$dtime,y=.$ln.fluor,id=.$trt,plot.best.Q=T,methods=c('linear'))) %>% summarise(trt,mu=grs$best.slope,best.model=grs$best.model)
+gdat <- sdat %>% group_by(trt) %>% do(grs=get.growth.rate(x=.$dtime,y=.$ln.fluor,id=.$trt,plot.best.Q=F,methods=c('linear'))) %>% summarise(trt,mu=grs$best.slope,best.model=grs$best.model)
+gdat
+
+## ----error=FALSE---------------------------------------------------------
+# Only use the linear method:
+gdat <- sdat %>% group_by(trt) %>% do(grs=get.growth.rate(x=.$dtime,y=.$ln.fluor,id=.$trt,plot.best.Q=F,methods=c('lag','sat','flr'))) %>% summarise(trt,mu=grs$best.slope,best.model=grs$best.model)
+gdat
+
+## ----error=FALSE---------------------------------------------------------
+gdat <- sdat %>% group_by(trt) %>% do(grs=get.growth.rate(x=.$dtime,y=.$ln.fluor,id=.$trt,plot.best.Q=F,model.selection=c('BIC'))) %>% summarise(trt,mu=grs$best.slope,best.model=grs$best.model)
 gdat
 
 ## ------------------------------------------------------------------------
 head(example_TPC_data)
 
-## ------------------------------------------------------------------------
+## ----error=FALSE,warning=F-----------------------------------------------
 # Single data set:
 sp1 <- example_TPC_data %>% filter(isolate.id=='CH30_4_RI_03' & dilution==1)
 
@@ -63,7 +88,7 @@ sp1 <- example_TPC_data %>% filter(isolate.id=='CH30_4_RI_03' & dilution==1)
 nbcurve.traits<-get.nbcurve.tpc(sp1$temperature,sp1$mu,method='grid.mle2',plotQ=T,conf.bandQ = T,fpath=NA)
 data.frame(nbcurve.traits)
 
-## ----echo=F--------------------------------------------------------------
+## ----error=FALSE,warning=F-----------------------------------------------
 # First, let's look at an example with multiple dilutions but the same strain:
 sp1b <- example_TPC_data %>% filter(isolate.id=='CH30_4_RI_03')
 
@@ -78,7 +103,7 @@ res <- sp1b %>% group_by(isolate.id,dilution) %>% do(tpcs=get.nbcurve.tpc(.$temp
 # provide an explicit fpath to invoke plot saving; when `id` is also provided, this column will be used to produce the plot's title, as well as included in the file name.
 #res <- sp1b %>% group_by(isolate.id,dilution) %>% do(tpcs=get.nbcurve.tpc(.$temperature,.$mu,method='grid.mle2',plotQ=T,conf.bandQ=T,fpath=fpath,id=.$dilution))
 
-## ------------------------------------------------------------------------
+## ----error=FALSE,warning=F-----------------------------------------------
 nb.res <- sp1b %>% group_by(isolate.id,dilution) %>% do(tpcs=get.nbcurve.tpc(.$temperature,.$mu,method='grid.mle2',plotQ=T,conf.bandQ=F,fpath=NA,id=.$dilution))
 
 sp1b %>% group_by(isolate.id,dilution) %>% do(tpcs=get.nbcurve.tpc(.$temperature,.$mu,method='grid.mle2',plotQ=F,conf.bandQ=F,fpath=NA,id=.$dilution))
@@ -89,6 +114,9 @@ nb.res2<-nb.res %>% summarise(isolate.id,dilution,topt=tpcs$o,tmin=tpcs$tmin,tma
 
 nb.res2
 
+## ------------------------------------------------------------------------
+nb.res %>% summarise(isolate.id,dilution,topt=tpcs$o,topt.lwr=tpcs$ciF[1,1],topt.upr=tpcs$ciF[1,2],ntemps=tpcs$ntemps)
+
 ## ----warning=F-----------------------------------------------------------
 de.res <- sp1b %>% group_by(isolate.id,dilution) %>% do(tpcs=get.decurve.tpc(.$temperature,.$mu,method='grid.mle2',plotQ=T,conf.bandQ=T,fpath=NA,id=.$dilution))
 
@@ -96,7 +124,7 @@ de.res2 <- de.res %>% summarise(isolate.id,dilution,topt=tpcs$topt,tmin=tpcs$tmi
 
 de.res2
 
-## ------------------------------------------------------------------------
+## ----error=FALSE,warning=F-----------------------------------------------
 library(reshape2)
 
 nb.res3<-melt(nb.res2,id.vars=c('isolate.id','dilution'))
