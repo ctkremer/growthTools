@@ -121,9 +121,9 @@ sdat2<-sdat[sdat$trt=='D',]
 
 plot(ln.fluor~dtime,data=sdat2)
 
-get.gr.flr(x=sdat2$dtime,y=sdat2$ln.fluor)
+# calculate growth rate using all available methods:
+res<-get.growth.rate(sdat2$dtime,sdat2$ln.fluor,plot.best.Q = T,id = 'Population D',model.selection = 'AICc')
 
-devtools::load_all()
 
 # subset the data, focusing on population A:
 sdat2<-sdat[sdat$trt=='A',]
@@ -139,9 +139,11 @@ res<-get.growth.rate(sdat2$dtime,sdat2$ln.fluor,plot.best.Q = T,id = 'Population
 res<-get.growth.rate(sdat2$dtime,sdat2$ln.fluor,plot.best.Q = T,id = 'Population A',model.selection = 'AICc')
 
 
-
+# Or fit the full set of mock time series:
 gdat <- sdat %>% group_by(trt) %>% do(grs=get.growth.rate(x=.$dtime,y=.$ln.fluor,id=.$trt,plot.best.Q=T,fpath=NA)) 
 gdat %>% summarise(trt,mu=grs$best.slope,best.model=grs$best.model,best.se=grs$best.se,best.n=grs$best.model.slope.n,best.r2=grs$best.model.slope.r2)
+
+# C might be better described by an additional lagflr model... hmm.
 
 
 res$best.se
