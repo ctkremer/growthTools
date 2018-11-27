@@ -90,7 +90,8 @@ devtools<span class="op">::</span><span class="kw">load_all</span>()
 <span class="kw">library</span>(ggplot2)
 <span class="kw">library</span>(dplyr)
 <span class="kw">library</span>(tidyr)
-<span class="kw">library</span>(mleTools)</code></pre></div>
+<span class="kw">library</span>(mleTools)
+<span class="kw">library</span>(reshape2)</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Construct example data set:</span>
 sdat &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">trt =</span> <span class="kw">c</span>(<span class="kw">rep</span>(<span class="st">&quot;A&quot;</span>, <span class="dv">10</span>), <span class="kw">rep</span>(<span class="st">&quot;B&quot;</span>, <span class="dv">10</span>), <span class="kw">rep</span>(<span class="st">&quot;C&quot;</span>, 
     <span class="dv">10</span>), <span class="kw">rep</span>(<span class="st">&quot;D&quot;</span>, <span class="dv">10</span>)), <span class="dt">dtime =</span> <span class="kw">rep</span>(<span class="kw">seq</span>(<span class="dv">1</span>, <span class="dv">10</span>), <span class="dv">4</span>), <span class="dt">ln.fluor =</span> <span class="kw">c</span>(<span class="kw">c</span>(<span class="dv">1</span>, 
@@ -335,7 +336,6 @@ res &lt;-<span class="st"> </span>sp1b <span class="op">%&gt;%</span><span class
 nb.res2 &lt;-<span class="st"> </span>nb.res <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">summarise</span>(isolate.id, dilution, <span class="dt">topt =</span> tpcs<span class="op">$</span>o, 
     <span class="dt">tmin =</span> tpcs<span class="op">$</span>tmin, <span class="dt">tmax =</span> tpcs<span class="op">$</span>tmax, <span class="dt">rsqr =</span> tpcs<span class="op">$</span>rsqr, <span class="dt">a =</span> <span class="kw">exp</span>(tpcs<span class="op">$</span>a), 
     <span class="dt">b =</span> tpcs<span class="op">$</span>b, <span class="dt">w =</span> tpcs<span class="op">$</span>w)
-
 nb.res2</code></pre></div>
 <pre><code>## # A tibble: 3 x 9
 ##     isolate.id dilution     topt       tmin     tmax      rsqr         a
@@ -365,7 +365,6 @@ nb.res2</code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">de.res2 &lt;-<span class="st"> </span>de.res <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">summarise</span>(isolate.id, dilution, <span class="dt">topt =</span> tpcs<span class="op">$</span>topt, 
     <span class="dt">tmin =</span> tpcs<span class="op">$</span>tmin, <span class="dt">tmax =</span> tpcs<span class="op">$</span>tmax, <span class="dt">rsqr =</span> tpcs<span class="op">$</span>rsqr, <span class="dt">b1 =</span> tpcs<span class="op">$</span>b1, 
     <span class="dt">b2 =</span> tpcs<span class="op">$</span>b2, <span class="dt">d0 =</span> tpcs<span class="op">$</span>d0, <span class="dt">d2 =</span> tpcs<span class="op">$</span>d2)
-
 de.res2</code></pre></div>
 <pre><code>## # A tibble: 3 x 10
 ##     isolate.id dilution     topt        tmin     tmax      rsqr        b1
@@ -375,12 +374,6 @@ de.res2</code></pre></div>
 ## 3 CH30_4_RI_03        3 15.63678   -1.851455 26.36538 0.7127087 7.0850162
 ## # ... with 3 more variables: b2 &lt;dbl&gt;, d0 &lt;dbl&gt;, d2 &lt;dbl&gt;</code></pre>
 <p>It should also be straightforward to fit both types of model to your data, then try to decide which model performs best, using criteria such as R2 or AIC. For now though, here’s a basic visual comparison:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(reshape2)</code></pre></div>
-<pre><code>## 
-## Attaching package: 'reshape2'</code></pre>
-<pre><code>## The following object is masked from 'package:tidyr':
-## 
-##     smiths</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">nb.res3 &lt;-<span class="st"> </span><span class="kw">melt</span>(nb.res2, <span class="dt">id.vars =</span> <span class="kw">c</span>(<span class="st">&quot;isolate.id&quot;</span>, <span class="st">&quot;dilution&quot;</span>))
 de.res3 &lt;-<span class="st"> </span><span class="kw">melt</span>(de.res2, <span class="dt">id.vars =</span> <span class="kw">c</span>(<span class="st">&quot;isolate.id&quot;</span>, <span class="st">&quot;dilution&quot;</span>))
 res2 &lt;-<span class="st"> </span><span class="kw">rbind</span>(<span class="kw">data.frame</span>(<span class="dt">type =</span> <span class="st">&quot;nb&quot;</span>, nb.res3), <span class="kw">data.frame</span>(<span class="dt">type =</span> <span class="st">&quot;de&quot;</span>, 
