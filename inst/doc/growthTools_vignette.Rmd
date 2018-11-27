@@ -9,6 +9,11 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+```{r,echo=FALSE}
+library(knitr)
+opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
+```
+
 # Calculate exponential population growth rates using growthTools
 
 ## Getting Started
@@ -27,7 +32,6 @@ library(dplyr)
 library(tidyr)
 library(mleTools)
 ```
-
 
 ```{r}
 # Construct example data set:

@@ -1,3 +1,7 @@
+## ----echo=FALSE----------------------------------------------------------
+library(knitr)
+opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
+
 ## ----message=FALSE-------------------------------------------------------
 # To direct vignette code to use the growthTools package during development, calling devtools::load_all() is suggested. When ready for release, use the library command. 
 # http://stackoverflow.com/questions/35727645/devtools-build-vignette-cant-find-functions
