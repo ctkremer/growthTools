@@ -25,7 +25,7 @@ The growthTools package is designed to help automate the estimation of exponenti
 
 The growthTools package relies heavily on data manipulation tools from the dplyr package to facilitate the automation of these analysis for large numbers of populations/strains/species.
 
-# Calculate exponential population growth rates using growthTools
+# Calculate exponential population growth rates
 
 ## Getting Started
 
@@ -55,11 +55,11 @@ sdat<-data.frame(trt=c(rep('A',10),rep('B',10),rep('C',10),rep('D',10)),
                             c(5.5,4.5,3.5,2.5,1.5,0,0.2,-0.1,0,-0.1)))
 ```
 
-## Basic example: working with a single time series
+## Working with a single time series
 
 We can take a quick look at the abundance time series created in this mock data set:
 
-```{r}
+```{r,width=6,heigh=4.5}
 ggplot(sdat,aes(x=dtime,y=ln.fluor))+
   geom_point(aes(colour=trt))+theme_bw()+
   scale_x_continuous('Time')+
@@ -71,7 +71,7 @@ First, let's focus on applying this technique to a single time series, to get a 
 
 Here is an example from a single time series:
 
-```{r,error=FALSE}
+```{r,error=FALSE,width=6,heigh=4.5}
 # subset the data, focusing on population A:
 sdat2<-sdat[sdat$trt=='A',]
 
@@ -222,6 +222,8 @@ head(example_TPC_data)
 ```
 
 This data set contains information on the growth rate (mu) of one focal strain of a diatom (isolate.id) collected from Narragannsett Bay, RI in 2017. This isolate was grown at a range of differen temperatures, over three separate dilution periods, and replicated three times at each level. The final column, 'best.model' reflects the model used to provide the growth rate estimates, using functions from the `growthTools` package as described in the preceding section.
+
+## Norberg model:
 
 Now, we can use the function `get.nbcurve.tpc()` to fit thermal performance curves (using the re-parameterized Norberg function - see `?nbcurve2()`) to the growth rate data. This is easily done for a single dilution period:
 
