@@ -20,4 +20,3 @@ Optimum temperature
 Given the competitive optimum temperature and other Norberg parameters, calculate the
 true optimum temperature.
 }
-

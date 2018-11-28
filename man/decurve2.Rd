@@ -25,4 +25,3 @@ Growth rate at one or more temperatures
 \description{
 Alternate parameterization for Topt and phi (see mathematica notebook)
 }
-

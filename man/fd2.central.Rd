@@ -14,4 +14,3 @@ fd2.central(fx, h)
 \description{
 Approximate 2nd derivative (finite difference)
 }
-

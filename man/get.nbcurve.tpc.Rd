@@ -4,8 +4,9 @@
 \alias{get.nbcurve.tpc}
 \title{Fit Norberg curve to growth rate vs. temperature data}
 \usage{
-get.nbcurve.tpc(temp, mu, method = "grid.mle2", plotQ = F, conf.bandQ = T,
-  fpath = NA, id = NA, suppress.grid.mle2.warnings = TRUE, ...)
+get.nbcurve.tpc(temp, mu, method = "grid.mle2", plotQ = F,
+  conf.bandQ = T, fpath = NA, id = NA,
+  suppress.grid.mle2.warnings = TRUE, ...)
 }
 \arguments{
 \item{temp}{Temperature}
@@ -29,4 +30,3 @@ get.nbcurve.tpc(temp, mu, method = "grid.mle2", plotQ = F, conf.bandQ = T,
 \description{
 Fit Norberg curve to growth rate vs. temperature data
 }
-

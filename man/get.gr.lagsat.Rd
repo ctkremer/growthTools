@@ -29,4 +29,3 @@ constant again.
 \examples{
 
 }
-

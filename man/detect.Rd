@@ -15,4 +15,3 @@ TRUE/FALSE depending on whether or not 'try-error' is listed as (one) of the cla
 \description{
 Helper function used to determine whether an attempt at an mle2 fit failed
 }
-

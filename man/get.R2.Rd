@@ -18,4 +18,3 @@ R2 value
 Assuming a normal error distribution and an mle2 fit that uses the 'formula' syntax
 (this function will not work if mle2 is handed a black-boxed NLL function)
 }
-

@@ -26,4 +26,3 @@ This function fits a linear model to ln(abundance) data.
 \examples{
 
 }
-

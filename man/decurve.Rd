@@ -25,4 +25,3 @@ Growth rate at one or more temperatures
 \description{
 Re-parameterized from Thomas et al. 2016 to depend explicitly on Topt
 }
-

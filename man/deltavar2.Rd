@@ -28,4 +28,3 @@ There's probably a classier/more resilient way of fixing this, but in the short
 term, I patched it over by creating `deltavar2()`, and using parse/a custom string in
 `get.nbcurve.tpc()` when `deltavar2()` is called.
 }
-

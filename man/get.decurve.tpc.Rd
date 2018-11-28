@@ -5,8 +5,8 @@
 \title{Fit Double Exponential curve to growth rate vs. temperature data}
 \usage{
 get.decurve.tpc(temp, mu, method = "grid.mle2",
-  start.method = "general.grid", plotQ = F, conf.bandQ = T, fpath = NA,
-  id = NA, suppress.grid.mle2.warnings = TRUE, ...)
+  start.method = "general.grid", plotQ = F, conf.bandQ = T,
+  fpath = NA, id = NA, suppress.grid.mle2.warnings = TRUE, ...)
 }
 \arguments{
 \item{temp}{Temperature}
@@ -30,4 +30,3 @@ get.decurve.tpc(temp, mu, method = "grid.mle2",
 \description{
 Fit Double Exponential curve to growth rate vs. temperature data
 }
-

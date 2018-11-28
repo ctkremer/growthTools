@@ -9,4 +9,3 @@ sqfunc(x, b, s)
 \description{
 Helper function for smoothed lagged/saturating abundance equations
 }
-

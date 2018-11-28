@@ -30,4 +30,3 @@ is exactly 0 will this match the temperature at which a species achieves its hig
 growth rate. See Thomas et al. 2012 for more on this, and \code{nbcurve2()} for an
 alternative formulation.
 }
-

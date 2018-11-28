@@ -28,4 +28,3 @@ exponential growth kicks in.
 \examples{
 
 }
-

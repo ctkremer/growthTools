@@ -18,4 +18,3 @@ relating y to x; the resulting value is used to obtain a reasonable starting gue
 for the slopes of the piecewise linear functions in \code{lag}, \code{sat}, and
  \code{lagsat}
 }
-

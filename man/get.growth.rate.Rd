@@ -6,7 +6,8 @@
 \usage{
 get.growth.rate(x, y, id, plot.best.Q = F, fpath = NA,
   methods = c("linear", "lag", "sat", "flr", "lagsat"),
-  model.selection = c("AICc"), internal.r2.cutoff = 0, verbose = FALSE)
+  model.selection = c("AICc"), internal.r2.cutoff = 0,
+  verbose = FALSE)
 }
 \arguments{
 \item{x}{Time steps}
@@ -26,7 +27,7 @@ get.growth.rate(x, y, id, plot.best.Q = F, fpath = NA,
 \item{internal.r2.cutoff}{control parameter specifying the R2 criteria that may be applied to drop fits where the number of observations in the exponential portion is equal to 3. The default value of zero permits all fits of 3 obs to be considered.}
 }
 \value{
-A data frame containing the identity of the best model, the content of the best model, the estimated slopes of the increasing linear portion of the regressions (ie, exponential growth rate), the standard errors associated with these slopes, and the full list of all models fit.
+A data frame containing the identity of the best model, the content of the best model, the estimated slopes of the increasing linear portion of the regressions (ie, exponential growth rate), the standard errors associated with these slopes, the IC table used to determine the best model, and the full list of all models fit.
 }
 \description{
 This meta-function takes a time series of abundance, and attempts to extract an 
@@ -39,4 +40,3 @@ determine which model best fits the focal data.
 \examples{
 
 }
-

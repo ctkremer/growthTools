@@ -28,4 +28,3 @@ remain constant.
 \examples{
 
 }
-

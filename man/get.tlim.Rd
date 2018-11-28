@@ -21,4 +21,3 @@ Either the estimate of Tmin or Tmax corresponding to the provided Norberg parame
 \description{
 Note: check whether this operates on nbcurve() or nbcurve2() parameters!!!
 }
-

@@ -24,4 +24,3 @@ Predicted exponential growth rate at temperature x
 With this formulation, optimum temperature is explicitly the temperature at which
 a species achieves its highest growth rate.
 }
-
