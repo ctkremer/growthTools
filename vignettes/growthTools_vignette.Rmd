@@ -8,7 +8,7 @@ output:
     toc_depth: 2  # up to two depths of headings (specified by #, ## and ###)
     number_sections: true  ## if you want number sections at each table header
 vignette: >
-  %\VignetteIndexEntry{Introduction to growthTools}
+  %\VignetteIndexEntry{growthTools vignette}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 
