@@ -2,17 +2,28 @@
 title: "growthTools vignette"
 author: "Colin T. Kremer"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output: 
+  rmarkdown::html_vignette:
+    toc: true # table of content true
+    toc_depth: 2  # up to two depths of headings (specified by #, ## and ###)
+    number_sections: true  ## if you want number sections at each table header
 vignette: >
   %\VignetteIndexEntry{Introduction to growthTools}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+
 ---
 
 ```{r,echo=FALSE}
 library(knitr)
 opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
 ```
+
+# Overview
+
+The growthTools package is designed to help automate the estimation of exponential growth rates from large numbers of population time series (multiple measures of abundance or fluorescence over time), while adjusting for the possible presence of intervals of time where populations are not growing exponentially (e.g., lags in growth or saturating abundances due to density dependence). Additionally, the growthTools package includes functions for fitting two different parametric functions to data describing how exponential growth rate changes with temperature (aka thermal reaction norms or thermal performance curves).
+
+The growthTools package relies heavily on data manipulation tools from the dplyr package to facilitate the automation of these analysis for large numbers of populations/strains/species.
 
 # Calculate exponential population growth rates using growthTools
 
@@ -301,6 +312,7 @@ It should also be straightforward to fit both types of model to your data, then 
 nb.res3<-melt(nb.res2,id.vars=c('isolate.id','dilution'))
 de.res3<-melt(de.res2,id.vars=c('isolate.id','dilution'))
 res2<-rbind(data.frame(type='nb',nb.res3),data.frame(type='de',de.res3))
+res2[res2$variable=='rsqr',]
 
 ggplot(res2[res2$variable=='rsqr',],aes(x=type,y=value))+
   geom_boxplot(aes(fill=type))+
