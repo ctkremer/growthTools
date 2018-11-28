@@ -1,5 +1,3 @@
-^Meta$
-^doc$
 ^README\.Rmd$
 ^README-.*\.png$
 ^NEWS\.md$
