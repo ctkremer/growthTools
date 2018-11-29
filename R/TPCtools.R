@@ -524,16 +524,16 @@ deltavar2<-function (fun, meanval = NULL, vars, Sigma, verbose = FALSE)
   derivs <- try(lapply(vars, D, expr = expr), silent = TRUE)
   symbderivs <- TRUE
   if (inherits(derivs, "try-error")) {
-    if (length(grep("is not in the derivatives table", derivs)) | length(grep("n'est pas dans la table des dérivées", derivs))) {
+#    if (length(grep("is not in the derivatives table", derivs)) | length(grep("n'est pas dans la table des dérivées", derivs))) {
       symbderivs <- FALSE
       warning("some symbols not in derivative table, using numeric derivatives")
       nderivs <- with(as.list(meanval), numericDeriv(expr[[1]], 
                                                      theta = vars))
       nderivs <- attr(nderivs, "gradient")
-    }
-    else {
-      stop(paste("Error within derivs:", derivs))
-    }
+#    }
+#    else {
+#      stop(paste("Error within derivs:", derivs))
+#    }
   }
   else {
     nderivs <- sapply(derivs, eval, envir = as.list(meanval))
