@@ -62,12 +62,16 @@ We can take a quick look at the abundance time series created in this mock data 
 ```{r,width=6,heigh=4.5}
 ggplot(sdat,aes(x=dtime,y=ln.fluor))+
   geom_point(aes(colour=trt))+theme_bw()+
-  scale_x_continuous('Time')+
-  scale_y_continuous('ln(Abundance)')
+  scale_x_continuous(name = 'Time',breaks = seq(0,10,2))+
+  scale_y_continuous(name = 'ln(Abundance)')
 ```
 
 
-First, let's focus on applying this technique to a single time series, to get a feel for the methodology. In the process, a series of 5 different possible models are fit to the supplied time series data: (1) a linear model, (2) a lagged growth model, (3) a saturating growth model, (4) a model of exponential decline that hits a floor, characteristic of a detection threshold, and (5) a model where growth is both lagged and achieves saturation. Any model fit where the inferred phase of exponential growth (increasing or decreasing linear portion) contains fewer than three observations is automatically excluded from consideration. The remaining models are then competed against each other based on information criteria (IC), and the estimate of exponential growth corresponding to the best model is returned. Users can select one of a few different IC options, including AIC, AICc, BIC; more on this later.
+First, let's focus on applying this technique to a single time series, to get a feel for the methodology. In the process, a series of 5 different possible models are fit to the supplied time series data: (1) a linear model, (2) a lagged growth model, (3) a saturating growth model, (4) a model of exponential decline that hits a floor, characteristic of a detection threshold, and (5) a model where growth is both lagged and achieves saturation.
+
+Any model fit where the inferred phase of exponential growth (increasing or decreasing linear portion) contains fewer than three observations is automatically excluded from consideration. The remaining models are then competed against each other based on information criteria (IC), and the estimate of exponential growth corresponding to the best model is returned. Users can select one of a few different IC options, including AIC, AICc, BIC; more on this later.
+
+(Note: by default, before fitting occurs, the x-axis (time) is shifted to start at time=0, if necessary. This can improve the stability of the regression fitting. To avoid this, you can specify `zero.time=FALSE` when calling get.growth.rate())
 
 Here is an example from a single time series:
 
@@ -79,7 +83,13 @@ sdat2<-sdat[sdat$trt=='A',]
 res<-get.growth.rate(sdat2$dtime,sdat2$ln.fluor,plot.best.Q = T,id = 'Population A')
 ```
 
-The result (shown in the above plot) indicates that both lagged and saturating portions are present in the time series, as the lagsat model outperforms all of the simpler models. The inferred exponential phase - highlighted in red - has a slope that corresponds to the estimated growth rate, obtained from the best model: 
+The result (shown in the above plot) indicates that both lagged and saturating portions are present in the time series, as the lagsat model outperforms all of the simpler models. If you are interested, you can extract the IC table used to make this decision (defaults to AICc comparison):
+
+```{r}
+res$ictab
+```
+
+Given the lagsat model, the inferred exponential phase - highlighted in red - has a slope that corresponds to the estimated growth rate, obtained from the best model: 
 
 ```{r}
 res$best.model
