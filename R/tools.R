@@ -536,8 +536,8 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
     # match model names to outputs:
     names(slope.ests)<-mod.names
     names(se.ests)<-mod.names
-    names(slope.ns)<-mod.names
-    names(slope.rs)<-mod.names
+    names(slope.n.vals)<-mod.names
+    names(slope.r2.vals)<-mod.names
       
     # format output:
     result<-list(best.slope=slope.ests[[best.mod.id]],
