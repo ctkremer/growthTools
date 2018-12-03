@@ -532,6 +532,12 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
     best.mod.id<-which(mod.names==attr(ictab,"row.names")[1])
     
     # impose QC based on slope.n and slope.r2 here? or outside of function...
+    
+    # match model names to outputs:
+    names(slope.ests)<-mod.names
+    names(se.ests)<-mod.names
+    names(slope.ns)<-mod.names
+    names(slope.rs)<-mod.names
       
     # format output:
     result<-list(best.slope=slope.ests[[best.mod.id]],
