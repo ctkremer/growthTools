@@ -132,7 +132,7 @@ get.gr.lag<-function(x,y,plotQ=F,fpath=NA,id=''){
   
   fit.lag<-nlsLM(y ~ lag(x,a,b,B1,s=1E-10),
                  start = c(B1=mean(x)-(mean(x)-min(x))/2, a=min(y), b=1),data = data,
-                 lower = c(B1=-Inf,a=-Inf,b=0),
+                 lower = c(B1=-Inf,a=-Inf,b=0.0001),
                  control = nls.control(maxiter=1000, warnOnly=TRUE))
   cfs<-data.frame(t(coef(fit.lag)))
   
@@ -178,9 +178,9 @@ get.gr.sat<-function(x,y,plotQ=F,fpath=NA,id=''){
   a.guess<-coef(lm(y~x))[[1]]
   
   fit.sat<-nlsLM(y ~ sat(x,a,b,B1,s=1E-10),
-                 start=c(B1=mean(x)+(max(x)-mean(x))/2,a=a.guess,b=round(max(slopes),5)),
+                 start=c(B1=mean(x)+(max(x)-mean(x))/2,a=a.guess,b=round(max(c(slopes,0.0001)),5)),
                  data = data,
-                 lower = c(B1=-Inf,a=-Inf,b=0),
+                 lower = c(B1=-Inf,a=-Inf,b=0.0001),
                  control = nls.control(maxiter=1000, warnOnly=TRUE))
   cfs<-data.frame(t(coef(fit.sat)))
   
@@ -280,7 +280,7 @@ get.gr.lagsat<-function(x,y,plotQ=F,fpath=NA,id=''){
   fit.lagsat<-nlsLM(y ~ lagsat(x,a,b,B1,B2,s=1E-10),
                     start = c(B1=mean(x)-(mean(x)-min(x))/2,B2=mean(x)+(max(x)-mean(x))/2, a=min(y)+0.1, b=1),
                     data = data,
-                    lower = c(B1=-Inf,B2=-Inf,a=-Inf,b=0),
+                    lower = c(B1=-Inf,B2=-Inf,a=-Inf,b=0.0001),
                     control = nls.control(maxiter=1000, warnOnly=TRUE))
   cfs<-data.frame(t(coef(fit.lagsat)))
   
