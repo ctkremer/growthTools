@@ -221,6 +221,7 @@ get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=
   vcov.mat<-vcov(fit)
   vec<-as.list(c(cf,rsqr=rsqr,tmin=tmin,tmax=tmax))
   vec$ciF<-ciF
+  vec$cf<-cf
   vec$vcov<-vcov.mat
   vec$nobs<-nrow(tpc.tmp)
   vec$ntemps<-ntemps
