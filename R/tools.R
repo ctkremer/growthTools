@@ -130,25 +130,36 @@ get.gr.lag<-function(x,y,plotQ=F,fpath=NA,id=''){
   data<-data.frame(x=x,y=y)
   #slopes <- rollapply(data, 3, localslope, by.column=F)
   
-  fit.lag<-nlsLM(y ~ lag(x,a,b,B1,s=1E-10),
+  fit.lag<-try(nlsLM(y ~ lag(x,a,b,B1,s=1E-10),
                  start = c(B1=mean(x)-(mean(x)-min(x))/2, a=min(y), b=1),data = data,
                  lower = c(B1=-Inf,a=-Inf,b=0.0001),
-                 control = nls.control(maxiter=1000, warnOnly=TRUE))
-  cfs<-data.frame(t(coef(fit.lag)))
-  
-  if(plotQ){
-    if(!is.na(fpath)){
-      pdf(fpath)
-      plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-      curve(lag(x,cfs$a,cfs$b,cfs$B1,s=1E-10),min(x),max(x),add=T,col='blue')
-      curve(lag(x,cfs$a,cfs$b,cfs$B1,s=1E-10),cfs$B1,max(x),add=T,col='red')
-      dev.off()
-    }else{
-      plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-      curve(lag(x,cfs$a,cfs$b,cfs$B1,s=1E-10),min(x),max(x),add=T,col='blue')
-      curve(lag(x,cfs$a,cfs$b,cfs$B1,s=1E-10),cfs$B1,max(x),add=T,col='red')
+                 control = nls.control(maxiter=1000, warnOnly=TRUE)),silent=T)
+  if(class(fit.lag)=='try-error'){
+    fit.lag<-try(nlsLM(y ~ lag(x,a,b,B1,s=1E-10),
+                       start = c(B1=10, a=min(y), b=1),data = data,
+                       lower = c(B1=-Inf,a=-Inf,b=0.0001),
+                       control = nls.control(maxiter=1000, warnOnly=TRUE)),silent=T)
+  }
+  if(class(fit.lag)=='try-error'){
+    #print('fit.lag failed after two tries')
+  }else{
+    cfs<-data.frame(t(coef(fit.lag)))
+    
+    if(plotQ){
+      if(!is.na(fpath)){
+        pdf(fpath)
+        plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
+        curve(lag(x,cfs$a,cfs$b,cfs$B1,s=1E-10),min(x),max(x),n = 400,add=T,col='blue')
+        curve(lag(x,cfs$a,cfs$b,cfs$B1,s=1E-10),cfs$B1,max(x),n = 400,add=T,col='red')
+        dev.off()
+      }else{
+        plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
+        curve(lag(x,cfs$a,cfs$b,cfs$B1,s=1E-10),min(x),max(x),n = 400,add=T,col='blue')
+        curve(lag(x,cfs$a,cfs$b,cfs$B1,s=1E-10),cfs$B1,max(x),n = 400,add=T,col='red')
+      }
     }
   }
+
   return(fit.lag)
 }
 
@@ -177,26 +188,38 @@ get.gr.sat<-function(x,y,plotQ=F,fpath=NA,id=''){
   slopes <- rollapply(data.frame(x=x,y=y), 3, localslope, by.column=F)
   a.guess<-coef(lm(y~x))[[1]]
   
-  fit.sat<-nlsLM(y ~ sat(x,a,b,B1,s=1E-10),
+  fit.sat<-try(nlsLM(y ~ sat(x,a,b,B1,s=1E-10),
                  start=c(B1=mean(x)+(max(x)-mean(x))/2,a=a.guess,b=round(max(c(slopes,0.0001)),5)),
                  data = data,
                  lower = c(B1=-Inf,a=-Inf,b=0.0001),
-                 control = nls.control(maxiter=1000, warnOnly=TRUE))
-  cfs<-data.frame(t(coef(fit.sat)))
-  
-  if(plotQ){
-    if(!is.na(fpath)){
-      pdf(fpath)
-      plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-      curve(sat(x,cfs$a,cfs$b,cfs$B1,s=1E-10),min(x),max(x),add=T,col='blue')
-      curve(sat(x,cfs$a,cfs$b,cfs$B1,s=1E-10),min(x),cfs$B1,add=T,col='red')
-      dev.off()
-    }else{
-      plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-      curve(sat(x,cfs$a,cfs$b,cfs$B1,s=1E-10),min(x),max(x),add=T,col='blue')
-      curve(sat(x,cfs$a,cfs$b,cfs$B1,s=1E-10),min(x),cfs$B1,add=T,col='red')
-    }
+                 control = nls.control(maxiter=1000, warnOnly=TRUE)),silent=T)
+  if(class(fit.sat)=='try-error'){
+    fit.sat<-try(nlsLM(y ~ sat(x,a,b,B1,s=1E-10),
+                       start=c(B1=10,a=a.guess,b=round(max(c(slopes,0.0001)),5)),
+                       data = data,
+                       lower = c(B1=-Inf,a=-Inf,b=0.0001),
+                       control = nls.control(maxiter=1000, warnOnly=TRUE)),silent=T)
   }
+  if(class(fit.sat)=='try-error'){
+    #print('fit.sat failed after two tries')
+  }else{
+    cfs<-data.frame(t(coef(fit.sat)))
+    
+    if(plotQ){
+      if(!is.na(fpath)){
+        pdf(fpath)
+        plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
+        curve(sat(x,cfs$a,cfs$b,cfs$B1,s=1E-10),min(x),max(x),add=T,col='blue')
+        curve(sat(x,cfs$a,cfs$b,cfs$B1,s=1E-10),min(x),cfs$B1,add=T,col='red')
+        dev.off()
+      }else{
+        plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
+        curve(sat(x,cfs$a,cfs$b,cfs$B1,s=1E-10),min(x),max(x),add=T,col='blue')
+        curve(sat(x,cfs$a,cfs$b,cfs$B1,s=1E-10),min(x),cfs$B1,add=T,col='red')
+      }
+    }
+  }  
+  
   return(fit.sat)
 }
 
@@ -226,24 +249,29 @@ get.gr.flr<-function(x,y,plotQ=F,fpath=NA,id=''){
   slopes <- rollapply(data.frame(x=x,y=y), 3, localslope, by.column=F)
   a.guess<-coef(lm(y~x))[[1]]
   
-  fit.flr<-nlsLM(y ~ flr(x,a,b,B2,s=1E-10),
+  fit.flr<-try(nlsLM(y ~ flr(x,a,b,B2,s=1E-10),
                  start=c(a=a.guess,b=min(c(-0.1,round(min(slopes),5))),B2=mean(x)),
                  data = data,
-                 upper = c(a=Inf,b=0,B2=Inf),
-                 control = nls.control(maxiter=1000, warnOnly=TRUE))
-  cfs<-data.frame(t(coef(fit.flr)))
+                 upper = c(a=Inf,b=-0.00000001,B2=Inf),
+                 control = nls.control(maxiter=1000, warnOnly=TRUE)),silent=T)
   
-  if(plotQ){
-    if(!is.na(fpath)){
-      pdf(fpath)
-      plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-      curve(flr(x,cfs$a,cfs$b,cfs$B2,s=1E-10),cfs$B2,max(x),add=T,col='blue')
-      curve(flr(x,cfs$a,cfs$b,cfs$B2,s=1E-10),min(x),cfs$B2,add=T,col='red')
-      dev.off()
-    }else{
-      plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-      curve(flr(x,cfs$a,cfs$b,cfs$B2,s=1E-10),cfs$B2,max(x),add=T,col='blue')
-      curve(flr(x,cfs$a,cfs$b,cfs$B2,s=1E-10),min(x),cfs$B2,add=T,col='red')
+  if(class(fit.flr)=='try-error'){
+    #print('fit.flr failed after two tries')
+  }else{
+    cfs<-data.frame(t(coef(fit.flr)))
+    
+    if(plotQ){
+      if(!is.na(fpath)){
+        pdf(fpath)
+        plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
+        curve(flr(x,cfs$a,cfs$b,cfs$B2,s=1E-10),cfs$B2,max(x),add=T,col='blue')
+        curve(flr(x,cfs$a,cfs$b,cfs$B2,s=1E-10),min(x),cfs$B2,add=T,col='red')
+        dev.off()
+      }else{
+        plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
+        curve(flr(x,cfs$a,cfs$b,cfs$B2,s=1E-10),cfs$B2,max(x),add=T,col='blue')
+        curve(flr(x,cfs$a,cfs$b,cfs$B2,s=1E-10),min(x),cfs$B2,add=T,col='red')
+      }
     }
   }
   return(fit.flr)
@@ -277,24 +305,28 @@ get.gr.lagsat<-function(x,y,plotQ=F,fpath=NA,id=''){
   #a.guess<-coef(lm(y~x))[[1]]
   # round(log(max(slopes)),5)
   
-  fit.lagsat<-nlsLM(y ~ lagsat(x,a,b,B1,B2,s=1E-10),
+  fit.lagsat<-try(nlsLM(y ~ lagsat(x,a,b,B1,B2,s=1E-10),
                     start = c(B1=mean(x)-(mean(x)-min(x))/2,B2=mean(x)+(max(x)-mean(x))/2, a=min(y)+0.1, b=1),
                     data = data,
                     lower = c(B1=-Inf,B2=-Inf,a=-Inf,b=0.0001),
-                    control = nls.control(maxiter=1000, warnOnly=TRUE))
-  cfs<-data.frame(t(coef(fit.lagsat)))
-  
-  if(plotQ){
-    if(!is.na(fpath)){
-      pdf(fpath)
-      plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-      curve(lagsat(x,cfs$a,cfs$b,cfs$B1,cfs$B2,s=1E-10),min(x),max(x),add=T,col='blue')
-      curve(lagsat(x,cfs$a,cfs$b,cfs$B1,cfs$B2,s=1E-10),cfs$B1,cfs$B2,add=T,col='red')
-      dev.off()
-    }else{
-      plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-      curve(lagsat(x,cfs$a,cfs$b,cfs$B1,cfs$B2,s=1E-10),min(x),max(x),add=T,col='blue')
-      curve(lagsat(x,cfs$a,cfs$b,cfs$B1,cfs$B2,s=1E-10),cfs$B1,cfs$B2,add=T,col='red')
+                    control = nls.control(maxiter=1000, warnOnly=TRUE)),silent=T)
+  if(class(fit.lagsat)=='try-error'){
+    #print('fit.lagsat failed after two tries')
+  }else{
+    cfs<-data.frame(t(coef(fit.lagsat)))
+    
+    if(plotQ){
+      if(!is.na(fpath)){
+        pdf(fpath)
+        plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
+        curve(lagsat(x,cfs$a,cfs$b,cfs$B1,cfs$B2,s=1E-10),min(x),max(x),add=T,col='blue')
+        curve(lagsat(x,cfs$a,cfs$b,cfs$B1,cfs$B2,s=1E-10),cfs$B1,cfs$B2,add=T,col='red')
+        dev.off()
+      }else{
+        plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
+        curve(lagsat(x,cfs$a,cfs$b,cfs$B1,cfs$B2,s=1E-10),min(x),max(x),add=T,col='blue')
+        curve(lagsat(x,cfs$a,cfs$b,cfs$B1,cfs$B2,s=1E-10),cfs$B1,cfs$B2,add=T,col='red')
+      }
     }
   }
   return(fit.lagsat)
