@@ -141,6 +141,9 @@ get.gr.lag<-function(x,y,plotQ=F,fpath=NA,id=''){
                        control = nls.control(maxiter=1000, warnOnly=TRUE)),silent=T)
   }
   if(class(fit.lag)=='try-error'){
+    if(!grepl(attr(fit.lag,"condition"),pattern='singular gradient matrix')){
+      print(attr(fit.lag,"condition"))
+    }
     #print('fit.lag failed after two tries')
   }else{
     cfs<-data.frame(t(coef(fit.lag)))
@@ -188,19 +191,22 @@ get.gr.sat<-function(x,y,plotQ=F,fpath=NA,id=''){
   slopes <- rollapply(data.frame(x=x,y=y), 3, localslope, by.column=F)
   a.guess<-coef(lm(y~x))[[1]]
   
-  fit.sat<-try(nlsLM(y ~ sat(x,a,b,B1,s=1E-10),
-                 start=c(B1=mean(x)+(max(x)-mean(x))/2,a=a.guess,b=round(max(c(slopes,0.0001)),5)),
+  fit.sat<-try(nlsLM(y ~ sat(x,a,b,B2,s=1E-10),
+                 start=c(B2=mean(x)+(max(x)-mean(x))/2,a=a.guess,b=round(max(c(slopes,0.0001)),5)),
                  data = data,
-                 lower = c(B1=-Inf,a=-Inf,b=0.0001),
+                 lower = c(B2=-Inf,a=-Inf,b=0.0001),
                  control = nls.control(maxiter=1000, warnOnly=TRUE)),silent=T)
   if(class(fit.sat)=='try-error'){
-    fit.sat<-try(nlsLM(y ~ sat(x,a,b,B1,s=1E-10),
-                       start=c(B1=10,a=a.guess,b=round(max(c(slopes,0.0001)),5)),
+    fit.sat<-try(nlsLM(y ~ sat(x,a,b,B2,s=1E-10),
+                       start=c(B2=10,a=a.guess,b=round(max(c(slopes,0.0001)),5)),
                        data = data,
-                       lower = c(B1=-Inf,a=-Inf,b=0.0001),
+                       lower = c(B2=-Inf,a=-Inf,b=0.0001),
                        control = nls.control(maxiter=1000, warnOnly=TRUE)),silent=T)
   }
   if(class(fit.sat)=='try-error'){
+    if(!grepl(attr(fit.sat,"condition"),pattern='singular gradient matrix')){
+      print(attr(fit.sat,"condition"))
+    }
     #print('fit.sat failed after two tries')
   }else{
     cfs<-data.frame(t(coef(fit.sat)))
@@ -209,13 +215,13 @@ get.gr.sat<-function(x,y,plotQ=F,fpath=NA,id=''){
       if(!is.na(fpath)){
         pdf(fpath)
         plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-        curve(sat(x,cfs$a,cfs$b,cfs$B1,s=1E-10),min(x),max(x),add=T,col='blue')
-        curve(sat(x,cfs$a,cfs$b,cfs$B1,s=1E-10),min(x),cfs$B1,add=T,col='red')
+        curve(sat(x,cfs$a,cfs$b,cfs$B2,s=1E-10),min(x),max(x),add=T,col='blue')
+        curve(sat(x,cfs$a,cfs$b,cfs$B2,s=1E-10),min(x),cfs$B2,add=T,col='red')
         dev.off()
       }else{
         plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-        curve(sat(x,cfs$a,cfs$b,cfs$B1,s=1E-10),min(x),max(x),add=T,col='blue')
-        curve(sat(x,cfs$a,cfs$b,cfs$B1,s=1E-10),min(x),cfs$B1,add=T,col='red')
+        curve(sat(x,cfs$a,cfs$b,cfs$B2,s=1E-10),min(x),max(x),add=T,col='blue')
+        curve(sat(x,cfs$a,cfs$b,cfs$B2,s=1E-10),min(x),cfs$B2,add=T,col='red')
       }
     }
   }  
@@ -256,6 +262,9 @@ get.gr.flr<-function(x,y,plotQ=F,fpath=NA,id=''){
                  control = nls.control(maxiter=1000, warnOnly=TRUE)),silent=T)
   
   if(class(fit.flr)=='try-error'){
+    if(!grepl(attr(fit.flr,"condition"),pattern='singular gradient matrix')){
+      print(attr(fit.flr,"condition"))
+    }
     #print('fit.flr failed after two tries')
   }else{
     cfs<-data.frame(t(coef(fit.flr)))
@@ -311,6 +320,9 @@ get.gr.lagsat<-function(x,y,plotQ=F,fpath=NA,id=''){
                     lower = c(B1=-Inf,B2=-Inf,a=-Inf,b=0.0001),
                     control = nls.control(maxiter=1000, warnOnly=TRUE)),silent=T)
   if(class(fit.lagsat)=='try-error'){
+    if(!grepl(attr(fit.lagsat,"condition"),pattern='singular gradient matrix')){
+      print(attr(fit.lagsat,"condition"))
+    }
     #print('fit.lagsat failed after two tries')
   }else{
     cfs<-data.frame(t(coef(fit.lagsat)))
