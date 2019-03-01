@@ -420,11 +420,16 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
   class(modlist$gr)<-class(modlist$gr.lag)<-class(modlist$gr.sat)<-class(modlist$gr.flr)<-class(modlist$gr.lagsat)<-'try-error'
   gr<-gr.lag<-gr.sat<-gr.flr<-gr.lagsat<-NA
   slope.gr<-slope.gr.lag<-slope.gr.sat<-slope.gr.flr<-slope.gr.lagsat<-NA
+  se.gr<-se.gr.lag<-se.gr.sat<-se.gr.flr<-se.gr.lagsat<-NA
+  
   slope.n.gr<-slope.n.gr.lag<-slope.n.gr.sat<-slope.n.gr.flr<-slope.n.gr.lagsat<-NA
   slope.r2.gr<-slope.r2.gr.lag<-slope.r2.gr.sat<-slope.r2.gr.flr<-slope.r2.gr.lagsat<-NA
-  se.gr<-se.gr.lag<-se.gr.sat<-se.gr.flr<-se.gr.lagsat<-NA
+  
   pre.n.gr<-pre.n.gr.lag<-pre.n.gr.sat<-pre.n.gr.flr<-pre.n.gr.lagsat<-NA
+  pre.r2.gr<-pre.r2.gr.lag<-pre.r2.gr.sat<-pre.r2.gr.flr<-pre.r2.gr.lagsat<-NA
+  
   post.n.gr<-post.n.gr.lag<-post.n.gr.sat<-post.n.gr.flr<-post.n.gr.lagsat<-NA
+  post.r2.gr<-post.r2.gr.lag<-post.r2.gr.sat<-post.r2.gr.flr<-post.r2.gr.lagsat<-NA
   
   if(length(unique(x))==2){
     print('Caution: only two unique time points, high risk of over-fitting. Methods other than "linear" are likely to fail')
@@ -438,7 +443,7 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
       gr<-get.gr(x,y) 
       slope.gr<-coef(gr)[[2]]
       slope.n.gr<-length(x)
-      slope.r2.gr<-get.R2(gr,y)
+      slope.r2.gr<-get.R2(predict(gr),y)
       se.gr<-sqrt(diag(vcov(gr)))['x']
       modlist$gr<-gr
     }
@@ -446,14 +451,17 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
       gr.lag<-try(get.gr.lag(x,y))  
       if(prod(class(gr.lag)!='try-error')){
         b1.cutoff <- coef(gr.lag)[1]-0.1  # where does exponential phase begin?
-        pds.lag <- predict(gr.lag)[x>=b1.cutoff] # predicted values above this cutoff
-        obs.lag <- y[x>=b1.cutoff] # observed values above this cutoff
+        pds.lag <- predict(gr.lag) # predicted values
+        obs.lag <- y # observed values
         
         slope.gr.lag <- unname(coef(gr.lag)['b'])
-        slope.n.gr.lag <- length(x[x>=b1.cutoff])  # how many observations above cutoff
-        slope.r2.gr.lag <- 1-sum((pds.lag-obs.lag)^2)/sum((obs.lag-mean(obs.lag))^2)  # r2
         se.gr.lag <- sqrt(diag(vcov(gr.lag)))['b']
+        
+        slope.n.gr.lag <- length(x[x>=b1.cutoff])  # how many observations above cutoff
+        slope.r2.gr.lag <- get.R2(pds.lag[x>=b1.cutoff],obs.lag[x>=b1.cutoff])
+        
         pre.n.gr.lag<-length(x[x<=coef(gr.lag)['B1']])
+        pre.r2.gr.lag <- get.R2(pds.lag[x<=coef(gr.lag)['B1']],obs.lag[x<=coef(gr.lag)['B1']])
         
         # if exponential portion is based on fewer than 3 observations, re-classify this fit as
         # resulting in an error. This removes it from consideration as a 'best model', allowing
@@ -461,11 +469,6 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
         if(slope.n.gr.lag<3  | (slope.n.gr.lag==3 & slope.r2.gr.lag<internal.r2.cutoff)){
           class(gr.lag)<-'try-error'          
         }
-      }else{
-        slope.gr.lag<-NA
-        slope.n.gr.lag<-NA
-        slope.r2.gr.lag<-NA
-        se.gr.lag<-NA
       }
       modlist$gr.lag<-gr.lag
     }
@@ -473,14 +476,17 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
       gr.sat<-try(get.gr.sat(x,y))
       if(prod(class(gr.sat)!='try-error')){
         b2.cutoff <- coef(gr.sat)[1]+0.1  # where does exponential phase end?
-        pds.sat <- predict(gr.sat)[x<=b2.cutoff] # predicted values below this cutoff
-        obs.sat <- y[x<=b2.cutoff] # observed values below this cutoff
+        pds.sat <- predict(gr.sat) # predicted values
+        obs.sat <- y # observed values 
         
         slope.gr.sat <- unname(coef(gr.sat)['b'])
-        slope.n.gr.sat <- length(x[x<=b2.cutoff])  # how many observations below cutoff
-        slope.r2.gr.sat <- 1-sum((pds.sat-obs.sat)^2)/sum((obs.sat-mean(obs.sat))^2)  # r2
         se.gr.sat <- sqrt(diag(vcov(gr.sat)))['b']
-        post.n.gr.sat<-length(x[x>=coef(gr.sat)['B2']])
+        
+        slope.n.gr.sat <- length(x[x<=b2.cutoff])  # how many observations below cutoff
+        slope.r2.gr.sat <- get.R2(pds.sat[x<=b2.cutoff],obs.sat[x<=b2.cutoff])
+        
+        post.n.gr.sat <- length(x[x>=coef(gr.sat)['B2']])
+        post.r2.gr.sat <- get.R2(pds.sat[x>=coef(gr.sat)['B2']],obs.sat[x>=coef(gr.sat)['B2']])
         
         # if exponential portion is based on fewer than 3 observations, re-classify this fit as
         # resulting in an error. This removes it from consideration as a 'best model', allowing
@@ -488,11 +494,6 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
         if(slope.n.gr.sat<3 | (slope.n.gr.sat==3 & slope.r2.gr.sat<internal.r2.cutoff)){
           class(gr.sat)<-'try-error'          
         }
-      }else{
-        slope.gr.sat <- NA
-        slope.n.gr.sat <- NA
-        slope.r2.gr.sat <- NA
-        se.gr.sat <- NA
       }
       modlist$gr.sat<-gr.sat
     }
@@ -501,14 +502,17 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
       gr.flr<-try(get.gr.flr(x,y))
       if(prod(class(gr.flr)!='try-error')){
         b2.cutoff <- coef(gr.flr)['B2']+0.1  # where does exponential phase end?
-        pds.flr <- predict(gr.flr)[x<=b2.cutoff] # predicted values below this cutoff
-        obs.flr <- y[x<=b2.cutoff] # observed values below this cutoff
+        pds.flr <- predict(gr.flr) # predicted values
+        obs.flr <- y # observed values
         
         slope.gr.flr <- unname(coef(gr.flr)['b'])
-        slope.n.gr.flr <- length(x[x<=b2.cutoff])  # how many observations below cutoff
-        slope.r2.gr.flr <- 1-sum((pds.flr-obs.flr)^2)/sum((obs.flr-mean(obs.flr))^2)  # r2
         se.gr.flr <- sqrt(diag(vcov(gr.flr)))['b']
+        
+        slope.n.gr.flr <- length(x[x<=b2.cutoff])  # how many observations below cutoff
+        slope.r2.gr.flr <- get.R2(pds.flr[x<=b2.cutoff],obs.flr[x<=b2.cutoff])
+        
         post.n.gr.flr<-length(x[x>=coef(gr.flr)['B2']])
+        post.r2.gr.flr<-get.R2(pds.flr[x>=coef(gr.flr)['B2']],obs.flr[x>=coef(gr.flr)['B2']])
         
         # if exponential portion is based on fewer than 3 observations, re-classify this fit as
         # resulting in an error. This removes it from consideration as a 'best model', allowing
@@ -516,11 +520,6 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
         if(slope.n.gr.flr<3 | (slope.n.gr.flr==3 & slope.r2.gr.flr<internal.r2.cutoff)){
           class(gr.flr)<-'try-error'          
         }
-      }else{
-        slope.gr.flr <- NA
-        slope.n.gr.flr <- NA
-        slope.r2.gr.flr <- NA
-        se.gr.flr <- NA
       }
       modlist$gr.flr<-gr.flr
     }
@@ -530,16 +529,23 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
       if(prod(class(gr.lagsat)!='try-error')){
         b1.cutoff <- coef(gr.lagsat)[1]-0.1  # where does exponential phase begin?
         b2.cutoff <- coef(gr.lagsat)[2]+0.1  # where does exponential phase end?
-        pds.lagsat <- predict(gr.lagsat)[x<=b2.cutoff & x >=b1.cutoff] # predictions btwn cutoffs
-        obs.lagsat <- y[x<=b2.cutoff & x >=b1.cutoff] # observed values between cutoffs
-        
+        pds.lagsat <- predict(gr.lagsat) # predictions 
+        obs.lagsat <- y # observed values
         
         slope.gr.lagsat <- unname(coef(gr.lagsat)['b'])
-        slope.n.gr.lagsat <- length(x[x<=b2.cutoff & x >=b1.cutoff])  # how many obs btwn cutoffs
-        slope.r2.gr.lagsat <- 1-sum((pds.lagsat-obs.lagsat)^2)/sum((obs.lagsat-mean(obs.lagsat))^2)  # r2
         se.gr.lagsat <- sqrt(diag(vcov(gr.lagsat)))['b']
+        
+        slope.n.gr.lagsat <- length(x[x<=b2.cutoff & x >=b1.cutoff])  # how many obs btwn cutoffs
+        slope.r2.gr.lagsat <- get.R2(pds.lagsat[x<=b2.cutoff & x >=b1.cutoff],
+                                     obs.lagsat[x<=b2.cutoff & x >=b1.cutoff])
+        
         pre.n.gr.lagsat<-length(x[x<=coef(gr.lagsat)['B1']])
+        pre.r2.gr.lagsat <- get.R2(pds.lagsat[x<=coef(gr.lagsat)['B1']],
+                                     obs.lagsat[x<=coef(gr.lagsat)['B1']])
+        
         post.n.gr.lagsat<-length(x[x>=coef(gr.lagsat)['B2']])
+        post.r2.gr.lagsat <- get.R2(pds.lagsat[x>=coef(gr.lagsat)['B2']],
+                                     obs.lagsat[x>=coef(gr.lagsat)['B2']])
         
         # if exponential portion is based on fewer than 3 observations, re-classify this fit as
         # resulting in an error. This removes it from consideration as a 'best model', allowing
@@ -548,11 +554,6 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
           class(gr.lagsat)<-'try-error'          
         }
 
-      }else{
-        slope.gr.lagsat <- NA
-        slope.n.gr.lagsat <- NA
-        slope.r2.gr.lagsat <- NA
-        se.gr.lagsat <- NA
       }
       modlist$gr.lagsat<-gr.lagsat
     }
@@ -573,7 +574,9 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
     slope.n.vals<-c(slope.n.gr,slope.n.gr.lag,slope.n.gr.sat,slope.n.gr.flr,slope.n.gr.lagsat)[successful.fits]
     slope.r2.vals<-c(slope.r2.gr,slope.r2.gr.lag,slope.r2.gr.sat,slope.r2.gr.flr,slope.r2.gr.lagsat)[successful.fits]
     pre.n.vals<-c(pre.n.gr,pre.n.gr.lag,pre.n.gr.sat,pre.n.gr.flr,pre.n.gr.lagsat)[successful.fits]
+    pre.r2.vals<-c(pre.r2.gr,pre.r2.gr.lag,pre.r2.gr.sat,pre.r2.gr.flr,pre.r2.gr.lagsat)[successful.fits]
     post.n.vals<-c(post.n.gr,post.n.gr.lag,post.n.gr.sat,post.n.gr.flr,post.n.gr.lagsat)[successful.fits]
+    post.r2.vals<-c(post.r2.gr,post.r2.gr.lag,post.r2.gr.sat,post.r2.gr.flr,post.r2.gr.lagsat)[successful.fits]
     
     # compare successful models
     switch(model.selection,
@@ -592,13 +595,15 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
     names(slope.n.vals)<-mod.names
     names(slope.r2.vals)<-mod.names
     names(pre.n.vals)<-mod.names
+    names(pre.r2.vals)<-mod.names
     names(post.n.vals)<-mod.names
+    names(post.r2.vals)<-mod.names
     
     # format output:
     result<-list(best.slope=slope.ests[[best.mod.id]],
                  best.se=se.ests[[best.mod.id]],
                  best.model=as.character(mod.names[[best.mod.id]]),
-                 best.model.rsqr=get.R2(mod.list[[best.mod.id]],y),
+                 best.model.rsqr=get.R2(predict(mod.list[[best.mod.id]]),y),
                  best.model.slope.n=slope.n.vals[[best.mod.id]],
                  best.model.slope.r2=slope.r2.vals[[best.mod.id]],
                  best.model.contents=list(mod.list[[best.mod.id]]),
@@ -607,7 +612,9 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
                  slope.ns=slope.n.vals,
                  slope.rs=slope.r2.vals,
                  pre.ns=pre.n.vals,
+                 pre.rs=pre.r2.vals,
                  post.ns=post.n.vals,
+                 post.rs=post.r2.vals,
                  ictab=ictab,
                  models=list(gr=gr,gr.lag=gr.lag,gr.sat=gr.sat,gr.flr=gr.flr,gr.lagsat=gr.lagsat))
     #print(result)
@@ -641,7 +648,9 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
                  slope.ns=NA,
                  slope.rs=NA,
                  pre.ns=NA,
+                 pre.rs=NA,
                  post.ns=NA,
+                 post.rs=NA,
                  models=list(gr=NA,gr.lag=NA,gr.sat=NA,gr.flr=NA,gr.lagsat=NA))
   }
   
