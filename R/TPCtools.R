@@ -206,7 +206,7 @@ get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=
   tmax<-get.tlim(cf$o,cf$w,cf$b,type='tmax')
   
   # calculate R2
-  rsqr<-get.R2(fit,tpc.tmp$mu)
+  rsqr<-get.R2(predict(fit),tpc.tmp$mu)
 
   # Calculate confidence intervals using the delta method (see Bolker book, pg 255)
   #   ... why is this useful? really, we'd like CI's on the x-axis position of these traits
@@ -408,7 +408,7 @@ get.decurve.tpc<-function(temp,mu,method='grid.mle2',start.method='general.grid'
   }
 
   # calculate R2
-  rsqr<-get.R2(fit,tpc.tmp$mu)
+  rsqr<-get.R2(predict(fit),tpc.tmp$mu)
   
   # simple Fisher confidence intervals:
   ciF<-ci.FI(fit)
@@ -475,20 +475,19 @@ get.decurve.tpc<-function(temp,mu,method='grid.mle2',start.method='general.grid'
 
 
 
-#' Calculate R2 for an mle2 model
+#' Calculate R2
 #' 
-#' Assuming a normal error distribution and an mle2 fit that uses the 'formula' syntax
-#' (this function will not work if mle2 is handed a black-boxed NLL function)
+#' 1-sum((obs-pds)^2)/sum((obs-mean(obs))^2)
 #' 
-#' @param model An mle2 model object
+#' @param pds Predicted y values (could arise from predict(model) for an mle2 model)
 #' @param obs Observed y values
 #' 
 #' @return R2 value
 #' 
 #' @export
-get.R2<-function(model,obs){
-  expc<-predict(model)
-  rsqr<-1-sum((obs-expc)^2)/sum((obs-mean(obs))^2)
+get.R2<-function(pds,obs){
+  #pds<-predict(model)
+  rsqr<-1-sum((obs-pds)^2)/sum((obs-mean(obs))^2)
   rsqr
 }
 
