@@ -423,6 +423,8 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
   slope.n.gr<-slope.n.gr.lag<-slope.n.gr.sat<-slope.n.gr.flr<-slope.n.gr.lagsat<-NA
   slope.r2.gr<-slope.r2.gr.lag<-slope.r2.gr.sat<-slope.r2.gr.flr<-slope.r2.gr.lagsat<-NA
   se.gr<-se.gr.lag<-se.gr.sat<-se.gr.flr<-se.gr.lagsat<-NA
+  pre.n.gr<-pre.n.gr.lag<-pre.n.gr.sat<-pre.n.gr.flr<-pre.n.gr.lagsat<-NA
+  post.n.gr<-post.n.gr.lag<-post.n.gr.sat<-post.n.gr.flr<-post.n.gr.lagsat<-NA
   
   if(length(unique(x))==2){
     print('Caution: only two unique time points, high risk of over-fitting. Methods other than "linear" are likely to fail')
@@ -451,6 +453,7 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
         slope.n.gr.lag <- length(x[x>=b1.cutoff])  # how many observations above cutoff
         slope.r2.gr.lag <- 1-sum((pds.lag-obs.lag)^2)/sum((obs.lag-mean(obs.lag))^2)  # r2
         se.gr.lag <- sqrt(diag(vcov(gr.lag)))['b']
+        pre.n.gr.lag<-length(x[x<=coef(gr.lag)['B1']])
         
         # if exponential portion is based on fewer than 3 observations, re-classify this fit as
         # resulting in an error. This removes it from consideration as a 'best model', allowing
@@ -477,6 +480,7 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
         slope.n.gr.sat <- length(x[x<=b2.cutoff])  # how many observations below cutoff
         slope.r2.gr.sat <- 1-sum((pds.sat-obs.sat)^2)/sum((obs.sat-mean(obs.sat))^2)  # r2
         se.gr.sat <- sqrt(diag(vcov(gr.sat)))['b']
+        post.n.gr.sat<-length(x[x>=coef(gr.sat)['B2']])
         
         # if exponential portion is based on fewer than 3 observations, re-classify this fit as
         # resulting in an error. This removes it from consideration as a 'best model', allowing
@@ -504,6 +508,7 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
         slope.n.gr.flr <- length(x[x<=b2.cutoff])  # how many observations below cutoff
         slope.r2.gr.flr <- 1-sum((pds.flr-obs.flr)^2)/sum((obs.flr-mean(obs.flr))^2)  # r2
         se.gr.flr <- sqrt(diag(vcov(gr.flr)))['b']
+        post.n.gr.flr<-length(x[x>=coef(gr.flr)['B2']])
         
         # if exponential portion is based on fewer than 3 observations, re-classify this fit as
         # resulting in an error. This removes it from consideration as a 'best model', allowing
@@ -533,6 +538,8 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
         slope.n.gr.lagsat <- length(x[x<=b2.cutoff & x >=b1.cutoff])  # how many obs btwn cutoffs
         slope.r2.gr.lagsat <- 1-sum((pds.lagsat-obs.lagsat)^2)/sum((obs.lagsat-mean(obs.lagsat))^2)  # r2
         se.gr.lagsat <- sqrt(diag(vcov(gr.lagsat)))['b']
+        pre.n.gr.lagsat<-length(x[x<=coef(gr.lagsat)['B1']])
+        post.n.gr.lagsat<-length(x[x>=coef(gr.lagsat)['B2']])
         
         # if exponential portion is based on fewer than 3 observations, re-classify this fit as
         # resulting in an error. This removes it from consideration as a 'best model', allowing
@@ -565,7 +572,9 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
     se.ests<-unname(c(se.gr,se.gr.lag,se.gr.sat,se.gr.flr,se.gr.lagsat)[successful.fits])
     slope.n.vals<-c(slope.n.gr,slope.n.gr.lag,slope.n.gr.sat,slope.n.gr.flr,slope.n.gr.lagsat)[successful.fits]
     slope.r2.vals<-c(slope.r2.gr,slope.r2.gr.lag,slope.r2.gr.sat,slope.r2.gr.flr,slope.r2.gr.lagsat)[successful.fits]
-      
+    pre.n.vals<-c(pre.n.gr,pre.n.gr.lag,pre.n.gr.sat,pre.n.gr.flr,pre.n.gr.lagsat)[successful.fits]
+    post.n.vals<-c(post.n.gr,post.n.gr.lag,post.n.gr.sat,post.n.gr.flr,post.n.gr.lagsat)[successful.fits]
+    
     # compare successful models
     switch(model.selection,
            AIC={ictab<-AICtab(mod.list,mnames = mod.names)},
@@ -582,7 +591,9 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
     names(se.ests)<-mod.names
     names(slope.n.vals)<-mod.names
     names(slope.r2.vals)<-mod.names
-      
+    names(pre.n.vals)<-mod.names
+    names(post.n.vals)<-mod.names
+    
     # format output:
     result<-list(best.slope=slope.ests[[best.mod.id]],
                  best.se=se.ests[[best.mod.id]],
@@ -595,6 +606,8 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
                  ses=se.ests,
                  slope.ns=slope.n.vals,
                  slope.rs=slope.r2.vals,
+                 pre.ns=pre.n.vals,
+                 post.ns=post.n.vals,
                  ictab=ictab,
                  models=list(gr=gr,gr.lag=gr.lag,gr.sat=gr.sat,gr.flr=gr.flr,gr.lagsat=gr.lagsat))
     #print(result)
@@ -627,6 +640,8 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
                  ses=NA,
                  slope.ns=NA,
                  slope.rs=NA,
+                 pre.ns=NA,
+                 post.ns=NA,
                  models=list(gr=NA,gr.lag=NA,gr.sat=NA,gr.flr=NA,gr.lagsat=NA))
   }
   
