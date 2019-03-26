@@ -10,14 +10,17 @@ License: MIT + file LICENSE
 LazyData: TRUE
 RoxygenNote: 6.1.1
 Encoding: UTF-8
-Imports: dplyr,
+Imports: bbmle,
+    dplyr,
     ggplot2,
     gridExtra,
     MASS,
+    minpack.lm,
     reshape2,
     vegan,
     tidyr,
-    tibble
+    tibble,
+    zoo
 Suggests: knitr,
     rmarkdown
 VignetteBuilder: knitr
