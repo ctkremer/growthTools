@@ -2,12 +2,12 @@
 % Please edit documentation in R/TPCtools.R
 \name{get.R2}
 \alias{get.R2}
-\title{Calculate R2 for an mle2 model}
+\title{Calculate R2}
 \usage{
-get.R2(model, obs)
+get.R2(pds, obs)
 }
 \arguments{
-\item{model}{An mle2 model object}
+\item{pds}{Predicted y values (could arise from predict(model) for an mle2 model)}
 
 \item{obs}{Observed y values}
 }
@@ -15,6 +15,5 @@ get.R2(model, obs)
 R2 value
 }
 \description{
-Assuming a normal error distribution and an mle2 fit that uses the 'formula' syntax
-(this function will not work if mle2 is handed a black-boxed NLL function)
+1-sum((obs-pds)^2)/sum((obs-mean(obs))^2)
 }
