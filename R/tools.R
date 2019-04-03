@@ -431,16 +431,17 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
   post.n.gr<-post.n.gr.lag<-post.n.gr.sat<-post.n.gr.flr<-post.n.gr.lagsat<-NA
   post.r2.gr<-post.r2.gr.lag<-post.r2.gr.sat<-post.r2.gr.flr<-post.r2.gr.lagsat<-NA
   
+  ts.length<-length(unique(x))
   
   # if there are more than two unique time points with data:
-  if(length(unique(x))>=2){
+  if(ts.length>=2){
     
     if(length(unique(x))==2){
       print('Caution: only two unique time points, high risk of over-fitting. Only linear method will be used')
     }
     
     # Fill data structures for each given method, if requested by user:
-    if('linear' %in% methods & length(unique(x))>=2){
+    if('linear' %in% methods & ts.length>1){
       gr<-get.gr(x,y) 
       slope.gr<-coef(gr)[[2]]
       slope.n.gr<-length(x)
@@ -452,7 +453,7 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
     }
     
     # lag needs more than 2 obs
-    if('lag' %in% methods & length(unique(x))>2){
+    if('lag' %in% methods & ts.length>2){
       gr.lag<-try(get.gr.lag(x,y))  
       if(prod(class(gr.lag)!='try-error')){
         b1.cutoff <- coef(gr.lag)[1]-0.1  # where does exponential phase begin?
@@ -481,7 +482,7 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
     }
     
     # sat needs more than 2 obs
-    if('sat' %in% methods & length(unique(x))>2){
+    if('sat' %in% methods & ts.length>2){
       gr.sat<-try(get.gr.sat(x,y))
       if(prod(class(gr.sat)!='try-error')){
         b2.cutoff <- coef(gr.sat)[1]+0.1  # where does exponential phase end?
@@ -510,7 +511,7 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
     }
     
     # flr needs more than 2 obs
-    if('flr' %in% methods & length(unique(x))>2){
+    if('flr' %in% methods & ts.length>2){
       gr.flr<-try(get.gr.flr(x,y))
       if(prod(class(gr.flr)!='try-error')){
         b2.cutoff <- coef(gr.flr)['B2']+0.1  # where does exponential phase end?
@@ -534,12 +535,12 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
         }
       }
       modlist$gr.flr<-gr.flr
-    }else{
-      class(gr.flr)<-'try-error'
-    }
+    }#else{
+      #class(gr.flr)<-'try-error'
+    #}
     
     # lagsat needs more than 3 obs
-    if('lagsat' %in% methods & length(unique(x))>3){
+    if('lagsat' %in% methods & ts.length>3){
       gr.lagsat<-try(get.gr.lagsat(x,y))
       if(prod(class(gr.lagsat)!='try-error')){
         b1.cutoff <- coef(gr.lagsat)[1]-0.1  # where does exponential phase begin?
@@ -575,7 +576,7 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
       class(gr.lagsat)<-'try-error'
     }
   
-    # determine which fits occured and were successful
+    # determine which fits occurred and were successful
     successful.fits<-sapply(modlist,detect)
   
     if(sum(successful.fits)==0){
