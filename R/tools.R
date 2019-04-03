@@ -128,14 +128,14 @@ get.gr<-function(x,y,plotQ=F,fpath=NA,id=''){
 get.gr.lag<-function(x,y,plotQ=F,fpath=NA,id=''){
   
   data<-data.frame(x=x,y=y)
-  #slopes <- rollapply(data, 3, localslope, by.column=F)
+  #slopes <- zoo::rollapply(data, 3, localslope, by.column=F)
   
-  fit.lag<-try(nlsLM(y ~ lag(x,a,b,B1,s=1E-10),
+  fit.lag<-try(minpack.lm::nlsLM(y ~ lag(x,a,b,B1,s=1E-10),
                  start = c(B1=mean(x)-(mean(x)-min(x))/2, a=min(y), b=1),data = data,
                  lower = c(B1=-Inf,a=-Inf,b=0.0001),
                  control = nls.control(maxiter=1000, warnOnly=TRUE)),silent=T)
   if(class(fit.lag)=='try-error'){
-    fit.lag<-try(nlsLM(y ~ lag(x,a,b,B1,s=1E-10),
+    fit.lag<-try(minpack.lm::nlsLM(y ~ lag(x,a,b,B1,s=1E-10),
                        start = c(B1=10, a=min(y), b=1),data = data,
                        lower = c(B1=-Inf,a=-Inf,b=0.0001),
                        control = nls.control(maxiter=1000, warnOnly=TRUE)),silent=T)
@@ -188,16 +188,16 @@ get.gr.lag<-function(x,y,plotQ=F,fpath=NA,id=''){
 get.gr.sat<-function(x,y,plotQ=F,fpath=NA,id=''){
   
   data<-data.frame(x=x,y=y)
-  slopes <- rollapply(data.frame(x=x,y=y), 3, localslope, by.column=F)
+  slopes <- zoo::rollapply(data.frame(x=x,y=y), 3, localslope, by.column=F)
   a.guess<-coef(lm(y~x))[[1]]
   
-  fit.sat<-try(nlsLM(y ~ sat(x,a,b,B2,s=1E-10),
+  fit.sat<-try(minpack.lm::nlsLM(y ~ sat(x,a,b,B2,s=1E-10),
                  start=c(B2=mean(x)+(max(x)-mean(x))/2,a=a.guess,b=round(max(c(slopes,0.0001)),5)),
                  data = data,
                  lower = c(B2=-Inf,a=-Inf,b=0.0001),
                  control = nls.control(maxiter=1000, warnOnly=TRUE)),silent=T)
   if(class(fit.sat)=='try-error'){
-    fit.sat<-try(nlsLM(y ~ sat(x,a,b,B2,s=1E-10),
+    fit.sat<-try(minpack.lm::nlsLM(y ~ sat(x,a,b,B2,s=1E-10),
                        start=c(B2=10,a=a.guess,b=round(max(c(slopes,0.0001)),5)),
                        data = data,
                        lower = c(B2=-Inf,a=-Inf,b=0.0001),
@@ -252,10 +252,10 @@ get.gr.sat<-function(x,y,plotQ=F,fpath=NA,id=''){
 get.gr.flr<-function(x,y,plotQ=F,fpath=NA,id=''){
   
   data<-data.frame(x=x,y=y)
-  slopes <- rollapply(data.frame(x=x,y=y), 3, localslope, by.column=F)
+  slopes <- zoo::rollapply(data.frame(x=x,y=y), 3, localslope, by.column=F)
   a.guess<-coef(lm(y~x))[[1]]
   
-  fit.flr<-try(nlsLM(y ~ flr(x,a,b,B2,s=1E-10),
+  fit.flr<-try(minpack.lm::nlsLM(y ~ flr(x,a,b,B2,s=1E-10),
                  start=c(a=a.guess,b=min(c(-0.1,round(min(slopes),5))),B2=mean(x)),
                  data = data,
                  upper = c(a=Inf,b=-0.00000001,B2=Inf),
@@ -309,12 +309,12 @@ get.gr.flr<-function(x,y,plotQ=F,fpath=NA,id=''){
 get.gr.lagsat<-function(x,y,plotQ=F,fpath=NA,id=''){
   
   data<-data.frame(x=x,y=y)
-  #slopes <- rollapply(data.frame(x=x,y=y), 3, localslope, by.column=F)
+  #slopes <- zoo::rollapply(data.frame(x=x,y=y), 3, localslope, by.column=F)
   #log(max(slopes))
   #a.guess<-coef(lm(y~x))[[1]]
   # round(log(max(slopes)),5)
   
-  fit.lagsat<-try(nlsLM(y ~ lagsat(x,a,b,B1,B2,s=1E-10),
+  fit.lagsat<-try(minpack.lm::nlsLM(y ~ lagsat(x,a,b,B1,B2,s=1E-10),
                     start = c(B1=mean(x)-(mean(x)-min(x))/2,B2=mean(x)+(max(x)-mean(x))/2, a=min(y)+0.1, b=1),
                     data = data,
                     lower = c(B1=-Inf,B2=-Inf,a=-Inf,b=0.0001),
