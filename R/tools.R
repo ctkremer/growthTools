@@ -432,6 +432,7 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
   post.r2.gr<-post.r2.gr.lag<-post.r2.gr.sat<-post.r2.gr.flr<-post.r2.gr.lagsat<-NA
   
   ts.length<-length(unique(x))
+  print(ts.length)
   
   # if there are more than two unique time points with data:
   if(ts.length>=2){
@@ -448,9 +449,9 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
       slope.r2.gr<-get.R2(predict(gr),y)
       se.gr<-sqrt(diag(vcov(gr)))['x']
       modlist$gr<-gr
-    }else{
-      class(gr)<-'try-error'          
-    }
+    }#else{
+#      class(gr)<-'try-error'          
+#    }
     
     # lag needs more than 2 obs
     if('lag' %in% methods & ts.length>2){
@@ -477,9 +478,9 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
         }
       }
       modlist$gr.lag<-gr.lag
-    }else{
-      class(gr.lag)<-'try-error'          
-    }
+    }#else{
+      #class(gr.lag)<-'try-error'          
+    #}
     
     # sat needs more than 2 obs
     if('sat' %in% methods & ts.length>2){
@@ -506,9 +507,9 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
         }
       }
       modlist$gr.sat<-gr.sat
-    }else{
-      class(gr.sat)<-'try-error'
-    }
+    }#else{
+      #class(gr.sat)<-'try-error'
+    #}
     
     # flr needs more than 2 obs
     if('flr' %in% methods & ts.length>2){
@@ -572,13 +573,14 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
 
       }
       modlist$gr.lagsat<-gr.lagsat
-    }else{
-      class(gr.lagsat)<-'try-error'
-    }
+    }#else{
+      #class(gr.lagsat)<-'try-error'
+    #}
   
     # determine which fits occurred and were successful
     successful.fits<-sapply(modlist,detect)
-  
+    print(successful.fits)
+    
     if(sum(successful.fits)==0){
       print('Error! All results for requested methods failed!')
       break();
