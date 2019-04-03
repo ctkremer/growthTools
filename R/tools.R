@@ -133,12 +133,12 @@ get.gr.lag<-function(x,y,plotQ=F,fpath=NA,id=''){
   fit.lag<-try(minpack.lm::nlsLM(y ~ lag(x,a,b,B1,s=1E-10),
                  start = c(B1=mean(x)-(mean(x)-min(x))/2, a=min(y), b=1),data = data,
                  lower = c(B1=-Inf,a=-Inf,b=0.0001),
-                 control = nls.control(maxiter=1000, warnOnly=TRUE)),silent=T)
+                 control = nls.lm.control(maxiter=1000,maxfev=1000)),silent=T)
   if(class(fit.lag)=='try-error'){
     fit.lag<-try(minpack.lm::nlsLM(y ~ lag(x,a,b,B1,s=1E-10),
                        start = c(B1=10, a=min(y), b=1),data = data,
                        lower = c(B1=-Inf,a=-Inf,b=0.0001),
-                       control = nls.control(maxiter=1000, warnOnly=TRUE)),silent=T)
+                       control = nls.lm.control(maxiter=1000,maxfev=1000)),silent=T)
   }
   if(class(fit.lag)=='try-error'){
     if(!grepl(attr(fit.lag,"condition"),pattern='singular gradient matrix')){
@@ -195,13 +195,13 @@ get.gr.sat<-function(x,y,plotQ=F,fpath=NA,id=''){
                  start=c(B2=mean(x)+(max(x)-mean(x))/2,a=a.guess,b=round(max(c(slopes,0.0001)),5)),
                  data = data,
                  lower = c(B2=-Inf,a=-Inf,b=0.0001),
-                 control = nls.control(maxiter=1000, warnOnly=TRUE)),silent=T)
+                 control = nls.lm.control(maxiter=1000,maxfev=1000)),silent=T)
   if(class(fit.sat)=='try-error'){
     fit.sat<-try(minpack.lm::nlsLM(y ~ sat(x,a,b,B2,s=1E-10),
                        start=c(B2=10,a=a.guess,b=round(max(c(slopes,0.0001)),5)),
                        data = data,
                        lower = c(B2=-Inf,a=-Inf,b=0.0001),
-                       control = nls.control(maxiter=1000, warnOnly=TRUE)),silent=T)
+                       control = nls.lm.control(maxiter=1000,maxfev=1000)),silent=T)
   }
   if(class(fit.sat)=='try-error'){
     if(!grepl(attr(fit.sat,"condition"),pattern='singular gradient matrix')){
@@ -259,7 +259,7 @@ get.gr.flr<-function(x,y,plotQ=F,fpath=NA,id=''){
                  start=c(a=a.guess,b=min(c(-0.1,round(min(slopes),5))),B2=mean(x)),
                  data = data,
                  upper = c(a=Inf,b=-0.00000001,B2=Inf),
-                 control = nls.control(maxiter=1000, warnOnly=TRUE)),silent=T)
+                 control = nls.lm.control(maxiter=1000,maxfev=1000)),silent=T)
   
   if(class(fit.flr)=='try-error'){
     if(!grepl(attr(fit.flr,"condition"),pattern='singular gradient matrix')){
@@ -318,7 +318,7 @@ get.gr.lagsat<-function(x,y,plotQ=F,fpath=NA,id=''){
                     start = c(B1=mean(x)-(mean(x)-min(x))/2,B2=mean(x)+(max(x)-mean(x))/2, a=min(y)+0.1, b=1),
                     data = data,
                     lower = c(B1=-Inf,B2=-Inf,a=-Inf,b=0.0001),
-                    control = nls.control(maxiter=1000, warnOnly=TRUE)),silent=T)
+                    control = nls.lm.control(maxiter=1000,maxfev=1000)),silent=T)
   if(class(fit.lagsat)=='try-error'){
     if(!grepl(attr(fit.lagsat,"condition"),pattern='singular gradient matrix')){
       print(attr(fit.lagsat,"condition"))
@@ -438,7 +438,7 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
   if(ts.length>=2){
     
     if(length(unique(x))==2){
-      print('Caution: only two unique time points, high risk of over-fitting. Only linear method will be used')
+      print('Caution: only two unique time points, high risk of over-fitting. Only linear method will be used, if requested')
     }
     
     # Fill data structures for each given method, if requested by user:
