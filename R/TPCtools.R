@@ -199,6 +199,7 @@ get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=
   
   # pull out parameters
   cf<-as.list(coef(fit))
+  vcov.mat<-vcov(fit)
 #  cf$a<-exp(cf$a)
   
   # additional responses/traits:
@@ -217,7 +218,6 @@ get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=
   ciF<-ci.FI(fit)
   
   # save output:
-  vcov.mat<-vcov(fit)
   vec<-as.list(c(cf,rsqr=rsqr,tmin=tmin,tmax=tmax))
   vec$umax<-pd.umax
   vec$umax.ci<-1.96*sqrt(dvs0.umax)
