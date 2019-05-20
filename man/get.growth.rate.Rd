@@ -29,7 +29,7 @@ get.growth.rate(x, y, id, plot.best.Q = F, fpath = NA,
 \item{zero.time}{if TRUE, shift time axis so that each time series starts at time = 0}
 }
 \value{
-A data frame containing the identity of the best model, the content of the best model, the estimated slopes of the increasing linear portion of the regressions (ie, exponential growth rate), the standard errors associated with these slopes, the IC table used to determine the best model, and the full list of all models fit.
+A data frame containing the identity of the best model, the content of the best model, the estimated slopes of the increasing linear portion of the regressions (ie, exponential growth rate), the standard errors associated with these slopes, the IC table used to determine the best model, and the full list of all models fit. See vignette for details.
 }
 \description{
 This meta-function takes a time series of abundance, and attempts to extract an 

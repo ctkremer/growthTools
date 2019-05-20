@@ -2,12 +2,12 @@
 % Please edit documentation in R/TPCtools.R
 \name{get.topt}
 \alias{get.topt}
-\title{Get true optimum temperature from nbcurve()}
+\title{Get optimum temperature from nbcurve.legacy()}
 \usage{
-get.topt(topt, w, b)
+get.topt(copt, w, b)
 }
 \arguments{
-\item{topt}{Competitive optimum temperature}
+\item{copt}{Competitive optimum temperature}
 
 \item{w}{Thermal niche width}
 
@@ -17,6 +17,6 @@ get.topt(topt, w, b)
 Optimum temperature
 }
 \description{
-Given the competitive optimum temperature and other Norberg parameters, calculate the
-true optimum temperature.
+Given the competitive optimum temperature and other legacy Norberg parameters, 
+calculate the true optimum temperature.
 }
