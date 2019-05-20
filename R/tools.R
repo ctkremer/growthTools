@@ -436,7 +436,7 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
     print('Caution: only two unique time points, high risk of over-fitting. Methods other than "linear" are likely to fail')
   }
   
-  # if there are more than two unique time points with data:
+  # if there are two or more unique time points with data:
   if(length(unique(x))>=2){
   
     # Fill data structures for each given method, if requested by user:
