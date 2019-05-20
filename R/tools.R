@@ -389,6 +389,7 @@ detect<-function(x){
 #' @param methods Must be a character vector containing one or more of \code{'linear'}, \code{'lag'}, \code{'sat'}, \code{'flr'}, or \code{'lagsat'}
 #' @param id Label corresponding to the population/strain/species of interest; used to determine the title and file name of saved plot, if any.
 #' @param model.selection control parameter to specify which IC metric to use in model selection; default is AICc, which corrects for small sample sizes and converges asymptotically on AIC.
+#' @param min.exp.obs control parameter specifying the minimum number of observations that must fall within the estimated exponential phase in order to consider lag, sat, lagsat, and flr models; defaults to 3.
 #' @param internal.r2.cutoff control parameter specifying the R2 criteria that may be applied to drop fits where the number of observations in the exponential portion is equal to 3. The default value of zero permits all fits of 3 obs to be considered.
 #' @param zero.time if TRUE, shift time axis so that each time series starts at time = 0
 #' 
@@ -399,7 +400,7 @@ detect<-function(x){
 #' 
 #' @export
 #' @import bbmle
-get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag','sat','flr','lagsat'),model.selection=c('AICc'),internal.r2.cutoff=0,verbose=FALSE,zero.time=T){
+get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag','sat','flr','lagsat'),model.selection=c('AICc'),min.exp.obs=3,internal.r2.cutoff=0,verbose=FALSE,zero.time=T){
   
   # thin vectors if abundance measure is NA
   x<-x[!is.na(y)]
@@ -463,10 +464,10 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
         pre.n.gr.lag<-length(x[x<=coef(gr.lag)['B1']])
         pre.r2.gr.lag <- get.R2(pds.lag[x<=coef(gr.lag)['B1']],obs.lag[x<=coef(gr.lag)['B1']])
         
-        # if exponential portion is based on fewer than 3 observations, re-classify this fit as
+        # if exponential portion is based on fewer than min.exp.obs observations, re-classify this fit as
         # resulting in an error. This removes it from consideration as a 'best model', allowing
         # a different model to succeed.
-        if(slope.n.gr.lag<3  | (slope.n.gr.lag==3 & slope.r2.gr.lag<internal.r2.cutoff)){
+        if(slope.n.gr.lag < min.exp.obs  | (slope.n.gr.lag==min.exp.obs & slope.r2.gr.lag<internal.r2.cutoff)){
           class(gr.lag)<-'try-error'          
         }
       }
@@ -488,10 +489,10 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
         post.n.gr.sat <- length(x[x>=coef(gr.sat)['B2']])
         post.r2.gr.sat <- get.R2(pds.sat[x>=coef(gr.sat)['B2']],obs.sat[x>=coef(gr.sat)['B2']])
         
-        # if exponential portion is based on fewer than 3 observations, re-classify this fit as
+        # if exponential portion is based on fewer than min.exp.obs observations, re-classify this fit as
         # resulting in an error. This removes it from consideration as a 'best model', allowing
         # a different model to succeed.
-        if(slope.n.gr.sat<3 | (slope.n.gr.sat==3 & slope.r2.gr.sat<internal.r2.cutoff)){
+        if(slope.n.gr.sat < min.exp.obs | (slope.n.gr.sat==min.exp.obs & slope.r2.gr.sat < internal.r2.cutoff)){
           class(gr.sat)<-'try-error'          
         }
       }
@@ -514,10 +515,10 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
         post.n.gr.flr<-length(x[x>=coef(gr.flr)['B2']])
         post.r2.gr.flr<-get.R2(pds.flr[x>=coef(gr.flr)['B2']],obs.flr[x>=coef(gr.flr)['B2']])
         
-        # if exponential portion is based on fewer than 3 observations, re-classify this fit as
+        # if exponential portion is based on fewer than min.exp.obs observations, re-classify this fit as
         # resulting in an error. This removes it from consideration as a 'best model', allowing
         # a different model to succeed.
-        if(slope.n.gr.flr<3 | (slope.n.gr.flr==3 & slope.r2.gr.flr<internal.r2.cutoff)){
+        if(slope.n.gr.flr < min.exp.obs | (slope.n.gr.flr==min.exp.obs & slope.r2.gr.flr < internal.r2.cutoff)){
           class(gr.flr)<-'try-error'          
         }
       }
@@ -547,10 +548,10 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
         post.r2.gr.lagsat <- get.R2(pds.lagsat[x>=coef(gr.lagsat)['B2']],
                                      obs.lagsat[x>=coef(gr.lagsat)['B2']])
         
-        # if exponential portion is based on fewer than 3 observations, re-classify this fit as
+        # if exponential portion is based on fewer than min.exp.obs observations, re-classify this fit as
         # resulting in an error. This removes it from consideration as a 'best model', allowing
         # a different model to succeed.
-        if(slope.n.gr.lagsat<3  | (slope.n.gr.lagsat==3 & slope.r2.gr.lagsat<internal.r2.cutoff)){
+        if(slope.n.gr.lagsat < min.exp.obs  | (slope.n.gr.lagsat==min.exp.obs & slope.r2.gr.lagsat < internal.r2.cutoff)){
           class(gr.lagsat)<-'try-error'          
         }
 
