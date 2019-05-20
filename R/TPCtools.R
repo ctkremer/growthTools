@@ -208,18 +208,19 @@ get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=
   # calculate R2
   rsqr<-get.R2(predict(fit),tpc.tmp$mu)
 
-  # Calculate confidence intervals using the delta method (see Bolker book, pg 255)
-  #   ... why is this useful? really, we'd like CI's on the x-axis position of these traits
-  #focal.dvs<-suppressWarnings(deltavar(fun=nbcurve2(c(cf$o,tmin,tmax),o,w,a,b),meanval=cf,Sigma=vcov(fit)))
-  #focal.ci<-1.96*sqrt(focal.dvs)
+  # Calculate umax and confidence interval using the delta method (see Bolker book, pg 255)
+  pd.umax<-predict(fit,newdata=data.frame(temp=cf$o))
+  st.umax<-paste("nbcurve2(c(",paste(cf$o,collapse=','),"),o,w,a,b)",sep='')
+  dvs0.umax<-suppressWarnings(deltavar2(fun=parse(text=st.umax),meanval=cf,Sigma=vcov.mat))
   
   # simple Fisher confidence intervals:
   ciF<-ci.FI(fit)
   
   # save output:
-  #vec<-c(cf,rsqr,tmin,tmax,focal.ci)
   vcov.mat<-vcov(fit)
   vec<-as.list(c(cf,rsqr=rsqr,tmin=tmin,tmax=tmax))
+  vec$umax<-pd.umax
+  vec$umax.ci<-1.96*sqrt(dvs0.umax)
   vec$ciF<-ciF
   vec$cf<-cf
   vec$vcov<-vcov.mat
