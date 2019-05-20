@@ -19,11 +19,11 @@
 #' Note that with the original formulation, 'Optimum temperature' is the temperature at
 #' which growth rate coincides with the exponential portion of this equation. Only if b
 #' is exactly 0 will this match the temperature at which a species achieves its highest
-#' growth rate. See Thomas et al. 2012 for more on this, and \code{nbcurve2()} for an
+#' growth rate. See Thomas et al. 2012 for more on this, and \code{nbcurve()} for an
 #' alternative formulation.
 #' 
 #' @param x Temperature
-#' @param opt (Competitive) Optimum temperature
+#' @param copt Competitive optimum temperature
 #' @param w Thermal niche width
 #' @param a ln(Exponential intercept)
 #' @param b Exponential scaling
@@ -31,8 +31,8 @@
 #' @return Predicted exponential growth rate at temperature x
 #' 
 #' @export
-nbcurve<-function(x,opt,w,a,b){
-  res<-exp(a)*exp(b*x)*(1-((x-opt)/(w/2))^2)
+nbcurve.legacy<-function(x,copt,w,a,b){
+  res<-exp(a)*exp(b*x)*(1-((x-copt)/(w/2))^2)
   res
 }
 
@@ -42,7 +42,7 @@ nbcurve<-function(x,opt,w,a,b){
 #' a species achieves its highest growth rate.
 #' 
 #' @param x Temperature
-#' @param opt Optimum temperature
+#' @param topt Optimum temperature
 #' @param w Thermal niche width
 #' @param a ln(Exponential intercept)
 #' @param b Exponential scaling
@@ -50,33 +50,33 @@ nbcurve<-function(x,opt,w,a,b){
 #' @return Predicted exponential growth rate at temperature x
 #' 
 #' @export
-nbcurve2<-function(x,opt,w,a,b){
-  num <- -2-2*b*opt+2*b*x+sqrt(4+(b*w)^2)
+nbcurve<-function(x,topt,w,a,b){
+  num <- -2-2*b*topt+2*b*x+sqrt(4+(b*w)^2)
   res<-exp(a)*exp(b*x)*(1-(num/(b*w))^2)
   res
 }
 
-#' Get true optimum temperature from nbcurve()
+#' Get optimum temperature from nbcurve.legacy()
 #' 
-#' Given the competitive optimum temperature and other Norberg parameters, calculate the
-#' true optimum temperature.
+#' Given the competitive optimum temperature and other legacy Norberg parameters, 
+#' calculate the true optimum temperature.
 #' 
-#' @param topt Competitive optimum temperature
+#' @param copt Competitive optimum temperature
 #' @param w Thermal niche width
 #' @param b Exponential scaling
 #' 
 #' @return Optimum temperature
 #' 
 #' @export
-get.topt<-function(topt,w,b){
-  (1/(2*b))*(-2+2*b*topt+sqrt(4+b^2*w^2))
+get.topt<-function(copt,w,b){
+  (1/(2*b))*(-2+2*b*copt+sqrt(4+b^2*w^2))
 }
 
 #' Calculate thermal niche limits
 #' 
-#' Note: check whether this operates on nbcurve() or nbcurve2() parameters!!!
+#' Note: this operates on nbcurve parameters (ie, uses topt not copt)
 #' 
-#' @param topt Competitive optimum temperature
+#' @param topt Optimum temperature
 #' @param w Thermal niche width
 #' @param b Exponential scaling
 #' @param type One of either 'tmin' or 'tmax'; default is 'tmin'
@@ -139,6 +139,8 @@ decurve2<-function(temp,topt,phi,b2,d0,d2){
 
 #' Fit Norberg curve to growth rate vs. temperature data
 #' 
+#' Note: this function fits a re-parameterized version of the original Norberg curve (Norberg et al. 2001, Thomas et al. 2012), altered to depend directly on a parameter that provides the true optimum temperature (ie, the temperature at which growth rate is maximal). See \code{nbcurve()} for more.
+#' 
 #' @param temp Temperature
 #' @param mu Exponential growth rate
 #' @param fit.method Specify which fitting algorithm to use, 'mle2' or 'grid.mle2'
@@ -166,35 +168,33 @@ get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=
   if(method=='grid.mle2'){
     
     # set up search of a grid of parameter guesses
-    #grids<-list(o=seq(15,25,5),w=seq(15,40,5))
-    #start<-list(o=NA,w=NA,a=-1.11,b=0.05,s=log(2))
-    grids<-list(o=seq(15,35,5),w=seq(10,40,5),a=seq(-0.5,-3,-0.5),b=c(-0.05,0,0.05))
-    start<-list(o=NA,w=NA,a=NA,b=NA,s=log(2))
+    grids<-list(topt=seq(15,35,5),w=seq(10,40,5),a=seq(-0.5,-3,-0.5),b=c(-0.05,0,0.05))
+    start<-list(topt=NA,w=NA,a=NA,b=NA,s=log(2))
     
     if(suppress.grid.mle2.warnings){
-      fit0<-suppressWarnings(grid.mle2(minuslogl=mu~dnorm(mean=nbcurve2(temp,o,w,a,b),
+      fit0<-suppressWarnings(grid.mle2(minuslogl=mu~dnorm(mean=nbcurve(temp,topt,w,a,b),
                                                           sd=exp(s)),
                                        grids=grids,start=start,data=tpc.tmp,...))
     }else{
-      fit0<-grid.mle2(minuslogl=mu~dnorm(mean=nbcurve2(temp,o,w,a,b),sd=exp(s)),
+      fit0<-grid.mle2(minuslogl=mu~dnorm(mean=nbcurve(temp,topt,w,a,b),sd=exp(s)),
                                        grids=grids,start=start,data=tpc.tmp,...)
     }
     cfg<-coef(fit0$res.best) # this seemed to be throwing problems b/c of an issue with accessing mle2...?
 
     # polish best fit model, using formula interface:
     guesses<-as.list(cfg)
-    fit<-mle2(mu~dnorm(mean=nbcurve2(temp,o,w,a,b),sd=exp(s)),
+    fit<-mle2(mu~dnorm(mean=nbcurve(temp,topt,w,a,b),sd=exp(s)),
               start=guesses,data=tpc.tmp)
   }
   
   if(method=='mle2'){
     print("Caution: this option not fully beta tested... 7/30/18")
-    o.guess <- tpc.tmp$temp[tpc.tmp$mu==max(tpc.tmp$mu)]
+    topt.guess <- tpc.tmp$temp[tpc.tmp$mu==max(tpc.tmp$mu)]
     w.guess <- diff(range(tmp$temp))
     a.guess <- -1.11
     b.guess <- 0.05
-    fit<-mle2(mu~dnorm(mean=nbcurve2(temp,o,w,a,b),sd=exp(s)),
-              start=list(o=o.guess,w=w.guess,a=a.guess,b=b.guess,s=log(2)),data=tpc.tmp)
+    fit<-mle2(mu~dnorm(mean=nbcurve(temp,topt,w,a,b),sd=exp(s)),
+              start=list(topt=topt.guess,w=w.guess,a=a.guess,b=b.guess,s=log(2)),data=tpc.tmp)
   }
   
   # pull out parameters
@@ -202,15 +202,15 @@ get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=
 #  cf$a<-exp(cf$a)
   
   # additional responses/traits:
-  tmin<-get.tlim(cf$o,cf$w,cf$b,type='tmin')
-  tmax<-get.tlim(cf$o,cf$w,cf$b,type='tmax')
+  tmin<-get.tlim(cf$topt,cf$w,cf$b,type='tmin')
+  tmax<-get.tlim(cf$topt,cf$w,cf$b,type='tmax')
   
   # calculate R2
   rsqr<-get.R2(predict(fit),tpc.tmp$mu)
 
   # Calculate umax and confidence interval using the delta method (see Bolker book, pg 255)
-  pd.umax<-predict(fit,newdata=data.frame(temp=cf$o))
-  st.umax<-paste("nbcurve2(c(",paste(cf$o,collapse=','),"),o,w,a,b)",sep='')
+  pd.umax<-predict(fit,newdata=data.frame(temp=cf$topt))
+  st.umax<-paste("nbcurve(c(",paste(cf$o,collapse=','),"),topt,w,a,b)",sep='')
   dvs0.umax<-suppressWarnings(deltavar2(fun=parse(text=st.umax),meanval=cf,Sigma=vcov.mat))
   
   # simple Fisher confidence intervals:
@@ -250,12 +250,12 @@ get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=
     
     if(conf.bandQ){
       ### Confidence bands via the delta method (see Bolker book, pg. 255)  
-      st<-paste("nbcurve2(c(",paste(xs,collapse=','),"),o,w,a,b)",sep='')
+      st<-paste("nbcurve(c(",paste(xs,collapse=','),"),topt,w,a,b)",sep='')
       dvs0<-suppressWarnings(deltavar2(fun=parse(text=st),meanval=cf,Sigma=vcov.mat))
       
       # Better approach? Pass correct local environment to deltavar... BUSTED
-      #dvs0<-deltavar3(fun=nbcurve2(xs,o,w,a,b),meanval=cf,Sigma = vcov(fit),cenv=current.env)
-      #dvs0<-suppressWarnings(deltavar(fun=nbcurve2(xs,o,w,a,b),meanval=cf,Sigma=vcov(fit)))
+      #dvs0<-deltavar3(fun=nbcurve(xs,topt,w,a,b),meanval=cf,Sigma = vcov(fit),cenv=current.env)
+      #dvs0<-suppressWarnings(deltavar(fun=nbcurve(xs,topt,w,a,b),meanval=cf,Sigma=vcov(fit)))
       
       new.data$ml.ci<-1.96*sqrt(dvs0)
       p1<-p1+geom_ribbon(data=new.data,aes(ymin=mu-ml.ci,ymax=mu+ml.ci),alpha=0.2)
@@ -308,7 +308,7 @@ get.decurve.tpc<-function(temp,mu,method='grid.mle2',start.method='general.grid'
   id<-id[1]
   
   if(length(unique(tpc.tmp$temp))<=5){
-    print("Caution in get.nbcurve.tpc - focal data set has <=5 unique temperatures, risk of overfitting is high!")
+    print("Caution in get.decurve.tpc - focal data set has <=5 unique temperatures, risk of overfitting is high!")
   }
   
   if(method=='grid.mle2'){
