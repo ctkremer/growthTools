@@ -210,7 +210,7 @@ get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=
 
   # Calculate umax and confidence interval using the delta method (see Bolker book, pg 255)
   pd.umax<-predict(fit,newdata=data.frame(temp=cf$topt))
-  st.umax<-paste("nbcurve(c(",paste(cf$o,collapse=','),"),topt,w,a,b)",sep='')
+  st.umax<-paste("nbcurve(c(",paste(cf$topt,collapse=','),"),topt,w,a,b)",sep='')
   dvs0.umax<-suppressWarnings(deltavar2(fun=parse(text=st.umax),meanval=cf,Sigma=vcov.mat))
   
   # simple Fisher confidence intervals:
