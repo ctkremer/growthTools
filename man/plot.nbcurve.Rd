@@ -10,9 +10,9 @@ plot.nbcurve(fit.info, plot.ci = TRUE, plot.obs = TRUE, xlim = c(-2,
 \arguments{
 \item{fit.info}{The result of a single TPC curve fit from get.nbcurve.tpc}
 
-\item{plot.ci}{logical; should the resulting plot include 95% confidence bands?}
+\item{plot.ci}{logical, should the resulting plot include 95% confidence bands}
 
-\item{plot.obs}{logical; should resulting plot include raw data?}
+\item{plot.obs}{logical, should resulting plot include raw data}
 
 \item{xlim}{x-axis range (temperature)}
 
