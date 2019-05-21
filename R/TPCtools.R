@@ -44,7 +44,7 @@ nbcurve.legacy<-function(x,copt,w,a,b){
 #' @param x Temperature
 #' @param topt Optimum temperature
 #' @param w Thermal niche width
-#' @param a ln(Exponential intercept)
+#' @param a Affects the y-intercept
 #' @param b Exponential scaling
 #' 
 #' @return Predicted exponential growth rate at temperature x
@@ -52,7 +52,7 @@ nbcurve.legacy<-function(x,copt,w,a,b){
 #' @export
 nbcurve<-function(x,topt,w,a,b){
   num <- -2-2*b*topt+2*b*x+sqrt(4+(b*w)^2)
-  res<-exp(a)*exp(b*x)*(1-(num/(b*w))^2)
+  res<-exp(a+b*x)*(1-(num/(b*w))^2)
   res
 }
 
@@ -156,9 +156,9 @@ decurve2<-function(temp,topt,phi,b2,d0,d2){
 #' @import mleTools
 #' @import emdbook
 #' @import ggplot2
-get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=NA,id=NA,suppress.grid.mle2.warnings=TRUE,...){
-  tpc.tmp<-na.omit(data.frame(mu,temp))
-  ntemps<-length(unique(tpc.tmp$temp))
+get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=NA,id=NA,suppress.grid.mle2.warnings=TRUE,...){
+  tpc.tmp<-na.omit(data.frame(temperature,mu))
+  ntemps<-length(unique(tpc.tmp$temperature))
   
   if(ntemps<=4){
     print("Caution in get.nbcurve.tpc - focal data set has <=4 unique temperatures, risk of overfitting is high!")
@@ -172,35 +172,34 @@ get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=
     start<-list(topt=NA,w=NA,a=NA,b=NA,s=log(2))
     
     if(suppress.grid.mle2.warnings){
-      fit0<-suppressWarnings(grid.mle2(minuslogl=mu~dnorm(mean=nbcurve(temp,topt,w,a,b),
+      fit0<-suppressWarnings(grid.mle2(minuslogl=mu~dnorm(mean=nbcurve(temperature,topt,w,a,b),
                                                           sd=exp(s)),
                                        grids=grids,start=start,data=tpc.tmp,...))
     }else{
-      fit0<-grid.mle2(minuslogl=mu~dnorm(mean=nbcurve(temp,topt,w,a,b),sd=exp(s)),
+      fit0<-grid.mle2(minuslogl=mu~dnorm(mean=nbcurve(temperature,topt,w,a,b),sd=exp(s)),
                                        grids=grids,start=start,data=tpc.tmp,...)
     }
     cfg<-coef(fit0$res.best) # this seemed to be throwing problems b/c of an issue with accessing mle2...?
 
     # polish best fit model, using formula interface:
     guesses<-as.list(cfg)
-    fit<-mle2(mu~dnorm(mean=nbcurve(temp,topt,w,a,b),sd=exp(s)),
+    fit<-mle2(mu~dnorm(mean=nbcurve(temperature,topt,w,a,b),sd=exp(s)),
               start=guesses,data=tpc.tmp)
   }
   
   if(method=='mle2'){
     print("Caution: this option not fully beta tested... 7/30/18")
-    topt.guess <- tpc.tmp$temp[tpc.tmp$mu==max(tpc.tmp$mu)]
-    w.guess <- diff(range(tmp$temp))
+    topt.guess <- tpc.tmp$temperature[tpc.tmp$mu==max(tpc.tmp$mu)]
+    w.guess <- diff(range(tmp$temperature))
     a.guess <- -1.11
     b.guess <- 0.05
-    fit<-mle2(mu~dnorm(mean=nbcurve(temp,topt,w,a,b),sd=exp(s)),
+    fit<-mle2(mu~dnorm(mean=nbcurve(temperature,topt,w,a,b),sd=exp(s)),
               start=list(topt=topt.guess,w=w.guess,a=a.guess,b=b.guess,s=log(2)),data=tpc.tmp)
   }
   
   # pull out parameters
   cf<-as.list(coef(fit))
   vcov.mat<-vcov(fit)
-#  cf$a<-exp(cf$a)
   
   # additional responses/traits:
   tmin<-get.tlim(cf$topt,cf$w,cf$b,type='tmin')
@@ -210,7 +209,7 @@ get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=
   rsqr<-get.R2(predict(fit),tpc.tmp$mu)
 
   # Calculate umax and confidence interval using the delta method (see Bolker book, pg 255)
-  pd.umax<-predict(fit,newdata=data.frame(temp=cf$topt))
+  pd.umax<-predict(fit,newdata=data.frame(temperature=cf$topt))
   st.umax<-paste("nbcurve(c(",paste(cf$topt,collapse=','),"),topt,w,a,b)",sep='')
   dvs0.umax<-suppressWarnings(deltavar2(fun=parse(text=st.umax),meanval=cf,Sigma=vcov.mat))
   
@@ -228,15 +227,16 @@ get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=
   vec$ntemps<-ntemps
   vec$logLik<-logLik(fit)
   vec$aic<-AIC(fit)
+  vec$data<-tpc.tmp
   
   # Plot results:
   if(plotQ){
-    xs<-seq(min(tpc.tmp$temp),max(tpc.tmp$temp),0.1)
-    new.data<-data.frame(temp=xs)
+    xs<-seq(min(tpc.tmp$temperature),max(tpc.tmp$temperature),0.1)
+    new.data<-data.frame(temperature=xs)
     new.data$mu<-predict(fit,newdata=new.data)
     
     # plot it out
-    p1<-ggplot(tpc.tmp,aes(x=temp,y=mu))+
+    p1<-ggplot(tpc.tmp,aes(x=temperature,y=mu))+
       geom_point()+
       geom_line(data=new.data)+
       geom_hline(yintercept = 0)+
@@ -280,7 +280,6 @@ get.nbcurve.tpc<-function(temp,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=
   # Finished, return relevant stats.  
   return(vec)
 }
-
 
 
 
@@ -423,6 +422,7 @@ get.decurve.tpc<-function(temp,mu,method='grid.mle2',start.method='general.grid'
   vec$n<-nrow(tpc.tmp)
   vec$logLik<-logLik(fit)
   vec$aic<-AIC(fit)
+  vec$data<-tpc.tmp
   
   # Plot results:
   if(plotQ){
@@ -564,4 +564,32 @@ deltavar2<-function (fun, meanval = NULL, vars, Sigma, verbose = FALSE)
 #' @export
 fd2.central<-function(fx,h){
   (fx[3]-2*fx[2]+fx[1])/(h^2)
+}
+
+
+#' Predict values from nbcurve fit
+#' 
+#' @param fit.info The result of a single TPC curve fit from get.nbcurve.tpc
+#' @param newdata A new data frame, containing a sequence of `temperature` values at which model predictions should be made; defaults to (-2,40)
+#' @param se.fit logical; should standard error values be returned?
+#' 
+#' @export
+predict.nbcurve<-function(fit.info,newdata=data.frame(temperature=seq(-2,40,0.1)),se.fit=FALSE){
+  
+  # Check level of nesting for fit.info, and reduce if necessary
+  if(length(fit.info)==1){
+    fit.info<-fit.info[[1]]
+  }
+  
+  # generate predictions across a range of temperatures
+  mu<-nbcurve(newdata$temperature, topt = fit.info$topt, w = fit.info$w, a = fit.info$a, b = fit.info$b)
+  newdata$mu<-mu
+  
+  if(se.fit){
+    st<-paste("nbcurve(c(",paste(ts,collapse=','),"),topt,w,a,b)",sep='')
+    dvs0<-suppressWarnings(deltavar2(fun=parse(text=st),meanval=fit.info$cf,Sigma=fit.info$vcov))
+    newdata$se.fit<-sqrt(dvs0)  
+  }
+  
+  return(newdata)
 }
