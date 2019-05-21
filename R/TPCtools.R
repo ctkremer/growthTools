@@ -415,37 +415,24 @@ get.decurve.tpc<-function(temperature,mu,method='grid.mle2',start.method='genera
   vec$cf<-cf
   vec$vcov<-vcov.mat
   vec$n<-nrow(tpc.tmp)
-#  vec$ntemps<-ntemps
+  vec$ntemps<-ntemps
   vec$logLik<-logLik(fit)
   vec$aic<-AIC(fit)
   vec$data<-tpc.tmp
   
   # Plot results:
   if(plotQ){
-    xs<-seq(min(tpc.tmp$temperature),max(tpc.tmp$temperature),0.1)
-    new.data<-data.frame(temperature=xs)
-    new.data$mu<-predict(fit,newdata=new.data)
     
-    # plot it out
-    p1<-ggplot(tpc.tmp,aes(x=temperature,y=mu))+
-      geom_point()+
-      geom_line(data=new.data)+
-      geom_hline(yintercept = 0)+
-      theme_bw()+
-      scale_x_continuous('Temperature (C)')+
-      scale_y_continuous('Growth rate (1/day)')
+    # use function to generate a single curve plot:
+    p1<-plot.decurve(vec,xlim = c(min(tpc.tmp$temperature),
+                                  max(tpc.tmp$temperature)),
+                     plot.ci = conf.bandQ,plot.obs = T)
+    p1<-p1+scale_x_continuous('Temperature (C)')+
+      scale_y_continuous('Growth rate (1/day)')+
+      theme(panel.grid = element_blank())
     
     if(!is.na(id)){
       p1<-p1+ggtitle(id)
-    }
-    
-    if(conf.bandQ){
-      ### Confidence bands via the delta method (see Bolker book, pg. 255)  
-      st<-paste("decurve(c(",paste(xs,collapse=','),"),topt,b1,b2,d0,d2)",sep='')
-      dvs0<-suppressWarnings(deltavar2(fun=parse(text=st),meanval=cf,Sigma=vcov.mat))
-      
-      new.data$ml.ci<-1.96*sqrt(dvs0)
-      p1<-p1+geom_ribbon(data=new.data,aes(ymin=mu-ml.ci,ymax=mu+ml.ci),alpha=0.2)
     }
     
     if(!is.na(fpath)){
