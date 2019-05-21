@@ -67,11 +67,14 @@ ggplot(sdat,aes(x=dtime,y=ln.fluor))+
 ```
 
 
-First, let's focus on applying this technique to a single time series, to get a feel for the methodology. In the process, a series of 5 different possible models are fit to the supplied time series data: (1) a linear model, (2) a lagged growth model, (3) a saturating growth model, (4) a model of exponential decline that hits a floor, characteristic of a detection threshold, and (5) a model where growth is both lagged and achieves saturation.
+First, let's focus on applying this technique to a single time series, to get a feel for the methodology. In the process, a series of 5 different possible models are fit to the supplied time series data: (1) a linear model, (2) a lagged growth model, (3) a saturating growth model, (4) a model of exponential decline that hits a floor, characteristic of a detection threshold, and (5) a model where growth experiences both an initial lag and achieves saturation.
 
-Any model fit where the inferred phase of exponential growth (increasing or decreasing linear portion) contains fewer than three observations is automatically excluded from consideration. The remaining models are then competed against each other based on information criteria (IC), and the estimate of exponential growth corresponding to the best model is returned. Users can select one of a few different IC options, including AIC, AICc, BIC; more on this later.
+Note that by default:
+* before fitting occurs, the x-axis (time) is shifted to start at time=0, if necessary. This can improve the stability of the regression fitting. To avoid this, you can specify `zero.time=FALSE` when calling `get.growth.rate()`)
+* any regression where the inferred phase of exponential growth (increasing or decreasing linear portion) contains fewer than three observations is automatically excluded from consideration, and will not appear in the output. This can be adjusted using the `min.exp.obs` option, but values less than 3 are not recommended.
+* the remaining models are then competed against each other based on Akaike Information Criteria adjusted for small sample sizes (AICc). Users may instead select AIC or BIC.
 
-(Note: by default, before fitting occurs, the x-axis (time) is shifted to start at time=0, if necessary. This can improve the stability of the regression fitting. To avoid this, you can specify `zero.time=FALSE` when calling get.growth.rate())
+The best model identified during model comparison is used to provide the reported estimate of exponential growth. 
 
 Here is an example from a single time series:
 
@@ -209,12 +212,12 @@ gdat
 
 ## Model selection
 
-We can also indicate which of three information criteria to use when selecting the 'best model' - AIC, AICc, or BIC. The default if no option is specified is to use AICc, which adjusts for the effects of small sample sizes, but converges on AIC in the limit of large sample sizes. Here's an example invoking BIC instead:
+We can also indicate which of three information criteria to use when selecting the 'best model' - AIC, AICc, or BIC. The default if no option is specified is to use AICc, which adjusts for the effects of small sample sizes, but converges on AIC in the limit of large sample sizes. Generally, the basic linear model is favored more often using AICc than AIC, such that small lag or saturated phases may be ignored. Here's an example invoking AIC instead of AICc:
 
 ```{r,error=FALSE}
 gdat <- sdat %>% group_by(trt) %>% 
         do(grs=get.growth.rate(x=.$dtime,y=.$ln.fluor,id=.$trt,plot.best.Q=F,
-                               model.selection=c('BIC'))) %>% 
+                               model.selection=c('AIC'))) %>% 
         summarise(trt,mu=grs$best.slope,best.model=grs$best.model)
 gdat
 ```
@@ -244,7 +247,7 @@ sp1 <- example_TPC_data %>% filter(isolate.id=='CH30_4_RI_03' & dilution==1)
 # obtain Norberg curve parameters, using a grid search algorithm to consider a range of possible initial parameter values, and plot the results
 nbcurve.traits<-get.nbcurve.tpc(sp1$temperature,sp1$mu,method='grid.mle2',
                                 plotQ=T,conf.bandQ = T,fpath=NA)
-data.frame(nbcurve.traits)
+nbcurve.traits
 ```
 
 But can also be automatically applied to multiple dilution periods or otherwise independent thermal performance curves (e.g., from different species or populations):
@@ -286,22 +289,33 @@ After executing any of these, you can use `summarise` to recover parameter estim
 
 ```{r}
 # process results
-nb.res2<-nb.res %>% summarise(isolate.id,dilution,topt=tpcs$o,tmin=tpcs$tmin,
-                              tmax=tpcs$tmax,rsqr=tpcs$rsqr,
-                              a=exp(tpcs$a),b=tpcs$b,w=tpcs$w)
+nb.res2<-nb.res %>% summarise(isolate.id,dilution,topt=tpcs$topt,tmin=tpcs$tmin,
+                              tmax=tpcs$tmax,umax=tpcs$umax,rsqr=tpcs$rsqr,
+                              a=tpcs$a,b=tpcs$b,w=tpcs$w)
 nb.res2
 ```
 
-A variety of other diagnostics are available, including log likelihood of the model fit, AIC, the total number of observations the regression is based on, how many unique temperature treatments are involved, and approximate confidence intervals for the coefficients of the model (based on Fisher information). These can be accessed by including additional terms in the summarise command, for example:
+A variety of other diagnostics are available, including the log likelihood of the model fit, AIC, the total number of observations the regression is based on, how many unique temperature treatments are involved, and approximate confidence intervals for the coefficients of the model (based on Fisher information). These can be accessed by including additional terms in the summarise command, for example:
 
 ```{r}
-nb.res %>% summarise(isolate.id,dilution,topt=tpcs$o,topt.lwr=tpcs$ciF[1,1],
-                     topt.upr=tpcs$ciF[1,2],ntemps=tpcs$ntemps)
+nb.res %>% summarise(isolate.id,dilution,ntemps=tpcs$ntemps,
+                     topt=tpcs$topt,topt.lwr=tpcs$ciF[1,1],topt.upr=tpcs$ciF[1,2])
 ```
+
+Note that the output also provides an estimate of umax, the maximum growth rate (achieved at a temperature of Topt). Using the same method employed to generate confidence bands, we can also obtain an estimated 95% confidence interval around umax:
+
+```{r}
+nb.res %>% summarise(isolate.id,dilution,ntemps=tpcs$ntemps,
+                     topt=tpcs$topt,topt.lwr=tpcs$ciF[1,1],topt.upr=tpcs$ciF[1,2],
+                     umax=tpcs$umax,umax.lwr=tpcs$umax-tpcs$umax.ci,umax.upr=tpcs$umax+tpcs$umax.ci)
+```
+
 
 ## Double exponential model:
 
-The package also allows fitting an alternative parametric equation, known currently as the double exponential model, to thermal performance curves. Details on this model can be found in Thomas et al. 2017 Global Change Biology. In brief, it models net population growth rate as the difference between two processes that depend exponentially on temperature: birth and death.
+NOTE: many new features introduced into `get.nbcurve.tpc()` have not yet been added to `get.decurve.tpc`, but will be soon (5/21/19).
+
+The package also allows fitting an alternative parametric equation, known currently as the double exponential model, to thermal performance curves. Details on this model can be found in Thomas et al. 2017, Global Change Biology. In brief, it models net population growth rate as the difference between two processes that depend exponentially on temperature: birth and death.
 
 Right now, model fitting using this approach is pretty slow; this model is a 5 parameter model (Norberg uses 4 parameters), and several of the parameter estimates tend to covary strongly, so convergence takes many iterations of the optimization algorithm. There are ways to speed things up (by providing a smaller grid of initial parameter guesses to grid.mle2 behind the scenes), but this comes at an elevated risk of finding a local rather than globally optimal set of parameter estimates.
 
@@ -346,11 +360,122 @@ res2 <- example_TPC_data %>% group_by(isolate.id,dilution) %>%
         do(tpcs=get.nbcurve.tpc(.$temperature,.$mu,method='grid.mle2',
                                 plotQ=F,conf.bandQ=F,fpath=NA,id=.$id))
 
-clean.res <- res2 %>% summarise(isolate.id,dilution,topt=tpcs$o,
+clean.res <- res2 %>% summarise(isolate.id,dilution,topt=tpcs$topt,
                                 tmin=tpcs$tmin,tmax=tpcs$tmax,rsqr=tpcs$rsqr,
                                 a=exp(tpcs$a),b=tpcs$b,w=tpcs$w)
 data.frame(clean.res)
 ```
 
 
+
+# Visualize Thermal Performance Curves
+
+There are two functions within the package to aid in plotting thermal performance curves (TPCs), that allow us to predict and plot values from a given TPC fit.
+
+## Predict values from a TPC
+
+The first of these is `predict.nbcurve()`, which works quite similarly as other `predict()` functions in R. Basically, we can provide the function with the output from a single `get.nbcurve.tpc` fit and it will return a set of temperatures and predicted growth rates. For example:
+
+```{r}
+# pull out the fit resulting from a single get.nbcurve.tpc:
+fit.info<-nb.res[1,]$tpcs
+
+# generate predictions for a single curve:
+tmp<-predict.nbcurve(fit.info)
+head(tmp)
+```
+
+By default, the output is for a sequence of temperatures from -2 to 40 C, in steps of 0.1. However, users can specify a custom set of values:
+
+```{r}
+predict.nbcurve(fit.info,newdata=data.frame(temperature=c(20,25,30)))
+```
+
+The function can also generate standard errors around the predicted growth rate values, using the delta method (see Bolker book, pg. 255).
+
+```{r}
+predict.nbcurve(fit.info,newdata=data.frame(temperature=c(20,25,30)),se.fit=TRUE)
+```
+
+
+## Plot values from a TPC
+
+These predicted values can be used as the foundation for plotting fitted Norberg curves:
+
+```{r}
+# generate predictions for a single curve, along with standard errors:
+tmp<-predict.nbcurve(fit.info,se.fit=T)
+
+# plot the predictions
+ggplot(tmp,aes(x=temperature,y=mu))+
+  geom_ribbon(aes(ymin=mu-1.96*se.fit,ymax=mu+1.96*se.fit),fill='gray')+
+  geom_line()+
+  coord_cartesian(ylim=c(-0.2,1))+
+  theme_bw()
+```
+
+For ease, this capacity has been formalized using the `plot.nbcurve()` function, which invokes `predict.nbcurve()` internally:
+
+```{r}
+# use function to generate a single curve plot:
+plot.nbcurve(fit.info)
+```
+
+We can also control whether the confidence band and raw data are displayed, or alter the range of the plot:
+
+```{r}
+# use function to generate a single curve plot:
+plot.nbcurve(fit.info,plot.ci = F,plot.obs = F,xlim=c(-2,32),ylim=c(-0.5,1))
+```
+
+Finally, users can also save the ggplot2 object created by the `plot.nbcurve()` and then subsequently modify the layout of the plot, for example:
+
+```{r}
+c1<-plot.nbcurve(fit.info)
+
+# demonstrate changes in layout
+c1+scale_x_continuous('Temperature (C)')+
+  scale_y_continuous('Growth rate (1/day)')+
+  theme(panel.grid = element_blank())
+```
+
+
+## Plot multiple TPCs at once:
+
+The `plot.nbcurve()` function is suited to displaying the results of a single Norberg TPC, but cannot easily be used to combine multiple TPCs within a single plot. To accomplish this, it's better to take advantage of the `predict.nbcurve()` function, combined with the same `dplyr` capabilities that allow us to fit multiple TPCs in the first place.
+
+Recall that when we used `get.nbcurve.tpc` to fit multiple curves, we defined a set of grouping variables that uniquely identified the growth rate data for each individual TPC. The resulting output is a complex data frame that retains columns for each of these grouping variables, as well as a new column (which we called `tpcs`), which holds the individual Norberg curve fits.
+
+We can take this output and process it using `predict.nbcurve()` as follows:
+
+```{r,warning=F}
+# generate predictions for multiple curves:
+tmp2 <- nb.res %>% group_by(isolate.id,dilution) %>% do(predict.nbcurve(.$tpcs,se.fit=T))
+head(tmp2)
+```
+
+Subsequently, we can take this resulting data frame and plot it with ggplot2, using the grouping variables to visually distinguish different curves:
+
+```{r}
+# plot multiple curves simultaneously
+multi.curve<-ggplot(tmp2,aes(x=temperature,y=mu))+
+  geom_hline(yintercept = 0)+
+  geom_line(aes(colour=factor(dilution)))+
+  coord_cartesian(ylim=c(-0.2,0.75),xlim=c(-2,35))+
+  scale_x_continuous('Temperature (C)')+
+  scale_y_continuous('Growth rate (1/day)')+
+  scale_colour_discrete('Dilution')+
+  theme_bw()
+multi.curve
+```
+
+Finally, it is possible to ammend these multi-curve plots with the underlying observations used as the foundation of the regressions. This takes advantage of the fact that the original observations are reported in the `data` field of output from `get.nbcurve.tpc()`.
+
+```{r,warning=F}
+# recapitulate corresponding data frame of observations:
+tmp2.obs <- nb.res %>% group_by(isolate.id,dilution) %>% do(.$tpcs[[1]]$data)
+head(tmp2.obs)
+
+multi.curve+geom_point(data=tmp2.obs,aes(colour=factor(dilution)),alpha=0.4)
+```
 
