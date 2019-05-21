@@ -4,13 +4,11 @@
 \alias{get.nbcurve.tpc}
 \title{Fit Norberg curve to growth rate vs. temperature data}
 \usage{
-get.nbcurve.tpc(temp, mu, method = "grid.mle2", plotQ = F,
+get.nbcurve.tpc(temperature, mu, method = "grid.mle2", plotQ = F,
   conf.bandQ = T, fpath = NA, id = NA,
   suppress.grid.mle2.warnings = TRUE, ...)
 }
 \arguments{
-\item{temp}{Temperature}
-
 \item{mu}{Exponential growth rate}
 
 \item{plotQ}{Should regression be visualized?}
@@ -24,6 +22,8 @@ get.nbcurve.tpc(temp, mu, method = "grid.mle2", plotQ = F,
 \item{suppress.grid.mle2.warnings}{logical; should warnings arising from grid.mle2 invocation be suppressed (TRUE), or displayed (FALSE)? Default is TRUE.}
 
 \item{...}{Additional arguments passed to grid.mle2 (e.g., control=list(maxit=2000))}
+
+\item{temp}{Temperature}
 
 \item{fit.method}{Specify which fitting algorithm to use, 'mle2' or 'grid.mle2'}
 }

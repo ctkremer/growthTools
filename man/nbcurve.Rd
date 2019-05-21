@@ -13,7 +13,7 @@ nbcurve(x, topt, w, a, b)
 
 \item{w}{Thermal niche width}
 
-\item{a}{ln(Exponential intercept)}
+\item{a}{Affects the y-intercept}
 
 \item{b}{Exponential scaling}
 }

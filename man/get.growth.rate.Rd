@@ -6,8 +6,8 @@
 \usage{
 get.growth.rate(x, y, id, plot.best.Q = F, fpath = NA,
   methods = c("linear", "lag", "sat", "flr", "lagsat"),
-  model.selection = c("AICc"), internal.r2.cutoff = 0,
-  verbose = FALSE, zero.time = T)
+  model.selection = c("AICc"), min.exp.obs = 3,
+  internal.r2.cutoff = 0, verbose = FALSE, zero.time = T)
 }
 \arguments{
 \item{x}{Time steps}
@@ -23,6 +23,8 @@ get.growth.rate(x, y, id, plot.best.Q = F, fpath = NA,
 \item{methods}{Must be a character vector containing one or more of \code{'linear'}, \code{'lag'}, \code{'sat'}, \code{'flr'}, or \code{'lagsat'}}
 
 \item{model.selection}{control parameter to specify which IC metric to use in model selection; default is AICc, which corrects for small sample sizes and converges asymptotically on AIC.}
+
+\item{min.exp.obs}{control parameter specifying the minimum number of observations that must fall within the estimated exponential phase in order to consider lag, sat, lagsat, and flr models; defaults to 3.}
 
 \item{internal.r2.cutoff}{control parameter specifying the R2 criteria that may be applied to drop fits where the number of observations in the exponential portion is equal to 3. The default value of zero permits all fits of 3 obs to be considered.}
 
