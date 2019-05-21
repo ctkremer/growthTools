@@ -593,3 +593,51 @@ predict.nbcurve<-function(fit.info,newdata=data.frame(temperature=seq(-2,40,0.1)
   
   return(newdata)
 }
+
+
+
+#' Plotting function for single Norberg curve
+#' 
+#' @param fit.info The result of a single TPC curve fit from get.nbcurve.tpc
+#' @param plot.ci logical; should the resulting plot include 95% confidence bands?
+#' @param plot.obs logical; should resulting plot include raw data?
+#' @param xlim x-axis range (temperature)
+#' @param ylim y-axis range (adjusts internally to -0.2 to slightly above umax+CI)
+#' 
+#' @export
+plot.nbcurve.tpc<-function(fit.info,plot.ci=TRUE,plot.obs=TRUE,xlim=c(-2,40),ylim=c(-0.2,5)){
+  
+  # Check level of nesting for fit.info, and reduce if necessary
+  if(length(fit.info)==1){
+    fit.info<-fit.info[[1]]
+  }
+  
+  # adjust plotting window to specific curve?
+  ylim<-c(ylim[1],1.1*(fit.info$umax+fit.info$umax.ci))
+  
+  # generate predictions along a range of temperatures
+  if(plot.ci){
+    preds<-predict.nbcurve(fit.info,se.fit = TRUE)    
+  }else{
+    preds<-predict.nbcurve(fit.info)    
+  }
+  
+  # generate basic plot
+  cplot<-ggplot(preds,aes(x=temperature,y=mu))+
+    geom_hline(yintercept = 0)+
+    geom_line()+
+    coord_cartesian(xlim=xlim,ylim=ylim)+
+    theme_bw()
+  
+  # add confidence bands?
+  if(plot.ci){
+    cplot<-cplot+geom_ribbon(aes(ymin=mu-1.96*se.fit,ymax=mu+1.96*se.fit),alpha=0.2)
+  }
+  
+  # add observations?
+  if(plot.obs){
+    cplot<-cplot+geom_point(data=fit.info$data)
+  }
+  
+  return(cplot) 
+}
