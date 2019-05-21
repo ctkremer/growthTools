@@ -238,7 +238,7 @@ This data set contains information on the growth rate (mu) of one focal strain o
 
 ## Norberg model:
 
-Now, we can use the function `get.nbcurve.tpc()` to fit thermal performance curves (using the re-parameterized Norberg function - see `?nbcurve2()`) to the growth rate data. This is easily done for a single dilution period:
+Now, we can use the function `get.nbcurve.tpc()` to fit thermal performance curves (using the re-parameterized Norberg function - see `?nbcurve()`) to the growth rate data. This is easily done for a single dilution period:
 
 ```{r,error=FALSE,warning=F}
 # Single data set:
