@@ -233,8 +233,8 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=F,conf.bandQ=T
   if(plotQ){
     
     # use function to generate a single curve plot:
-    p1<-plot.nbcurve.tpc(vec,xlim = c(min(tpc.tmp$temperature),
-                                      max(tpc.tmp$temperature)),
+    p1<-plot.nbcurve(vec,xlim = c(min(tpc.tmp$temperature),
+                                  max(tpc.tmp$temperature)),
                          plot.ci = conf.bandQ,plot.obs = T)
     p1<-p1+scale_x_continuous('Temperature (C)')+
       scale_y_continuous('Growth rate (1/day)')+
@@ -592,7 +592,7 @@ predict.nbcurve<-function(fit.info,newdata=data.frame(temperature=seq(-2,40,0.1)
 #' @param ylim y-axis range (adjusts internally to -0.2 to slightly above umax+CI)
 #' 
 #' @export
-plot.nbcurve.tpc<-function(fit.info,plot.ci=TRUE,plot.obs=TRUE,xlim=c(-2,40),ylim=c(-0.2,5)){
+plot.nbcurve<-function(fit.info,plot.ci=TRUE,plot.obs=TRUE,xlim=c(-2,40),ylim=c(-0.2,5)){
   
   # Check level of nesting for fit.info, and reduce if necessary
   if(length(fit.info)==1){
