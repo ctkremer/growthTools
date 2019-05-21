@@ -231,34 +231,17 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=F,conf.bandQ=T
   
   # Plot results:
   if(plotQ){
-    xs<-seq(min(tpc.tmp$temperature),max(tpc.tmp$temperature),0.1)
-    new.data<-data.frame(temperature=xs)
-    new.data$mu<-predict(fit,newdata=new.data)
     
-    # plot it out
-    p1<-ggplot(tpc.tmp,aes(x=temperature,y=mu))+
-      geom_point()+
-      geom_line(data=new.data)+
-      geom_hline(yintercept = 0)+
-      theme_bw()+
-      scale_x_continuous('Temperature (C)')+
-      scale_y_continuous('Growth rate (1/day)')
+    # use function to generate a single curve plot:
+    p1<-plot.nbcurve.tpc(vec,xlim = c(min(tpc.tmp$temperature),
+                                      max(tpc.tmp$temperature)),
+                         plot.ci = conf.bandQ,plot.obs = T)
+    p1<-p1+scale_x_continuous('Temperature (C)')+
+      scale_y_continuous('Growth rate (1/day)')+
+      theme(panel.grid = element_blank())
     
     if(!is.na(id)){
       p1<-p1+ggtitle(id)
-    }
-    
-    if(conf.bandQ){
-      ### Confidence bands via the delta method (see Bolker book, pg. 255)  
-      st<-paste("nbcurve(c(",paste(xs,collapse=','),"),topt,w,a,b)",sep='')
-      dvs0<-suppressWarnings(deltavar2(fun=parse(text=st),meanval=cf,Sigma=vcov.mat))
-      
-      # Better approach? Pass correct local environment to deltavar... BUSTED
-      #dvs0<-deltavar3(fun=nbcurve(xs,topt,w,a,b),meanval=cf,Sigma = vcov(fit),cenv=current.env)
-      #dvs0<-suppressWarnings(deltavar(fun=nbcurve(xs,topt,w,a,b),meanval=cf,Sigma=vcov(fit)))
-      
-      new.data$ml.ci<-1.96*sqrt(dvs0)
-      p1<-p1+geom_ribbon(data=new.data,aes(ymin=mu-ml.ci,ymax=mu+ml.ci),alpha=0.2)
     }
 
     if(!is.na(fpath)){
@@ -586,9 +569,13 @@ predict.nbcurve<-function(fit.info,newdata=data.frame(temperature=seq(-2,40,0.1)
   newdata$mu<-mu
   
   if(se.fit){
-    st<-paste("nbcurve(c(",paste(ts,collapse=','),"),topt,w,a,b)",sep='')
+    st<-paste("nbcurve(c(",paste(newdata$temperature,collapse=','),"),topt,w,a,b)",sep='')
     dvs0<-suppressWarnings(deltavar2(fun=parse(text=st),meanval=fit.info$cf,Sigma=fit.info$vcov))
-    newdata$se.fit<-sqrt(dvs0)  
+    newdata$se.fit<-sqrt(dvs0)
+    
+    # Better approach? Pass correct local environment to deltavar... BUSTED
+    #dvs0<-deltavar3(fun=nbcurve(xs,topt,w,a,b),meanval=cf,Sigma = vcov(fit),cenv=current.env)
+    #dvs0<-suppressWarnings(deltavar(fun=nbcurve(xs,topt,w,a,b),meanval=cf,Sigma=vcov(fit)))
   }
   
   return(newdata)
