@@ -101,7 +101,7 @@ get.tlim<-function(topt,w,b,type='tmin'){
 #' 
 #' Re-parameterized from Thomas et al. 2016 to depend explicitly on Topt
 #'
-#' @param temp Temperature(s) to calculate growth rate at
+#' @param temperature Temperature(s) to calculate growth rate at
 #' @param topt Optimum temperature (where growth rate is highest)
 #' @param b1 Birth rate at 0 Celsius
 #' @param b2 Temperature scaling of birth rate, > 0
@@ -111,8 +111,8 @@ get.tlim<-function(topt,w,b,type='tmin'){
 #' @return Growth rate at one or more temperatures
 #' 
 #' @export   
-decurve<-function(temp,topt,b1,b2,d0,d2){
-  res <- b1*exp(b2*temp) - (d0 + ((b1*b2)/d2)*exp((b2-d2)*topt)*exp(d2*temp))
+decurve<-function(temperature,topt,b1,b2,d0,d2){
+  res <- b1*exp(b2*temperature) - (d0 + ((b1*b2)/d2)*exp((b2-d2)*topt)*exp(d2*temperature))
   res
 }
 
@@ -121,7 +121,7 @@ decurve<-function(temp,topt,b1,b2,d0,d2){
 #' 
 #' Alternate parameterization for Topt and phi (see mathematica notebook)
 #'
-#' @param temp Temperature(s) to calculate growth rate at
+#' @param temperature Temperature(s) to calculate growth rate at
 #' @param topt Optimum temperature (where growth rate is highest)
 #' @param phi Birth rate at 0 Celsius
 #' @param b2 Temperature scaling of birth rate, > 0
@@ -131,8 +131,8 @@ decurve<-function(temp,topt,b1,b2,d0,d2){
 #' @return Growth rate at one or more temperatures
 #' 
 #' @export   
-decurve2<-function(temp,topt,phi,b2,d0,d2){
-  res <- (phi/(b2*(b2-d2)))*exp(b2*(temp-topt))-(d0+(phi/(d2*(b2-d2)))*exp(d2*(temp-topt)))
+decurve2<-function(temperature,topt,phi,b2,d0,d2){
+  res <- (phi/(b2*(b2-d2)))*exp(b2*(temperature-topt))-(d0+(phi/(d2*(b2-d2)))*exp(d2*(temperature-topt)))
   res
 }
 
@@ -141,7 +141,7 @@ decurve2<-function(temp,topt,phi,b2,d0,d2){
 #' 
 #' Note: this function fits a re-parameterized version of the original Norberg curve (Norberg et al. 2001, Thomas et al. 2012), altered to depend directly on a parameter that provides the true optimum temperature (ie, the temperature at which growth rate is maximal). See \code{nbcurve()} for more.
 #' 
-#' @param temp Temperature
+#' @param temperature Temperature
 #' @param mu Exponential growth rate
 #' @param fit.method Specify which fitting algorithm to use, 'mle2' or 'grid.mle2'
 #' @param plotQ Should regression be visualized?
@@ -269,7 +269,7 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=F,conf.bandQ=T
 
 #' Fit Double Exponential curve to growth rate vs. temperature data
 #' 
-#' @param temp Temperature
+#' @param temperature Temperature
 #' @param mu Exponential growth rate
 #' @param fit.method Specify which fitting algorithm to use, 'mle2' or 'grid.mle2'
 #' @param plotQ Should regression be visualized?
@@ -285,19 +285,22 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=F,conf.bandQ=T
 #' @import emdbook
 #' @import mgcv
 #' @import ggplot2
-get.decurve.tpc<-function(temp,mu,method='grid.mle2',start.method='general.grid',plotQ=F,conf.bandQ=T,fpath=NA,id=NA,suppress.grid.mle2.warnings=TRUE,...){
-  tpc.tmp<-na.omit(data.frame(mu,temp))
+get.decurve.tpc<-function(temperature,mu,method='grid.mle2',start.method='general.grid',plotQ=F,conf.bandQ=T,fpath=NA,id=NA,suppress.grid.mle2.warnings=TRUE,...){
+  tpc.tmp<-na.omit(data.frame(temperature,mu))
+  ntemps<-length(unique(tpc.tmp$temperature))
+  
+  # is this still necessary?
   id<-id[1]
   
-  if(length(unique(tpc.tmp$temp))<=5){
+  if(ntemps<=5){
     print("Caution in get.decurve.tpc - focal data set has <=5 unique temperatures, risk of overfitting is high!")
   }
   
   if(method=='grid.mle2'){
     
     if(start.method=='general.grid'){
-      tpc.tmp.tb<-tpc.tmp %>% group_by(temp) %>% summarise(mu=mean(mu))
-      topt.guess<-mean(tpc.tmp.tb$temp[tpc.tmp.tb$mu==max(tpc.tmp.tb$mu)])
+      tpc.tmp.tb<-tpc.tmp %>% group_by(temperature) %>% summarise(mu=mean(mu))
+      topt.guess<-mean(tpc.tmp.tb$temperature[tpc.tmp.tb$mu==max(tpc.tmp.tb$mu)])
       
       # set up search of a grid of parameter guesses
       grids<-list(b1=log(seq(0.01,0.41,0.2)),b2=log(seq(0.1,0.5,0.2)),
@@ -305,9 +308,9 @@ get.decurve.tpc<-function(temp,mu,method='grid.mle2',start.method='general.grid'
       start<-list(topt=topt.guess,b1=NA,b2=NA,d0=NA,d2=NA,s=log(2))
       
       if(suppress.grid.mle2.warnings){
-        fit0<-suppressWarnings(grid.mle2(minuslogl=mu~dnorm(mean=decurve(temp,topt,exp(b1),exp(b2),exp(d0),exp(d2)),sd=exp(s)),grids=grids,start=start,data=tpc.tmp,...))
+        fit0<-suppressWarnings(grid.mle2(minuslogl=mu~dnorm(mean=decurve(temperature,topt,exp(b1),exp(b2),exp(d0),exp(d2)),sd=exp(s)),grids=grids,start=start,data=tpc.tmp,...))
       }else{
-        fit0<-grid.mle2(minuslogl=mu~dnorm(mean=decurve(temp,topt,exp(b1),exp(b2),exp(d0),exp(d2)),sd=exp(s)),grids=grids,start=start,data=tpc.tmp,...)
+        fit0<-grid.mle2(minuslogl=mu~dnorm(mean=decurve(temperature,topt,exp(b1),exp(b2),exp(d0),exp(d2)),sd=exp(s)),grids=grids,start=start,data=tpc.tmp,...)
       }
       cfg<-as.list(coef(fit0$res.best))
       
@@ -319,13 +322,13 @@ get.decurve.tpc<-function(temp,mu,method='grid.mle2',start.method='general.grid'
     if(start.method=='smart.grid'){
       
       # guess topt
-      tpc.tmp.tb<-tpc.tmp %>% group_by(temp) %>% summarise(mu=mean(mu))
-      topt.guess<-mean(tpc.tmp.tb$temp[tpc.tmp.tb$mu==max(tpc.tmp.tb$mu)])
+      tpc.tmp.tb<-tpc.tmp %>% group_by(temperature) %>% summarise(mu=mean(mu))
+      topt.guess<-mean(tpc.tmp.tb$temperature[tpc.tmp.tb$mu==max(tpc.tmp.tb$mu)])
       
       # guess phi
-      gam.tmp<-gam(mu~s(temp,k=4),data=tpc.tmp)
+      gam.tmp<-gam(mu~s(temperature,k=4),data=tpc.tmp)
       h<-0.1
-      pd<-predict(gam.tmp,newdata=data.frame(temp=c(topt.guess-h,topt.guess,topt.guess+h)))
+      pd<-predict(gam.tmp,newdata=data.frame(temperature=c(topt.guess-h,topt.guess,topt.guess+h)))
       phi.guess<-fd2.central(pd,h)
       
       # could introduce a d0.guess, if negative growth rates are present at 
@@ -340,9 +343,9 @@ get.decurve.tpc<-function(temp,mu,method='grid.mle2',start.method='general.grid'
       
       # execute fit
       if(suppress.grid.mle2.warnings){
-        fit0<-suppressWarnings(grid.mle2(minuslogl=mu~dnorm(mean=decurve2(temp,topt,phi,exp(b2),exp(d0),exp(d2)),sd=exp(s)),grids=grids,start=start,data=tpc.tmp))
+        fit0<-suppressWarnings(grid.mle2(minuslogl=mu~dnorm(mean=decurve2(temperature,topt,phi,exp(b2),exp(d0),exp(d2)),sd=exp(s)),grids=grids,start=start,data=tpc.tmp))
       }else{
-        fit0<-grid.mle2(minuslogl=mu~dnorm(mean=decurve2(temp,topt,phi,exp(b2),exp(d0),exp(d2)),sd=exp(s)),grids=grids,start=start,data=tpc.tmp)
+        fit0<-grid.mle2(minuslogl=mu~dnorm(mean=decurve2(temperature,topt,phi,exp(b2),exp(d0),exp(d2)),sd=exp(s)),grids=grids,start=start,data=tpc.tmp)
       }
       cfg<-as.list(coef(fit0$res.best))
 
@@ -352,23 +355,26 @@ get.decurve.tpc<-function(temp,mu,method='grid.mle2',start.method='general.grid'
     }
     
     # polish best fit model using formula interface
-    fit<-mle2(mu~dnorm(mean=decurve(temp,topt,b1,b2,d0,d2),sd=s),
+    fit<-mle2(mu~dnorm(mean=decurve(temperature,topt,b1,b2,d0,d2),sd=s),
               start=guesses,data=tpc.tmp,control=list(maxit=0))
   }
 
   if(method=='mle2'){
     print("Caution: this option not fully beta tested... 7/30/18")
-    topt.guess <- tpc.tmp$temp[tpc.tmp$mu==max(tpc.tmp$mu)]
+    topt.guess <- tpc.tmp$temperature[tpc.tmp$mu==max(tpc.tmp$mu)]
     b1.guess <- 0.09
     b2.guess <- 0.15
     d0.guess <- 0.03
     d2.guess <- 0.18
-    fit<-mle2(mu~dnorm(mean=decurve(temp,topt,b1,b2,d0,d2),sd=exp(s)),
+    fit<-mle2(mu~dnorm(mean=decurve(temperature,topt,b1,b2,d0,d2),sd=exp(s)),
               start=list(topt=topt.guess,b1=b1.guess,b2=b2.guess,d0=d0.guess,d2=d2.guess,s=log(2)),data=tpc.tmp)
   }
   
   # pull out parameters
   cf<-as.list(coef(fit))
+  
+  # save vcov matrix
+  vcov.mat<-vcov(fit)
   
   # additional responses/traits:
   objective<-function(x){
@@ -393,28 +399,35 @@ get.decurve.tpc<-function(temp,mu,method='grid.mle2',start.method='general.grid'
   # calculate R2
   rsqr<-get.R2(predict(fit),tpc.tmp$mu)
   
+  # Calculate umax and confidence interval using the delta method (see Bolker book, pg 255)
+  pd.umax<-predict(fit,newdata=data.frame(temperature=cf$topt))
+  st.umax<-paste("decurve(c(",paste(cf$topt,collapse=','),"),topt,b1,b2,d0,d2)",sep='')
+  dvs0.umax<-suppressWarnings(deltavar2(fun=parse(text=st.umax),meanval=cf,Sigma=vcov.mat))
+  
   # simple Fisher confidence intervals:
   ciF<-ci.FI(fit)
   
   # save output:
-  #vec<-c(cf,rsqr,tmin,tmax,focal.ci)
-  vcov.mat<-vcov(fit)
   vec<-as.list(c(cf,rsqr=rsqr,tmin=tmin,tmax=tmax))
+  vec$umax<-pd.umax
+  vec$umax.ci<-1.96*sqrt(dvs0.umax)
   vec$ciF<-ciF
+  vec$cf<-cf
   vec$vcov<-vcov.mat
   vec$n<-nrow(tpc.tmp)
+#  vec$ntemps<-ntemps
   vec$logLik<-logLik(fit)
   vec$aic<-AIC(fit)
   vec$data<-tpc.tmp
   
   # Plot results:
   if(plotQ){
-    xs<-seq(min(tpc.tmp$temp),max(tpc.tmp$temp),0.1)
-    new.data<-data.frame(temp=xs)
+    xs<-seq(min(tpc.tmp$temperature),max(tpc.tmp$temperature),0.1)
+    new.data<-data.frame(temperature=xs)
     new.data$mu<-predict(fit,newdata=new.data)
     
     # plot it out
-    p1<-ggplot(tpc.tmp,aes(x=temp,y=mu))+
+    p1<-ggplot(tpc.tmp,aes(x=temperature,y=mu))+
       geom_point()+
       geom_line(data=new.data)+
       geom_hline(yintercept = 0)+
@@ -607,6 +620,81 @@ plot.nbcurve<-function(fit.info,plot.ci=TRUE,plot.obs=TRUE,xlim=c(-2,40),ylim=c(
     preds<-predict.nbcurve(fit.info,se.fit = TRUE)    
   }else{
     preds<-predict.nbcurve(fit.info)    
+  }
+  
+  # generate basic plot
+  cplot<-ggplot(preds,aes(x=temperature,y=mu))+
+    geom_hline(yintercept = 0)+
+    geom_line()+
+    coord_cartesian(xlim=xlim,ylim=ylim)+
+    theme_bw()
+  
+  # add confidence bands?
+  if(plot.ci){
+    cplot<-cplot+geom_ribbon(aes(ymin=mu-1.96*se.fit,ymax=mu+1.96*se.fit),alpha=0.2)
+  }
+  
+  # add observations?
+  if(plot.obs){
+    cplot<-cplot+geom_point(data=fit.info$data)
+  }
+  
+  return(cplot) 
+}
+
+
+#' Predict values from decurve fit
+#' 
+#' @param fit.info The result of a single TPC curve fit from get.decurve.tpc
+#' @param newdata A new data frame, containing a sequence of `temperature` values at which model predictions should be made; defaults to (-2,40)
+#' @param se.fit logical; should standard error values be returned?
+#' 
+#' @export
+predict.decurve<-function(fit.info,newdata=data.frame(temperature=seq(-2,40,0.1)),se.fit=FALSE){
+  
+  # Check level of nesting for fit.info, and reduce if necessary
+  if(length(fit.info)==1){
+    fit.info<-fit.info[[1]]
+  }
+  
+  # generate predictions across a range of temperatures
+  mu<-decurve(newdata$temperature, topt = fit.info$topt, b1 = fit.info$b1, b2 = fit.info$b2, d0 = fit.info$d0, d2 = fit.info$d2)
+  newdata$mu<-mu
+  
+  if(se.fit){
+    st<-paste("decurve(c(",paste(newdata$temperature,collapse=','),"),topt,b1,b2,d0,d2)",sep='')
+    dvs0<-suppressWarnings(deltavar2(fun=parse(text=st),meanval=fit.info$cf,Sigma=fit.info$vcov))
+    newdata$se.fit<-sqrt(dvs0)
+  }
+  
+  return(newdata)
+}
+
+
+#' Plotting function for single Double Exponential curve
+#' 
+#' @param fit.info The result of a single TPC curve fit from get.decurve.tpc
+#' @param plot.ci logical, should the resulting plot include 95% confidence bands
+#' @param plot.obs logical, should resulting plot include raw data
+#' @param xlim x-axis range (temperature)
+#' @param ylim y-axis range (adjusts internally to -0.2 to slightly above umax+CI)
+#' 
+#' @export
+plot.decurve<-function(fit.info,plot.ci=TRUE,plot.obs=TRUE,xlim=c(-2,40),ylim=c(-0.2,5)){
+  
+  # Check level of nesting for fit.info, and reduce if necessary
+  if(length(fit.info)==1){
+    fit.info<-fit.info[[1]]
+  }
+  
+  # adjust plotting window to specific curve?
+  ylim<-c(ylim[1],1.1*(fit.info$umax+fit.info$umax.ci))
+  
+  # generate predictions along a range of temperatures
+  if(plot.ci){
+    preds<-predict.decurve(fit.info,se.fit = TRUE)    
+  }else{
+    preds<-predict.decurve(fit.info)    
   }
   
   # generate basic plot
