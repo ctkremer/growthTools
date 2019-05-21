@@ -586,7 +586,7 @@ predict.nbcurve<-function(fit.info,newdata=data.frame(temperature=seq(-2,40,0.1)
 #' Plotting function for single Norberg curve
 #' 
 #' @param fit.info The result of a single TPC curve fit from get.nbcurve.tpc
-#' @param plot.ci logical, should the resulting plot include 95% confidence bands
+#' @param plot.ci logical, should the resulting plot include 95\% confidence bands
 #' @param plot.obs logical, should resulting plot include raw data
 #' @param xlim x-axis range (temperature)
 #' @param ylim y-axis range (adjusts internally to -0.2 to slightly above umax+CI)
