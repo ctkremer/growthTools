@@ -561,7 +561,8 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
   
     # determine which fits occured and were successful
     successful.fits<-sapply(modlist,detect)
-  
+    if(verbose) print(successful.fits)
+    
     if(sum(successful.fits)==0){
       print('Error! All results for requested methods failed!')
       break()
