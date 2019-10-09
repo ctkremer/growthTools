@@ -33,16 +33,20 @@ summary(m1)
 plot(growQ~temperature,data=tmp1)
 curve(expit(296.44 + -10.96*x),0,35,col='red',add=T,n = 1000)
 
-ml1<-mle2(mu~dnorm(mean=nbcurve2(temperature,opt,w,a,b),sd=exp(s)),start = list(opt=16,w=32,a=log(0.46),b=0.05,s=0),data=tmp1)
+# full data set
+ml1<-mle2(mu~dnorm(mean=nbcurve(temperature,opt,w,a,b),sd=exp(s)),start = list(opt=16,w=32,a=log(0.46),b=0.05,s=0),data=tmp1)
 summary(ml1)
 
-ml2<-mle2(mu~dnormbinom(mean=nbcurve2(temperature,opt,w,a,b),sd=exp(s),p=expit(p0+p1*tmp1$temperature)),start = list(opt=16,w=32,a=log(0.46),b=0.05,s=0,p0=0,p1=0),data=tmp1)
+# full data set + dnormbinom censored
+ml2<-mle2(mu~dnormbinom(mean=nbcurve(temperature,opt,w,a,b),sd=exp(s),p=expit(p0+p1*tmp1$temperature)),start = list(opt=16,w=32,a=log(0.46),b=0.05,s=0,p0=0,p1=0),data=tmp1)
 summary(ml2)
 
-ml3<-mle2(mu~dnorm(mean=nbcurve2(temperature,opt,w,a,b),sd=exp(s)),start = list(opt=16,w=32,a=log(0.46),b=0.05,s=0),data=tmp1[tmp1$temperature<26,])
+# subset (Temp < 26 C)
+ml3<-mle2(mu~dnorm(mean=nbcurve(temperature,opt,w,a,b),sd=exp(s)),start = list(opt=16,w=32,a=log(0.46),b=0.05,s=0),data=tmp1[tmp1$temperature<26,])
 summary(ml3)
 
-ml4<-mle2(mu~dnorm(mean=nbcurve2(temperature,opt,w,a,b),sd=exp(s)),start = list(opt=16,w=32,a=log(0.46),b=0.05,s=0),data=tmp1[tmp1$temperature<30,])
+# subset (Temp < 30 C)
+ml4<-mle2(mu~dnorm(mean=nbcurve(temperature,opt,w,a,b),sd=exp(s)),start = list(opt=16,w=32,a=log(0.46),b=0.05,s=0),data=tmp1[tmp1$temperature<30,])
 summary(ml4)
 
 #AICtab(ml1,ml2)
@@ -53,12 +57,23 @@ cfs3<-coef(ml3)
 cfs4<-coef(ml4)
 
 plot(mu~temperature,data=tmp1,main='CH4_15_RI_03-ESAW')
-curve(nbcurve2(x,opt=cfs1['opt'],w = cfs1['w'],a=cfs1['a'],b=cfs1['b']),0,35,col='blue',add=T)
-curve(nbcurve2(x,opt=cfs2['opt'],w = cfs2['w'],a=cfs2['a'],b=cfs2['b']),0,35,col='red',add=T)
-curve(nbcurve2(x,opt=cfs3['opt'],w = cfs3['w'],a=cfs3['a'],b=cfs3['b']),0,35,col='green',lty=3,add=T)
-curve(nbcurve2(x,opt=cfs4['opt'],w = cfs4['w'],a=cfs4['a'],b=cfs4['b']),0,35,col='purple',add=T)
-legend(x = 3,y = -0.05,legend = c('all data','new model','<25','<26'),col=c('blue','red','green','purple'),lty=c(1,1,3,1))
+curve(nbcurve(x,topt=cfs1['opt'],w = cfs1['w'],a=cfs1['a'],b=cfs1['b']),0,35,col='blue',add=T)
+curve(nbcurve(x,topt=cfs2['opt'],w = cfs2['w'],a=cfs2['a'],b=cfs2['b']),0,35,col='red',add=T)
+curve(nbcurve(x,topt=cfs3['opt'],w = cfs3['w'],a=cfs3['a'],b=cfs3['b']),0,35,col='green',lty=3,add=T)
+curve(nbcurve(x,topt=cfs4['opt'],w = cfs4['w'],a=cfs4['a'],b=cfs4['b']),0,35,col='purple',add=T)
+legend(x = 3,y = -0.05,legend = c('all data','censored model','< 26 C','< 30 C'),col=c('blue','red','green','purple'),lty=c(1,1,3,1))
 abline(0,0)
+
+# visualize censored model:
+
+summary(ml2)
+
+plot(mu~temperature,data=tmp1,main='CH4_15_RI_03-ESAW',xlab='Temperature',ylab='Growth rate (1/day)')
+abline(0,0,col='gray')
+curve(nbcurve(x,topt=cfs2['opt'],w = cfs2['w'],a=cfs2['a'],b=cfs2['b']),0,35,col='red',add=T)
+curve(expit(cfs2['p0']+cfs2['p1']*x),0,35,lty=2,col='red',add=T)
+legend(x = 3,y = -0.15,legend = c('Norberg TPC','P(dying)'),col=c('red','red'),lty=c(1,2))
+
 
 
 ######  CH8_15_RI_03-ESAW  ########
