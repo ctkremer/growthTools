@@ -1,7 +1,7 @@
 Package: growthTools
 Type: Package
 Title: Tools for analyzing time series of microbial abundances to estimate growth rates
-Version: 0.0.0.9000
+Version: 0.1.0
 Author: Colin T. Kremer
 Maintainer: Colin T. Kremer <kremerco@msu.edu>
 Description: Developed for applications to NSF Dimensions of Biodiversity grant
