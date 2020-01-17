@@ -18,12 +18,12 @@ Imports: bbmle,
     MASS,
     minpack.lm,
     mgcv,
+    mleTools,
     reshape2,
     vegan,
     tidyr,
     tibble,
     zoo
 Suggests: knitr,
-    mleTools,
     rmarkdown
 VignetteBuilder: knitr
