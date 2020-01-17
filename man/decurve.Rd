@@ -4,10 +4,10 @@
 \alias{decurve}
 \title{Double exponential model}
 \usage{
-decurve(temp, topt, b1, b2, d0, d2)
+decurve(temperature, topt, b1, b2, d0, d2)
 }
 \arguments{
-\item{temp}{Temperature(s) to calculate growth rate at}
+\item{temperature}{Temperature(s) to calculate growth rate at}
 
 \item{topt}{Optimum temperature (where growth rate is highest)}
 

@@ -2,18 +2,18 @@
 % Please edit documentation in R/TPCtools.R
 \name{nbcurve}
 \alias{nbcurve}
-\title{Norberg function}
+\title{Re-parameterized Norberg functions}
 \usage{
-nbcurve(x, opt, w, a, b)
+nbcurve(x, topt, w, a, b)
 }
 \arguments{
 \item{x}{Temperature}
 
-\item{opt}{(Competitive) Optimum temperature}
+\item{topt}{Optimum temperature}
 
 \item{w}{Thermal niche width}
 
-\item{a}{ln(Exponential intercept)}
+\item{a}{Affects the y-intercept}
 
 \item{b}{Exponential scaling}
 }
@@ -21,12 +21,6 @@ nbcurve(x, opt, w, a, b)
 Predicted exponential growth rate at temperature x
 }
 \description{
-See Norberg et al. 2001, Thomas et al. 2012
-}
-\details{
-Note that with the original formulation, 'Optimum temperature' is the temperature at
-which growth rate coincides with the exponential portion of this equation. Only if b
-is exactly 0 will this match the temperature at which a species achieves its highest
-growth rate. See Thomas et al. 2012 for more on this, and \code{nbcurve2()} for an
-alternative formulation.
+With this formulation, optimum temperature is explicitly the temperature at which
+a species achieves its highest growth rate.
 }

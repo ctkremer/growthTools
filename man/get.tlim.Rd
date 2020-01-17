@@ -7,7 +7,7 @@
 get.tlim(topt, w, b, type = "tmin")
 }
 \arguments{
-\item{topt}{Competitive optimum temperature}
+\item{topt}{Optimum temperature}
 
 \item{w}{Thermal niche width}
 
@@ -19,5 +19,5 @@ get.tlim(topt, w, b, type = "tmin")
 Either the estimate of Tmin or Tmax corresponding to the provided Norberg parameters.
 }
 \description{
-Note: check whether this operates on nbcurve() or nbcurve2() parameters!!!
+Note: this operates on nbcurve parameters (ie, uses topt not copt)
 }

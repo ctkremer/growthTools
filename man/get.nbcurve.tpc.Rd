@@ -4,12 +4,12 @@
 \alias{get.nbcurve.tpc}
 \title{Fit Norberg curve to growth rate vs. temperature data}
 \usage{
-get.nbcurve.tpc(temp, mu, method = "grid.mle2", plotQ = F,
+get.nbcurve.tpc(temperature, mu, method = "grid.mle2", plotQ = F,
   conf.bandQ = T, fpath = NA, id = NA,
   suppress.grid.mle2.warnings = TRUE, ...)
 }
 \arguments{
-\item{temp}{Temperature}
+\item{temperature}{Temperature}
 
 \item{mu}{Exponential growth rate}
 
@@ -28,5 +28,5 @@ get.nbcurve.tpc(temp, mu, method = "grid.mle2", plotQ = F,
 \item{fit.method}{Specify which fitting algorithm to use, 'mle2' or 'grid.mle2'}
 }
 \description{
-Fit Norberg curve to growth rate vs. temperature data
+Note: this function fits a re-parameterized version of the original Norberg curve (Norberg et al. 2001, Thomas et al. 2012), altered to depend directly on a parameter that provides the true optimum temperature (ie, the temperature at which growth rate is maximal). See \code{nbcurve()} for more.
 }

@@ -4,10 +4,10 @@
 \alias{decurve2}
 \title{Double exponential model, phi version}
 \usage{
-decurve2(temp, topt, phi, b2, d0, d2)
+decurve2(temperature, topt, phi, b2, d0, d2)
 }
 \arguments{
-\item{temp}{Temperature(s) to calculate growth rate at}
+\item{temperature}{Temperature(s) to calculate growth rate at}
 
 \item{topt}{Optimum temperature (where growth rate is highest)}
 
