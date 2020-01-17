@@ -24,5 +24,6 @@ Imports: bbmle,
     tibble,
     zoo
 Suggests: knitr,
+    mleTools,
     rmarkdown
 VignetteBuilder: knitr
