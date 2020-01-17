@@ -565,8 +565,7 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
     
     if(sum(successful.fits)==0){
       print('Error! All results for requested methods failed!')
-      break()
-      #stop('Error! All results for requested methods failed!')
+      stop('Error! All results for requested methods failed!')
     }
     
     # assemble model names, contents, and slopes, but only for successful fits
