@@ -389,6 +389,7 @@ detect<-function(x){
 #' @param methods Must be a character vector containing one or more of \code{'linear'}, \code{'lag'}, \code{'sat'}, \code{'flr'}, or \code{'lagsat'}
 #' @param id Label corresponding to the population/strain/species of interest; used to determine the title and file name of saved plot, if any.
 #' @param model.selection control parameter to specify which IC metric to use in model selection; default is AICc, which corrects for small sample sizes and converges asymptotically on AIC.
+#' @param min.exp.obs control parameter specifying the minimum number of observations that must fall within the estimated exponential phase in order to consider lag, sat, lagsat, and flr models; defaults to 3.
 #' @param internal.r2.cutoff control parameter specifying the R2 criteria that may be applied to drop fits where the number of observations in the exponential portion is equal to 3. The default value of zero permits all fits of 3 obs to be considered.
 #' @param zero.time if TRUE, shift time axis so that each time series starts at time = 0
 #' 
@@ -399,7 +400,7 @@ detect<-function(x){
 #' 
 #' @export
 #' @import bbmle
-get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag','sat','flr','lagsat'),model.selection=c('AICc'),internal.r2.cutoff=0,verbose=FALSE,zero.time=T){
+get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag','sat','flr','lagsat'),model.selection=c('AICc'),min.exp.obs=3,internal.r2.cutoff=0,verbose=FALSE,zero.time=T){
   
   # thin vectors if abundance measure is NA
   x<-x[!is.na(y)]
@@ -431,30 +432,23 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
   post.n.gr<-post.n.gr.lag<-post.n.gr.sat<-post.n.gr.flr<-post.n.gr.lagsat<-NA
   post.r2.gr<-post.r2.gr.lag<-post.r2.gr.sat<-post.r2.gr.flr<-post.r2.gr.lagsat<-NA
   
-  ts.length<-length(unique(x))
-  print(ts.length)
+  if(length(unique(x))==2){
+    print('Caution: only two unique time points, high risk of over-fitting. Methods other than "linear" are likely to fail')
+  }
   
-  # if there are more than two unique time points with data:
-  if(ts.length>=2){
-    
-    if(length(unique(x))==2){
-      print('Caution: only two unique time points, high risk of over-fitting. Only linear method will be used, if requested')
-    }
+  # if there are two or more unique time points with data:
+  if(length(unique(x))>=2){
     
     # Fill data structures for each given method, if requested by user:
-    if('linear' %in% methods & ts.length>1){
+    if('linear' %in% methods){
       gr<-get.gr(x,y) 
       slope.gr<-coef(gr)[[2]]
       slope.n.gr<-length(x)
       slope.r2.gr<-get.R2(predict(gr),y)
       se.gr<-sqrt(diag(vcov(gr)))['x']
       modlist$gr<-gr
-    }#else{
-#      class(gr)<-'try-error'          
-#    }
-    
-    # lag needs more than 2 obs
-    if('lag' %in% methods & ts.length>2){
+    }
+    if('lag' %in% methods){
       gr.lag<-try(get.gr.lag(x,y))  
       if(prod(class(gr.lag)!='try-error')){
         b1.cutoff <- coef(gr.lag)[1]-0.1  # where does exponential phase begin?
@@ -470,20 +464,16 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
         pre.n.gr.lag<-length(x[x<=coef(gr.lag)['B1']])
         pre.r2.gr.lag <- get.R2(pds.lag[x<=coef(gr.lag)['B1']],obs.lag[x<=coef(gr.lag)['B1']])
         
-        # if exponential portion is based on fewer than 3 observations, re-classify this fit as
+        # if exponential portion is based on fewer than min.exp.obs observations, re-classify this fit as
         # resulting in an error. This removes it from consideration as a 'best model', allowing
         # a different model to succeed.
-        if(slope.n.gr.lag<3  | (slope.n.gr.lag==3 & slope.r2.gr.lag<internal.r2.cutoff)){
+        if(slope.n.gr.lag < min.exp.obs  | (slope.n.gr.lag==min.exp.obs & slope.r2.gr.lag<internal.r2.cutoff)){
           class(gr.lag)<-'try-error'          
         }
       }
       modlist$gr.lag<-gr.lag
-    }#else{
-      #class(gr.lag)<-'try-error'          
-    #}
-    
-    # sat needs more than 2 obs
-    if('sat' %in% methods & ts.length>2){
+    }
+    if('sat' %in% methods){
       gr.sat<-try(get.gr.sat(x,y))
       if(prod(class(gr.sat)!='try-error')){
         b2.cutoff <- coef(gr.sat)[1]+0.1  # where does exponential phase end?
@@ -499,20 +489,17 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
         post.n.gr.sat <- length(x[x>=coef(gr.sat)['B2']])
         post.r2.gr.sat <- get.R2(pds.sat[x>=coef(gr.sat)['B2']],obs.sat[x>=coef(gr.sat)['B2']])
         
-        # if exponential portion is based on fewer than 3 observations, re-classify this fit as
+        # if exponential portion is based on fewer than min.exp.obs observations, re-classify this fit as
         # resulting in an error. This removes it from consideration as a 'best model', allowing
         # a different model to succeed.
-        if(slope.n.gr.sat<3 | (slope.n.gr.sat==3 & slope.r2.gr.sat<internal.r2.cutoff)){
+        if(slope.n.gr.sat < min.exp.obs | (slope.n.gr.sat==min.exp.obs & slope.r2.gr.sat < internal.r2.cutoff)){
           class(gr.sat)<-'try-error'          
         }
       }
       modlist$gr.sat<-gr.sat
-    }#else{
-      #class(gr.sat)<-'try-error'
-    #}
+    }
     
-    # flr needs more than 2 obs
-    if('flr' %in% methods & ts.length>2){
+    if('flr' %in% methods){
       gr.flr<-try(get.gr.flr(x,y))
       if(prod(class(gr.flr)!='try-error')){
         b2.cutoff <- coef(gr.flr)['B2']+0.1  # where does exponential phase end?
@@ -528,20 +515,17 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
         post.n.gr.flr<-length(x[x>=coef(gr.flr)['B2']])
         post.r2.gr.flr<-get.R2(pds.flr[x>=coef(gr.flr)['B2']],obs.flr[x>=coef(gr.flr)['B2']])
         
-        # if exponential portion is based on fewer than 3 observations, re-classify this fit as
+        # if exponential portion is based on fewer than min.exp.obs observations, re-classify this fit as
         # resulting in an error. This removes it from consideration as a 'best model', allowing
         # a different model to succeed.
-        if(slope.n.gr.flr<3 | (slope.n.gr.flr==3 & slope.r2.gr.flr<internal.r2.cutoff)){
+        if(slope.n.gr.flr < min.exp.obs | (slope.n.gr.flr==min.exp.obs & slope.r2.gr.flr < internal.r2.cutoff)){
           class(gr.flr)<-'try-error'          
         }
       }
       modlist$gr.flr<-gr.flr
-    }#else{
-      #class(gr.flr)<-'try-error'
-    #}
+    }
     
-    # lagsat needs more than 3 obs
-    if('lagsat' %in% methods & ts.length>3){
+    if('lagsat' %in% methods){
       gr.lagsat<-try(get.gr.lagsat(x,y))
       if(prod(class(gr.lagsat)!='try-error')){
         b1.cutoff <- coef(gr.lagsat)[1]-0.1  # where does exponential phase begin?
@@ -558,34 +542,33 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
         
         pre.n.gr.lagsat<-length(x[x<=coef(gr.lagsat)['B1']])
         pre.r2.gr.lagsat <- get.R2(pds.lagsat[x<=coef(gr.lagsat)['B1']],
-                                     obs.lagsat[x<=coef(gr.lagsat)['B1']])
+                                   obs.lagsat[x<=coef(gr.lagsat)['B1']])
         
         post.n.gr.lagsat<-length(x[x>=coef(gr.lagsat)['B2']])
         post.r2.gr.lagsat <- get.R2(pds.lagsat[x>=coef(gr.lagsat)['B2']],
-                                     obs.lagsat[x>=coef(gr.lagsat)['B2']])
+                                    obs.lagsat[x>=coef(gr.lagsat)['B2']])
         
-        # if exponential portion is based on fewer than 3 observations, re-classify this fit as
+        # if exponential portion is based on fewer than min.exp.obs observations, re-classify this fit as
         # resulting in an error. This removes it from consideration as a 'best model', allowing
         # a different model to succeed.
-        if(slope.n.gr.lagsat<3  | (slope.n.gr.lagsat==3 & slope.r2.gr.lagsat<internal.r2.cutoff)){
+        if(slope.n.gr.lagsat < min.exp.obs  | (slope.n.gr.lagsat==min.exp.obs & slope.r2.gr.lagsat < internal.r2.cutoff)){
           class(gr.lagsat)<-'try-error'          
         }
-
+        
       }
       modlist$gr.lagsat<-gr.lagsat
-    }#else{
-      #class(gr.lagsat)<-'try-error'
-    #}
-  
-    # determine which fits occurred and were successful
+    }
+    
+    # determine which fits occured and were successful
     successful.fits<-sapply(modlist,detect)
     if(verbose) print(successful.fits)
     
     if(sum(successful.fits)==0){
       print('Error! All results for requested methods failed!')
-      break();
+      break()
+      #stop('Error! All results for requested methods failed!')
     }
-  
+    
     # assemble model names, contents, and slopes, but only for successful fits
     mod.names<-c('gr','gr.lag','gr.sat','gr.flr','gr.lagsat')[successful.fits]
     mod.list<-list(gr,gr.lag,gr.sat,gr.flr,gr.lagsat)[successful.fits]
@@ -604,7 +587,7 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
            AICc={ictab<-AICctab(mod.list,mnames = mod.names)},
            BIC={ictab<-BICtab(mod.list,mnames = mod.names)},
            print("Error! Invalid IC method selected in get.nbcurve()"))
-  
+    
     best.mod.id<-which(mod.names==attr(ictab,"row.names")[1])
     
     # impose QC based on slope.n and slope.r2 here? or outside of function...
@@ -626,32 +609,32 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
                  best.model.rsqr=get.R2(predict(mod.list[[best.mod.id]]),y),
                  best.model.slope.n=slope.n.vals[[best.mod.id]],
                  best.model.slope.r2=slope.r2.vals[[best.mod.id]],
+                 best.model.pre.ns=pre.n.vals[[best.mod.id]],
+                 best.model.pre.rs=pre.r2.vals[[best.mod.id]],
+                 best.model.post.ns=post.n.vals[[best.mod.id]],
+                 best.model.post.rs=post.r2.vals[[best.mod.id]],
                  best.model.contents=list(mod.list[[best.mod.id]]),
                  slopes=slope.ests,
                  ses=se.ests,
                  slope.ns=slope.n.vals,
                  slope.rs=slope.r2.vals,
-                 pre.ns=pre.n.vals,
-                 pre.rs=pre.r2.vals,
-                 post.ns=post.n.vals,
-                 post.rs=post.r2.vals,
                  ictab=ictab,
                  models=list(gr=gr,gr.lag=gr.lag,gr.sat=gr.sat,gr.flr=gr.flr,gr.lagsat=gr.lagsat))
     #print(result)
-  
+    
     if(plot.best.Q){
       if(!is.na(fpath)){
         fpath<-paste(fpath,id[1],'.pdf',sep='')
       }
-    
+      
       # want to show the best model in the requested model set... given methods options.
       # no model can end up in the model set if not requested, so this should be o.k. as written
       gigo<-switch(result$best.model,
-                 gr=get.gr(x,y,plotQ=T,fpath=fpath,id=id[1]),
-                 gr.lag=get.gr.lag(x,y,plotQ=T,fpath=fpath,id=id[1]),
-                 gr.sat=get.gr.sat(x,y,plotQ=T,fpath=fpath,id=id[1]),
-                 gr.flr=get.gr.flr(x,y,plotQ=T,fpath=fpath,id=id[1]),
-                 gr.lagsat=get.gr.lagsat(x,y,plotQ=T,fpath=fpath,id=id[1]))
+                   gr=get.gr(x,y,plotQ=T,fpath=fpath,id=id[1]),
+                   gr.lag=get.gr.lag(x,y,plotQ=T,fpath=fpath,id=id[1]),
+                   gr.sat=get.gr.sat(x,y,plotQ=T,fpath=fpath,id=id[1]),
+                   gr.flr=get.gr.flr(x,y,plotQ=T,fpath=fpath,id=id[1]),
+                   gr.lagsat=get.gr.lagsat(x,y,plotQ=T,fpath=fpath,id=id[1]))
     }
   }else{
     print("Warning: fewer than two unique time points provided")
@@ -662,15 +645,15 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
                  best.model.rsqr=NA,
                  best.model.slope.n=NA,
                  best.model.slope.r2=NA,
+                 best.model.pre.ns=NA,
+                 best.model.pre.rs=NA,
+                 best.model.post.ns=NA,
+                 best.model.post.rs=NA,
                  best.model.contents=list(NA),
                  slopes=NA,
                  ses=NA,
                  slope.ns=NA,
                  slope.rs=NA,
-                 pre.ns=NA,
-                 pre.rs=NA,
-                 post.ns=NA,
-                 post.rs=NA,
                  models=list(gr=NA,gr.lag=NA,gr.sat=NA,gr.flr=NA,gr.lagsat=NA))
   }
   
