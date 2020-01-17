@@ -8,14 +8,16 @@ Description: Developed for applications to NSF Dimensions of Biodiversity grant
 Depends: R (>= 3.2.4), dplyr (>= 0.5.0)
 License: MIT + file LICENSE
 LazyData: TRUE
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.1
 Encoding: UTF-8
 Imports: bbmle,
     dplyr,
+    emdbook,
     ggplot2,
     gridExtra,
     MASS,
     minpack.lm,
+    mgcv,
     reshape2,
     vegan,
     tidyr,
