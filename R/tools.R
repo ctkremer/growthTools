@@ -45,8 +45,8 @@ sqfunc<-function(x,b,s){
 #' @examples 
 #' 
 #' curve(lag(x,5,0,4,s=1E-10),0,10,col='green',ylim=c(0,11),ylab='Abundance')
-#' curve(sat(x,0.9,0,8,s=1E-10),0,10,col='red',add=T)
-#' curve(lagsat(x,5.1,0,4,8,s=1E-10),0,10,col='blue',add=T)
+#' curve(sat(x,0.9,0,8,s=1E-10),0,10,col='red',add=TRUE)
+#' curve(lagsat(x,5.1,0,4,8,s=1E-10),0,10,col='blue',add=TRUE)
 #' 
 #' @export
 lagsat<-function(x,a,b,B1,B2,s=1E-10){
@@ -152,13 +152,13 @@ get.gr.lag<-function(x,y,plotQ=F,fpath=NA,id=''){
       if(!is.na(fpath)){
         pdf(fpath)
         plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-        curve(lag(x,cfs$a,cfs$b,cfs$B1,s=1E-10),min(x),max(x),n = 400,add=T,col='blue')
-        curve(lag(x,cfs$a,cfs$b,cfs$B1,s=1E-10),cfs$B1,max(x),n = 400,add=T,col='red')
+        curve(lag(x,cfs$a,cfs$b,cfs$B1,s=1E-10),min(x),max(x),n = 400,add=TRUE,col='blue')
+        curve(lag(x,cfs$a,cfs$b,cfs$B1,s=1E-10),cfs$B1,max(x),n = 400,add=TRUE,col='red')
         dev.off()
       }else{
         plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-        curve(lag(x,cfs$a,cfs$b,cfs$B1,s=1E-10),min(x),max(x),n = 400,add=T,col='blue')
-        curve(lag(x,cfs$a,cfs$b,cfs$B1,s=1E-10),cfs$B1,max(x),n = 400,add=T,col='red')
+        curve(lag(x,cfs$a,cfs$b,cfs$B1,s=1E-10),min(x),max(x),n = 400,add=TRUE,col='blue')
+        curve(lag(x,cfs$a,cfs$b,cfs$B1,s=1E-10),cfs$B1,max(x),n = 400,add=TRUE,col='red')
       }
     }
   }
@@ -215,13 +215,13 @@ get.gr.sat<-function(x,y,plotQ=F,fpath=NA,id=''){
       if(!is.na(fpath)){
         pdf(fpath)
         plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-        curve(sat(x,cfs$a,cfs$b,cfs$B2,s=1E-10),min(x),max(x),add=T,col='blue')
-        curve(sat(x,cfs$a,cfs$b,cfs$B2,s=1E-10),min(x),cfs$B2,add=T,col='red')
+        curve(sat(x,cfs$a,cfs$b,cfs$B2,s=1E-10),min(x),max(x),add=TRUE,col='blue')
+        curve(sat(x,cfs$a,cfs$b,cfs$B2,s=1E-10),min(x),cfs$B2,add=TRUE,col='red')
         dev.off()
       }else{
         plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-        curve(sat(x,cfs$a,cfs$b,cfs$B2,s=1E-10),min(x),max(x),add=T,col='blue')
-        curve(sat(x,cfs$a,cfs$b,cfs$B2,s=1E-10),min(x),cfs$B2,add=T,col='red')
+        curve(sat(x,cfs$a,cfs$b,cfs$B2,s=1E-10),min(x),max(x),add=TRUE,col='blue')
+        curve(sat(x,cfs$a,cfs$b,cfs$B2,s=1E-10),min(x),cfs$B2,add=TRUE,col='red')
       }
     }
   }  
@@ -273,13 +273,13 @@ get.gr.flr<-function(x,y,plotQ=F,fpath=NA,id=''){
       if(!is.na(fpath)){
         pdf(fpath)
         plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-        curve(flr(x,cfs$a,cfs$b,cfs$B2,s=1E-10),cfs$B2,max(x),add=T,col='blue')
-        curve(flr(x,cfs$a,cfs$b,cfs$B2,s=1E-10),min(x),cfs$B2,add=T,col='red')
+        curve(flr(x,cfs$a,cfs$b,cfs$B2,s=1E-10),cfs$B2,max(x),add=TRUE,col='blue')
+        curve(flr(x,cfs$a,cfs$b,cfs$B2,s=1E-10),min(x),cfs$B2,add=TRUE,col='red')
         dev.off()
       }else{
         plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-        curve(flr(x,cfs$a,cfs$b,cfs$B2,s=1E-10),cfs$B2,max(x),add=T,col='blue')
-        curve(flr(x,cfs$a,cfs$b,cfs$B2,s=1E-10),min(x),cfs$B2,add=T,col='red')
+        curve(flr(x,cfs$a,cfs$b,cfs$B2,s=1E-10),cfs$B2,max(x),add=TRUE,col='blue')
+        curve(flr(x,cfs$a,cfs$b,cfs$B2,s=1E-10),min(x),cfs$B2,add=TRUE,col='red')
       }
     }
   }
@@ -331,13 +331,13 @@ get.gr.lagsat<-function(x,y,plotQ=F,fpath=NA,id=''){
       if(!is.na(fpath)){
         pdf(fpath)
         plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-        curve(lagsat(x,cfs$a,cfs$b,cfs$B1,cfs$B2,s=1E-10),min(x),max(x),add=T,col='blue')
-        curve(lagsat(x,cfs$a,cfs$b,cfs$B1,cfs$B2,s=1E-10),cfs$B1,cfs$B2,add=T,col='red')
+        curve(lagsat(x,cfs$a,cfs$b,cfs$B1,cfs$B2,s=1E-10),min(x),max(x),add=TRUE,col='blue')
+        curve(lagsat(x,cfs$a,cfs$b,cfs$B1,cfs$B2,s=1E-10),cfs$B1,cfs$B2,add=TRUE,col='red')
         dev.off()
       }else{
         plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-        curve(lagsat(x,cfs$a,cfs$b,cfs$B1,cfs$B2,s=1E-10),min(x),max(x),add=T,col='blue')
-        curve(lagsat(x,cfs$a,cfs$b,cfs$B1,cfs$B2,s=1E-10),cfs$B1,cfs$B2,add=T,col='red')
+        curve(lagsat(x,cfs$a,cfs$b,cfs$B1,cfs$B2,s=1E-10),min(x),max(x),add=TRUE,col='blue')
+        curve(lagsat(x,cfs$a,cfs$b,cfs$B1,cfs$B2,s=1E-10),cfs$B1,cfs$B2,add=TRUE,col='red')
       }
     }
   }
