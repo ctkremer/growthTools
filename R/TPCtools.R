@@ -143,7 +143,7 @@ decurve2<-function(temperature,topt,phi,b2,d0,d2){
 #' 
 #' @param temperature Temperature
 #' @param mu Exponential growth rate
-#' @param fit.method Specify which fitting algorithm to use, 'mle2' or 'grid.mle2'
+#' @param method Specify which fitting algorithm to use, 'mle2' or 'grid.mle2'
 #' @param plotQ Should regression be visualized?
 #' @param conf.bandQ Should we calculate a confidence band around the regression? logical.
 #' @param fpath If visual requested, and valid file path provided here, plot will be saved as a .pdf file. Default is NA.
@@ -271,7 +271,8 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=F,conf.bandQ=T
 #' 
 #' @param temperature Temperature
 #' @param mu Exponential growth rate
-#' @param fit.method Specify which fitting algorithm to use, 'mle2' or 'grid.mle2'
+#' @param method Specify which fitting algorithm to use, 'mle2' or 'grid.mle2'
+#' @param start.method Specify method for generating starting grid for 'grid.mle2' option
 #' @param plotQ Should regression be visualized?
 #' @param conf.bandQ Should we calculate a confidence band around the regression? logical.
 #' @param fpath If visual requested, and valid file path provided here, plot will be saved as a .pdf file. Default is NA.

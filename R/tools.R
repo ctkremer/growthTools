@@ -9,6 +9,9 @@
 
 #' Helper function for smoothed lagged/saturating abundance equations
 #' 
+#' @param x time
+#' @param b slope
+#' @param s smoothing parameter
 sqfunc<-function(x,b,s){
   (1/2)*sqrt(b*(4*s+b*x^2))
 }
@@ -391,6 +394,7 @@ detect<-function(x){
 #' @param model.selection control parameter to specify which IC metric to use in model selection; default is AICc, which corrects for small sample sizes and converges asymptotically on AIC.
 #' @param min.exp.obs control parameter specifying the minimum number of observations that must fall within the estimated exponential phase in order to consider lag, sat, lagsat, and flr models; defaults to 3.
 #' @param internal.r2.cutoff control parameter specifying the R2 criteria that may be applied to drop fits where the number of observations in the exponential portion is equal to 3. The default value of zero permits all fits of 3 obs to be considered.
+#' @param verbose logical; display or suppress diagnostics
 #' @param zero.time if TRUE, shift time axis so that each time series starts at time = 0
 #' 
 #' @return A data frame containing the identity of the best model, the content of the best model, the estimated slopes of the increasing linear portion of the regressions (ie, exponential growth rate), the standard errors associated with these slopes, the IC table used to determine the best model, and the full list of all models fit. See vignette for details.
