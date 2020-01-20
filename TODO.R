@@ -1,6 +1,6 @@
 # To-do list for package:
 
-# - clean up NAMESPACE and DESCRIPTION files; some info is unique to each file, and Tamara ran into issues using the package b/c she was able to install it without also installing minpack.lm and zoo packages. See: http://r-pkgs.had.co.nz/namespace.html#imports 
+# - clean up example data sets - they contain more columns than are actually used/useful in examples and vignettes. also, consider renaming example_TPC_data
 
 # - make it possible to truncate temperature ranges in predict.nbcurve when applying it iteratively to multiple TPCs.
 
@@ -15,4 +15,6 @@
 #   - maybe target specific error message?
 
 #   - would also be nice to turn off 'convergence failure: cod=1 (iteration limit 'maxit' reached) in grid.mle2...
+
+# - create unit testing for the package to ensure stability of calculations...
 
