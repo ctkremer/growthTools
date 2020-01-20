@@ -91,6 +91,9 @@ flr<-function(x,a,b,B2,s=1E-10){
 #' @examples 
 #' 
 #' @export
+#' @import graphics
+#' @import grDevices
+#' @import stats
 get.gr<-function(x,y,plotQ=F,fpath=NA,id=''){
   lm1<-lm(y~x)
   
@@ -126,7 +129,10 @@ get.gr<-function(x,y,plotQ=F,fpath=NA,id=''){
 #' @examples 
 #' 
 #' @export
+#' @import graphics
+#' @import grDevices
 #' @import minpack.lm
+#' @import stats
 #' @import zoo
 get.gr.lag<-function(x,y,plotQ=F,fpath=NA,id=''){
   
@@ -186,7 +192,10 @@ get.gr.lag<-function(x,y,plotQ=F,fpath=NA,id=''){
 #' @examples 
 #' 
 #' @export
+#' @import graphics
+#' @import grDevices
 #' @import minpack.lm
+#' @import stats
 #' @import zoo
 get.gr.sat<-function(x,y,plotQ=F,fpath=NA,id=''){
   
@@ -250,7 +259,10 @@ get.gr.sat<-function(x,y,plotQ=F,fpath=NA,id=''){
 #' @examples 
 #' 
 #' @export
+#' @import graphics
+#' @import grDevices
 #' @import minpack.lm
+#' @import stats
 #' @import zoo
 get.gr.flr<-function(x,y,plotQ=F,fpath=NA,id=''){
   
@@ -308,7 +320,11 @@ get.gr.flr<-function(x,y,plotQ=F,fpath=NA,id=''){
 #' @examples 
 #' 
 #' @export
+#' @import graphics
+#' @import grDevices
 #' @import minpack.lm
+#' @import stats
+#' @import zoo
 get.gr.lagsat<-function(x,y,plotQ=F,fpath=NA,id=''){
   
   data<-data.frame(x=x,y=y)
@@ -359,6 +375,7 @@ get.gr.lagsat<-function(x,y,plotQ=F,fpath=NA,id=''){
 #' @return Slope of the linear regression
 #' 
 #' @export
+#' @import stats
 localslope<-function (d) {
   m <- lm(y~x, as.data.frame(d))
   return(coef(m)[2])
