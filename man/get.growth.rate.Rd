@@ -4,10 +4,19 @@
 \alias{get.growth.rate}
 \title{Extract exponential growth rate from a time series of ln(population abundance)}
 \usage{
-get.growth.rate(x, y, id, plot.best.Q = F, fpath = NA,
+get.growth.rate(
+  x,
+  y,
+  id,
+  plot.best.Q = F,
+  fpath = NA,
   methods = c("linear", "lag", "sat", "flr", "lagsat"),
-  model.selection = c("AICc"), min.exp.obs = 3,
-  internal.r2.cutoff = 0, verbose = FALSE, zero.time = T)
+  model.selection = c("AICc"),
+  min.exp.obs = 3,
+  internal.r2.cutoff = 0,
+  verbose = FALSE,
+  zero.time = T
+)
 }
 \arguments{
 \item{x}{Time steps}

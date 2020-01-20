@@ -4,8 +4,11 @@
 \alias{predict.nbcurve}
 \title{Predict values from nbcurve fit}
 \usage{
-predict.nbcurve(fit.info, newdata = data.frame(temperature = seq(-2, 40,
-  0.1)), se.fit = FALSE)
+predict.nbcurve(
+  fit.info,
+  newdata = data.frame(temperature = seq(-2, 40, 0.1)),
+  se.fit = FALSE
+)
 }
 \arguments{
 \item{fit.info}{The result of a single TPC curve fit from get.nbcurve.tpc}

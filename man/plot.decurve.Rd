@@ -4,8 +4,13 @@
 \alias{plot.decurve}
 \title{Plotting function for single Double Exponential curve}
 \usage{
-plot.decurve(fit.info, plot.ci = TRUE, plot.obs = TRUE, xlim = c(-2,
-  40), ylim = c(-0.2, 5))
+plot.decurve(
+  fit.info,
+  plot.ci = TRUE,
+  plot.obs = TRUE,
+  xlim = c(-2, 40),
+  ylim = c(-0.2, 5)
+)
 }
 \arguments{
 \item{fit.info}{The result of a single TPC curve fit from get.decurve.tpc}

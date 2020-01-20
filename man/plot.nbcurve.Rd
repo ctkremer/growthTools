@@ -4,8 +4,13 @@
 \alias{plot.nbcurve}
 \title{Plotting function for single Norberg curve}
 \usage{
-plot.nbcurve(fit.info, plot.ci = TRUE, plot.obs = TRUE, xlim = c(-2,
-  40), ylim = c(-0.2, 5))
+plot.nbcurve(
+  fit.info,
+  plot.ci = TRUE,
+  plot.obs = TRUE,
+  xlim = c(-2, 40),
+  ylim = c(-0.2, 5)
+)
 }
 \arguments{
 \item{fit.info}{The result of a single TPC curve fit from get.nbcurve.tpc}
