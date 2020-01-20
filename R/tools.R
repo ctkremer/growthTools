@@ -88,8 +88,6 @@ flr<-function(x,a,b,B2,s=1E-10){
 #' 
 #' @return This function returns a linear model regressing ln(abundance) on time
 #' 
-#' @examples 
-#' 
 #' @export
 #' @import graphics
 #' @import grDevices
@@ -125,8 +123,6 @@ get.gr<-function(x,y,plotQ=F,fpath=NA,id=''){
 #' @param id Label corresponding to the population/strain/species of interest
 #' 
 #' @return This function returns a nonlinear least-squares regression model
-#' 
-#' @examples 
 #' 
 #' @export
 #' @import graphics
@@ -188,8 +184,6 @@ get.gr.lag<-function(x,y,plotQ=F,fpath=NA,id=''){
 #' @param id Label corresponding to the population/strain/species of interest
 #' 
 #' @return This function returns a nonlinear least-squares regression model
-#' 
-#' @examples 
 #' 
 #' @export
 #' @import graphics
@@ -256,8 +250,6 @@ get.gr.sat<-function(x,y,plotQ=F,fpath=NA,id=''){
 #' 
 #' @return This function returns a nonlinear least-squares regression model
 #' 
-#' @examples 
-#' 
 #' @export
 #' @import graphics
 #' @import grDevices
@@ -316,8 +308,6 @@ get.gr.flr<-function(x,y,plotQ=F,fpath=NA,id=''){
 #' @param id Label corresponding to the population/strain/species of interest
 #' 
 #' @return This function returns a nonlinear least-squares regression model
-#' 
-#' @examples 
 #' 
 #' @export
 #' @import graphics
@@ -416,8 +406,6 @@ detect<-function(x){
 #' 
 #' @return A data frame containing the identity of the best model, the content of the best model, the estimated slopes of the increasing linear portion of the regressions (ie, exponential growth rate), the standard errors associated with these slopes, the IC table used to determine the best model, and the full list of all models fit. See vignette for details.
 #' 
-#' 
-#' @examples 
 #' 
 #' @export
 #' @import bbmle
