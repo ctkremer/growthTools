@@ -158,7 +158,8 @@ decurve2<-function(temperature,topt,phi,b2,d0,d2){
 #' @import grDevices
 #' @import mleTools
 #' @import stats
-get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=F,conf.bandQ=T,fpath=NA,id=NA,suppress.grid.mle2.warnings=TRUE,...){
+get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=FALSE,conf.bandQ=TRUE,
+                          fpath=NA,id=NA,suppress.grid.mle2.warnings=TRUE,...){
   tpc.tmp<-na.omit(data.frame(temperature,mu))
   ntemps<-length(unique(tpc.tmp$temperature))
   
@@ -192,7 +193,7 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=F,conf.bandQ=T
   if(method=='mle2'){
     print("Caution: this option not fully beta tested... 7/30/18")
     topt.guess <- tpc.tmp$temperature[tpc.tmp$mu==max(tpc.tmp$mu)]
-    w.guess <- diff(range(tmp$temperature))
+    w.guess <- diff(range(tpc.tmp$temperature))
     a.guess <- -1.11
     b.guess <- 0.05
     fit<-mle2(mu~dnorm(mean=nbcurve(temperature,topt,w,a,b),sd=exp(s)),
@@ -247,12 +248,11 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=F,conf.bandQ=T
     }
 
     if(!is.na(fpath)){
-      #time<-Sys.time()
-      #time<-gsub(x = time,pattern = ":",replacement = "_")
       if(is.na(id)){
+        time<-Sys.time()
+        time<-gsub(x = time,pattern = ":",replacement = "_")
         full.path<-paste(fpath,"TPC_fit_",time,".pdf",sep='')        
       }else{
-        #full.path<-paste(fpath,"TPC_fit_",id,"_",time,".pdf",sep='') 
         full.path<-paste(fpath,"TPC_fit_",id,".pdf",sep='') 
       }
       ggsave(device = pdf(),filename = full.path,p1,width = 5,height = 4)
@@ -443,12 +443,11 @@ get.decurve.tpc<-function(temperature,mu,method='grid.mle2',start.method='genera
     }
     
     if(!is.na(fpath)){
-      #time<-Sys.time()
-      #time<-gsub(x = time,pattern = ":",replacement = "_")
       if(is.na(id)){
+        time<-Sys.time()
+        time<-gsub(x = time,pattern = ":",replacement = "_")
         full.path<-paste(fpath,"TPC_fit_",time,".pdf",sep='')        
       }else{
-        #full.path<-paste(fpath,"TPC_fit_",id,"_",time,".pdf",sep='') 
         full.path<-paste(fpath,"TPC_fit_",id,".pdf",sep='') 
       }
       ggsave(device = pdf(),filename = full.path,p1,width = 5,height = 4)
@@ -618,7 +617,7 @@ plot.nbcurve<-function(fit.info,plot.ci=TRUE,plot.obs=TRUE,xlim=c(-2,40),ylim=c(
   }
   
   # generate basic plot
-  cplot<-ggplot(preds,aes(x=temperature,y=mu))+
+  cplot<-ggplot(preds,aes(x=.data$temperature,y=.data$mu))+
     geom_hline(yintercept = 0)+
     geom_line()+
     coord_cartesian(xlim=xlim,ylim=ylim)+
@@ -626,7 +625,7 @@ plot.nbcurve<-function(fit.info,plot.ci=TRUE,plot.obs=TRUE,xlim=c(-2,40),ylim=c(
   
   # add confidence bands?
   if(plot.ci){
-    cplot<-cplot+geom_ribbon(aes(ymin=mu-1.96*se.fit,ymax=mu+1.96*se.fit),alpha=0.2)
+    cplot<-cplot+geom_ribbon(aes(ymin=.data$mu-1.96*.data$se.fit,ymax=.data$mu+1.96*.data$se.fit),alpha=0.2)
   }
   
   # add observations?
@@ -675,6 +674,7 @@ predict.decurve<-function(fit.info,newdata=data.frame(temperature=seq(-2,40,0.1)
 #' @param ylim y-axis range (adjusts internally to -0.2 to slightly above umax+CI)
 #' 
 #' @export
+#' @import ggplot2
 plot.decurve<-function(fit.info,plot.ci=TRUE,plot.obs=TRUE,xlim=c(-2,40),ylim=c(-0.2,5)){
   
   # Check level of nesting for fit.info, and reduce if necessary
@@ -693,7 +693,7 @@ plot.decurve<-function(fit.info,plot.ci=TRUE,plot.obs=TRUE,xlim=c(-2,40),ylim=c(
   }
   
   # generate basic plot
-  cplot<-ggplot(preds,aes(x=temperature,y=mu))+
+  cplot<-ggplot(preds,aes(x=.data$temperature,y=.data$mu))+
     geom_hline(yintercept = 0)+
     geom_line()+
     coord_cartesian(xlim=xlim,ylim=ylim)+
@@ -701,7 +701,7 @@ plot.decurve<-function(fit.info,plot.ci=TRUE,plot.obs=TRUE,xlim=c(-2,40),ylim=c(
   
   # add confidence bands?
   if(plot.ci){
-    cplot<-cplot+geom_ribbon(aes(ymin=mu-1.96*se.fit,ymax=mu+1.96*se.fit),alpha=0.2)
+    cplot<-cplot+geom_ribbon(aes(ymin=.data$mu-1.96*.data$se.fit,ymax=.data$mu+1.96*.data$se.fit),alpha=0.2)
   }
   
   # add observations?
