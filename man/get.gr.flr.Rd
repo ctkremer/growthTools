@@ -26,6 +26,3 @@ the assumption that abundances decrease linearly at first, but then hit a floor
 and remain constant - consistent with a population that declines to the detection
 limit of fluoresence.
 }
-\examples{
-
-}

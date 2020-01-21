@@ -23,6 +23,3 @@ This function returns a linear model regressing ln(abundance) on time
 \description{
 This function fits a linear model to ln(abundance) data.
 }
-\examples{
-
-}

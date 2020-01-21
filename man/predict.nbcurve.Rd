@@ -4,7 +4,7 @@
 \alias{predict.nbcurve}
 \title{Predict values from nbcurve fit}
 \usage{
-predict.nbcurve(
+\method{predict}{nbcurve}(
   fit.info,
   newdata = data.frame(temperature = seq(-2, 40, 0.1)),
   se.fit = FALSE

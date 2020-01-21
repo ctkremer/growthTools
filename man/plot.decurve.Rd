@@ -4,7 +4,7 @@
 \alias{plot.decurve}
 \title{Plotting function for single Double Exponential curve}
 \usage{
-plot.decurve(
+\method{plot}{decurve}(
   fit.info,
   plot.ci = TRUE,
   plot.obs = TRUE,

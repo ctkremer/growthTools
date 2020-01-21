@@ -26,6 +26,3 @@ the assumption that abundances are nearly constant for several time points, befo
 exponential growth kicks in; subsequently, growth saturates and abundances become 
 constant again.
 }
-\examples{
-
-}

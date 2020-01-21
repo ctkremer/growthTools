@@ -62,7 +62,7 @@ possibility in future versions of this package.
 \examples{
 
 curve(lag(x,5,0,4,s=1E-10),0,10,col='green',ylim=c(0,11),ylab='Abundance')
-curve(sat(x,0.9,0,8,s=1E-10),0,10,col='red',add=T)
-curve(lagsat(x,5.1,0,4,8,s=1E-10),0,10,col='blue',add=T)
+curve(sat(x,0.9,0,8,s=1E-10),0,10,col='red',add=TRUE)
+curve(lagsat(x,5.1,0,4,8,s=1E-10),0,10,col='blue',add=TRUE)
 
 }

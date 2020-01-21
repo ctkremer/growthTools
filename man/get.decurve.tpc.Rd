@@ -22,6 +22,10 @@ get.decurve.tpc(
 
 \item{mu}{Exponential growth rate}
 
+\item{method}{Specify which fitting algorithm to use, 'mle2' or 'grid.mle2'}
+
+\item{start.method}{Specify method for generating starting grid for 'grid.mle2' option}
+
 \item{plotQ}{Should regression be visualized?}
 
 \item{conf.bandQ}{Should we calculate a confidence band around the regression? logical.}
@@ -33,8 +37,6 @@ get.decurve.tpc(
 \item{suppress.grid.mle2.warnings}{logical; should warnings arising from grid.mle2 invocation be suppressed (TRUE), or displayed (FALSE)? Default is TRUE.}
 
 \item{...}{Additional arguments passed to grid.mle2 (e.g., control=list(maxit=2000))}
-
-\item{fit.method}{Specify which fitting algorithm to use, 'mle2' or 'grid.mle2'}
 }
 \description{
 Fit Double Exponential curve to growth rate vs. temperature data

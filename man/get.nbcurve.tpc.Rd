@@ -8,8 +8,8 @@ get.nbcurve.tpc(
   temperature,
   mu,
   method = "grid.mle2",
-  plotQ = F,
-  conf.bandQ = T,
+  plotQ = FALSE,
+  conf.bandQ = TRUE,
   fpath = NA,
   id = NA,
   suppress.grid.mle2.warnings = TRUE,
@@ -20,6 +20,8 @@ get.nbcurve.tpc(
 \item{temperature}{Temperature}
 
 \item{mu}{Exponential growth rate}
+
+\item{method}{Specify which fitting algorithm to use, 'mle2' or 'grid.mle2'}
 
 \item{plotQ}{Should regression be visualized?}
 
@@ -32,8 +34,6 @@ get.nbcurve.tpc(
 \item{suppress.grid.mle2.warnings}{logical; should warnings arising from grid.mle2 invocation be suppressed (TRUE), or displayed (FALSE)? Default is TRUE.}
 
 \item{...}{Additional arguments passed to grid.mle2 (e.g., control=list(maxit=2000))}
-
-\item{fit.method}{Specify which fitting algorithm to use, 'mle2' or 'grid.mle2'}
 }
 \description{
 Note: this function fits a re-parameterized version of the original Norberg curve (Norberg et al. 2001, Thomas et al. 2012), altered to depend directly on a parameter that provides the true optimum temperature (ie, the temperature at which growth rate is maximal). See \code{nbcurve()} for more.

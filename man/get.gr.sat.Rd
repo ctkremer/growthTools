@@ -25,6 +25,3 @@ This function fits a smoothed piecewise linear model to ln(abundance) data, with
 the assumption that abundances increase linearly at first, but then saturate and
 remain constant.
 }
-\examples{
-
-}

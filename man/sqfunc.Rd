@@ -6,6 +6,13 @@
 \usage{
 sqfunc(x, b, s)
 }
+\arguments{
+\item{x}{time}
+
+\item{b}{slope}
+
+\item{s}{smoothing parameter}
+}
 \description{
 Helper function for smoothed lagged/saturating abundance equations
 }

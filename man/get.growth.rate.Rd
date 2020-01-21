@@ -37,6 +37,8 @@ get.growth.rate(
 
 \item{internal.r2.cutoff}{control parameter specifying the R2 criteria that may be applied to drop fits where the number of observations in the exponential portion is equal to 3. The default value of zero permits all fits of 3 obs to be considered.}
 
+\item{verbose}{logical; display or suppress diagnostics}
+
 \item{zero.time}{if TRUE, shift time axis so that each time series starts at time = 0}
 }
 \value{
@@ -49,7 +51,4 @@ These methods allow for the possibility that exponential growth may lag or satur
 or both, over the course of the time series. All selected methods are used to fit 
 models to the time series. Subsequently, model comparison (based on AIC) is used to 
 determine which model best fits the focal data.
-}
-\examples{
-
 }

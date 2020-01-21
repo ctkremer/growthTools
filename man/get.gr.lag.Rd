@@ -25,6 +25,3 @@ This function fits a smoothed piecewise linear model to ln(abundance) data, with
 the assumption that abundances are nearly constant for several time points, before 
 exponential growth kicks in.
 }
-\examples{
-
-}
