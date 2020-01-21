@@ -91,8 +91,8 @@ flr<-function(x,a,b,B2,s=1E-10){
 #' 
 #' @export
 #' @import graphics
-#' @import grDevices
-#' @import stats
+#' @importFrom grDevices pdf dev.off
+#' @importFrom stats lm abline
 get.gr<-function(x,y,plotQ=F,fpath=NA,id=''){
   lm1<-lm(y~x)
   
@@ -127,9 +127,9 @@ get.gr<-function(x,y,plotQ=F,fpath=NA,id=''){
 #' 
 #' @export
 #' @import graphics
-#' @import grDevices
+#' @importFrom grDevices pdf dev.off
 #' @import minpack.lm
-#' @import stats
+#' @importFrom stats curve
 #' @import zoo
 get.gr.lag<-function(x,y,plotQ=F,fpath=NA,id=''){
   
@@ -188,9 +188,9 @@ get.gr.lag<-function(x,y,plotQ=F,fpath=NA,id=''){
 #' 
 #' @export
 #' @import graphics
-#' @import grDevices
+#' @importFrom grDevices pdf dev.off
 #' @import minpack.lm
-#' @import stats
+#' @importFrom stats curve
 #' @import zoo
 get.gr.sat<-function(x,y,plotQ=F,fpath=NA,id=''){
   
@@ -253,9 +253,9 @@ get.gr.sat<-function(x,y,plotQ=F,fpath=NA,id=''){
 #' 
 #' @export
 #' @import graphics
-#' @import grDevices
+#' @importFrom grDevices pdf dev.off
 #' @import minpack.lm
-#' @import stats
+#' @importFrom stats curve
 #' @import zoo
 get.gr.flr<-function(x,y,plotQ=F,fpath=NA,id=''){
   
@@ -312,9 +312,9 @@ get.gr.flr<-function(x,y,plotQ=F,fpath=NA,id=''){
 #' 
 #' @export
 #' @import graphics
-#' @import grDevices
+#' @importFrom grDevices pdf dev.off
 #' @import minpack.lm
-#' @import stats
+#' @importFrom stats curve
 #' @import zoo
 get.gr.lagsat<-function(x,y,plotQ=F,fpath=NA,id=''){
   
@@ -366,7 +366,7 @@ get.gr.lagsat<-function(x,y,plotQ=F,fpath=NA,id=''){
 #' @return Slope of the linear regression
 #' 
 #' @export
-#' @import stats
+#' @importFrom stats lm
 localslope<-function (d) {
   m <- lm(y~x, as.data.frame(d))
   return(coef(m)[2])
@@ -607,9 +607,9 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
     
     # compare successful models
     switch(model.selection,
-           AIC={ictab<-AICtab(mod.list,mnames = mod.names)},
-           AICc={ictab<-AICctab(mod.list,mnames = mod.names)},
-           BIC={ictab<-BICtab(mod.list,mnames = mod.names)},
+           AIC={ictab <- bbmle::AICtab(mod.list,mnames = mod.names)},
+           AICc={ictab <- bbmle::AICctab(mod.list,mnames = mod.names)},
+           BIC={ictab <- bbmle::BICtab(mod.list,mnames = mod.names)},
            print("Error! Invalid IC method selected in get.nbcurve()"))
     
     best.mod.id<-which(mod.names==attr(ictab,"row.names")[1])

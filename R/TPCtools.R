@@ -155,9 +155,9 @@ decurve2<-function(temperature,topt,phi,b2,d0,d2){
 #' @import bbmle
 #' @import emdbook
 #' @import ggplot2
-#' @import grDevices
+#' @importFrom grDevices pdf dev.off
 #' @import mleTools
-#' @import stats
+#' @importFrom stats na.omit vcov uniroot
 get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=FALSE,conf.bandQ=TRUE,
                           fpath=NA,id=NA,suppress.grid.mle2.warnings=TRUE,...){
   tpc.tmp<-na.omit(data.frame(temperature,mu))
@@ -287,10 +287,10 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=FALSE,conf.ban
 #' @import dplyr
 #' @import emdbook
 #' @import ggplot2
-#' @import grDevices
+#' @importFrom grDevices pdf dev.off
 #' @import mleTools
 #' @import mgcv
-#' @import stats
+#' @importFrom stats na.omit vcov uniroot
 get.decurve.tpc<-function(temperature,mu,method='grid.mle2',start.method='general.grid',
                           plotQ=F,conf.bandQ=T,fpath=NA,id=NA,suppress.grid.mle2.warnings=TRUE,...){
   tpc.tmp<-na.omit(data.frame(temperature,mu))
@@ -500,7 +500,7 @@ get.R2<-function(pds,obs){
 #' @param verbose 'print details?'
 #' 
 #' @export
-#' @import stats
+#' @importFrom stats D
 deltavar2<-function (fun, meanval = NULL, vars, Sigma, verbose = FALSE) 
 {
   #expr <- as.expression(substitute(fun))    
