@@ -407,7 +407,7 @@ detect<-function(x){
 #' 
 #' @return A data frame containing the identity of the best model, the content of the best model, the estimated slopes of the increasing linear portion of the regressions (ie, exponential growth rate), the standard errors associated with these slopes, the IC table used to determine the best model, and the full list of all models fit. See vignette for details.
 #' 
-#' @example 
+#' @examples
 #' sdat<-data.frame(trt=c(rep('A',10),rep('B',10),rep('C',10),rep('D',10)),
 #'                 dtime=rep(seq(1,10),4),
 #'                 ln.fluor=c(c(1,1.1,0.9,1,2,3,4,5,5.2,4.7),
