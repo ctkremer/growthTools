@@ -21,9 +21,9 @@
 #'   \item{genus of phytoplankton population}
 #'   \item{species}{species epithet of phytoplankton population}
 #'   \item{group}{functional group phytoplankton species belongs to}
-#'   \item{source}{location where phytoplankton species were isolate (NB = Narragansett Bay)}
-#'   \item{plate.temperature}{temperature of well plate during fluorescence readings(?)}
-#'   \item{id}{unique identifier for single experimental phytoplankton populations (experimental units)}
+#'   \item{source}{location where phytoplankton species were isolated, NB is Narragansett Bay}
+#'   \item{plate.temperature}{temperature of well plate during fluorescence readings}
+#'   \item{id}{unique identifier for single experimental phytoplankton populations}
 #' }
 #' @source Elena Litchman/Tatiana Severin, W.K. Kellogg Biological Station, Michigan State University
 "abundance"
@@ -40,7 +40,7 @@
 #'   \item{isolate.id}{name of a given phytoplankton isolate}
 #'   \item{temperature}{temperature, in Celsius}
 #'   \item{dilution}{dilution number, ranging from 1-3}
-#'   \item{replicate}{experimental replicate (4 replicates per temperature/isolate)}
+#'   \item{replicate}{experimental replicate, 4 replicates per temperature and isolate}
 #'   \item{mu}{estimated growth rate}
 #'   \item{best.model}{time series model generating estimated growth rate}
 #'   \item{id}{unique identifier combining isolate id and dilution only}
