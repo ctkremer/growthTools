@@ -38,3 +38,10 @@ get.nbcurve.tpc(
 \description{
 Note: this function fits a re-parameterized version of the original Norberg curve (Norberg et al. 2001, Thomas et al. 2012), altered to depend directly on a parameter that provides the true optimum temperature (ie, the temperature at which growth rate is maximal). See \code{nbcurve()} for more.
 }
+\examples{
+data("example_TPC_data")
+sp1 <- example_TPC_data \%>\% filter(isolate.id=='CH30_4_RI_03' & dilution==1)
+nbcurve.traits<-get.nbcurve.tpc(sp1$temperature,sp1$mu,method='grid.mle2',plotQ=TRUE,conf.bandQ = TRUE,fpath=NA)
+nbcurve.traits
+
+}

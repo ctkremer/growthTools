@@ -15,7 +15,7 @@ get.growth.rate(
   min.exp.obs = 3,
   internal.r2.cutoff = 0,
   verbose = FALSE,
-  zero.time = T
+  zero.time = TRUE
 )
 }
 \arguments{
@@ -64,7 +64,7 @@ sdat<-data.frame(trt=c(rep('A',10),rep('B',10),rep('C',10),rep('D',10)),
 sdat2<-sdat[sdat$trt=='A',]
 
 # calculate growth rate using all available methods:
-res<-get.growth.rate(sdat2$dtime,sdat2$ln.fluor,plot.best.Q = T,id = 'Population A')
+res<-get.growth.rate(sdat2$dtime,sdat2$ln.fluor,plot.best.Q = TRUE,id = 'Population A')
 res$best.model
 res$best.slope
 
