@@ -48,8 +48,8 @@ sqfunc<-function(x,b,s){
 #' @examples 
 #' 
 #' curve(lag(x,5,1,4,s=1E-10),0,10,col='green',ylim=c(0,11),ylab='Abundance')
-#' curve(sat(x,0.9,0,8,s=1E-10),0,10,col='red',add=TRUE)
-#' curve(lagsat(x,5.1,0,4,8,s=1E-10),0,10,col='blue',add=TRUE)
+#' curve(sat(x,0.9,1,8,s=1E-10),0,10,col='red',add=TRUE)
+#' curve(lagsat(x,5.1,1,4,8,s=1E-10),0,10,col='blue',add=TRUE)
 #' 
 #' @export
 lagsat<-function(x,a,b,B1,B2,s=1E-10){
