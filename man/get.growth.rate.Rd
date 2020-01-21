@@ -52,3 +52,20 @@ or both, over the course of the time series. All selected methods are used to fi
 models to the time series. Subsequently, model comparison (based on AIC) is used to 
 determine which model best fits the focal data.
 }
+\examples{
+sdat<-data.frame(trt=c(rep('A',10),rep('B',10),rep('C',10),rep('D',10)),
+                dtime=rep(seq(1,10),4),
+                ln.fluor=c(c(1,1.1,0.9,1,2,3,4,5,5.2,4.7),
+                           c(1.1,0.9,1,2,3,4,4.1,4.2,3.7,4)+0.3,
+                           c(3.5,3.4,3.6,3.5,3.2,2.2,1.2,0.5,0.4,0.1),
+                           c(5.5,4.5,3.5,2.5,1.5,0,0.2,-0.1,0,-0.1)))
+                           
+# for single replicate                            
+sdat2<-sdat[sdat$trt=='A',]
+
+# calculate growth rate using all available methods:
+res<-get.growth.rate(sdat2$dtime,sdat2$ln.fluor,plot.best.Q = T,id = 'Population A')
+res$best.model
+res$best.slope
+
+}

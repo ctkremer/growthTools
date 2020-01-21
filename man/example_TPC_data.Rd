@@ -16,7 +16,7 @@
   \item{id}{unique identifier combining isolate id and dilution only}
 }}
 \source{
-Elena Litchman/Tatiana Severin, W.K. Kellogg Biological Station, Michigan State University
+Elena Litchman and Tatiana Severin, W.K. Kellogg Biological Station, Michigan State University
 }
 \usage{
 example_TPC_data
