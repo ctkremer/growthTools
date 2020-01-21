@@ -138,12 +138,12 @@ get.gr.lag<-function(x,y,plotQ=F,fpath=NA,id=''){
   fit.lag<-try(minpack.lm::nlsLM(y ~ lag(x,a,b,B1,s=1E-10),
                  start = c(B1=mean(x)-(mean(x)-min(x))/2, a=min(y), b=1),data = data,
                  lower = c(B1=-Inf,a=-Inf,b=0.0001),
-                 control = nls.lm.control(maxiter=1000,maxfev=1000)),silent=T)
+                 control = nls.lm.control(maxiter=1000,maxfev=1000)),silent=TRUE)
   if(class(fit.lag)=='try-error'){
     fit.lag<-try(minpack.lm::nlsLM(y ~ lag(x,a,b,B1,s=1E-10),
                        start = c(B1=10, a=min(y), b=1),data = data,
                        lower = c(B1=-Inf,a=-Inf,b=0.0001),
-                       control = nls.lm.control(maxiter=1000,maxfev=1000)),silent=T)
+                       control = nls.lm.control(maxiter=1000,maxfev=1000)),silent=TRUE)
   }
   if(class(fit.lag)=='try-error'){
     if(!grepl(attr(fit.lag,"condition"),pattern='singular gradient matrix')){
@@ -200,13 +200,13 @@ get.gr.sat<-function(x,y,plotQ=F,fpath=NA,id=''){
                  start=c(B2=mean(x)+(max(x)-mean(x))/2,a=a.guess,b=round(max(c(slopes,0.0001)),5)),
                  data = data,
                  lower = c(B2=-Inf,a=-Inf,b=0.0001),
-                 control = nls.lm.control(maxiter=1000,maxfev=1000)),silent=T)
+                 control = nls.lm.control(maxiter=1000,maxfev=1000)),silent=TRUE)
   if(class(fit.sat)=='try-error'){
     fit.sat<-try(minpack.lm::nlsLM(y ~ sat(x,a,b,B2,s=1E-10),
                        start=c(B2=10,a=a.guess,b=round(max(c(slopes,0.0001)),5)),
                        data = data,
                        lower = c(B2=-Inf,a=-Inf,b=0.0001),
-                       control = nls.lm.control(maxiter=1000,maxfev=1000)),silent=T)
+                       control = nls.lm.control(maxiter=1000,maxfev=1000)),silent=TRUE)
   }
   if(class(fit.sat)=='try-error'){
     if(!grepl(attr(fit.sat,"condition"),pattern='singular gradient matrix')){
@@ -264,7 +264,7 @@ get.gr.flr<-function(x,y,plotQ=F,fpath=NA,id=''){
                  start=c(a=a.guess,b=min(c(-0.1,round(min(slopes),5))),B2=mean(x)),
                  data = data,
                  upper = c(a=Inf,b=-0.00000001,B2=Inf),
-                 control = nls.lm.control(maxiter=1000,maxfev=1000)),silent=T)
+                 control = nls.lm.control(maxiter=1000,maxfev=1000)),silent=TRUE)
   
   if(class(fit.flr)=='try-error'){
     if(!grepl(attr(fit.flr,"condition"),pattern='singular gradient matrix')){
@@ -324,7 +324,7 @@ get.gr.lagsat<-function(x,y,plotQ=F,fpath=NA,id=''){
                     start = c(B1=mean(x)-(mean(x)-min(x))/2,B2=mean(x)+(max(x)-mean(x))/2, a=min(y)+0.1, b=1),
                     data = data,
                     lower = c(B1=-Inf,B2=-Inf,a=-Inf,b=0.0001),
-                    control = nls.lm.control(maxiter=1000,maxfev=1000)),silent=T)
+                    control = nls.lm.control(maxiter=1000,maxfev=1000)),silent=TRUE)
   if(class(fit.lagsat)=='try-error'){
     if(!grepl(attr(fit.lagsat,"condition"),pattern='singular gradient matrix')){
       print(attr(fit.lagsat,"condition"))
@@ -415,21 +415,21 @@ detect<-function(x){
 #' sdat2<-sdat[sdat$trt=='A',]
 #' 
 #' # calculate growth rate using all available methods:
-#' res<-get.growth.rate(sdat2$dtime,sdat2$ln.fluor,plot.best.Q = T,id = 'Population A')
+#' res<-get.growth.rate(sdat2$dtime,sdat2$ln.fluor,plot.best.Q = TRUE,id = 'Population A')
 #' res$best.model
 #' res$best.slope
 #' 
 #' @export
 #' @import bbmle
 #' @importFrom stats vcov
-get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag','sat','flr','lagsat'),model.selection=c('AICc'),min.exp.obs=3,internal.r2.cutoff=0,verbose=FALSE,zero.time=T){
+get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag','sat','flr','lagsat'),model.selection=c('AICc'),min.exp.obs=3,internal.r2.cutoff=0,verbose=FALSE,zero.time=TRUE){
   
   # thin vectors if abundance measure is NA
   x<-x[!is.na(y)]
   y<-y[!is.na(y)]
   
   if(zero.time){
-    x <- x-min(x,na.rm = T)
+    x <- x-min(x,na.rm = TRUE)
   }
   
   if(sum(methods %in% c('linear','lag','sat','flr','lagsat'))==0){
@@ -651,11 +651,11 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
       # want to show the best model in the requested model set... given methods options.
       # no model can end up in the model set if not requested, so this should be o.k. as written
       gigo<-switch(result$best.model,
-                   gr=get.gr(x,y,plotQ=T,fpath=fpath,id=id[1]),
-                   gr.lag=get.gr.lag(x,y,plotQ=T,fpath=fpath,id=id[1]),
-                   gr.sat=get.gr.sat(x,y,plotQ=T,fpath=fpath,id=id[1]),
-                   gr.flr=get.gr.flr(x,y,plotQ=T,fpath=fpath,id=id[1]),
-                   gr.lagsat=get.gr.lagsat(x,y,plotQ=T,fpath=fpath,id=id[1]))
+                   gr=get.gr(x,y,plotQ=TRUE,fpath=fpath,id=id[1]),
+                   gr.lag=get.gr.lag(x,y,plotQ=TRUE,fpath=fpath,id=id[1]),
+                   gr.sat=get.gr.sat(x,y,plotQ=TRUE,fpath=fpath,id=id[1]),
+                   gr.flr=get.gr.flr(x,y,plotQ=TRUE,fpath=fpath,id=id[1]),
+                   gr.lagsat=get.gr.lagsat(x,y,plotQ=TRUE,fpath=fpath,id=id[1]))
     }
   }else{
     print("Warning: fewer than two unique time points provided")

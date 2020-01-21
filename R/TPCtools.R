@@ -238,7 +238,7 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=FALSE,conf.ban
     # use function to generate a single curve plot:
     p1<-plot.nbcurve(vec,xlim = c(min(tpc.tmp$temperature),
                                   max(tpc.tmp$temperature)),
-                         plot.ci = conf.bandQ,plot.obs = T)
+                         plot.ci = conf.bandQ,plot.obs = TRUE)
     p1<-p1+scale_x_continuous('Temperature (C)')+
       scale_y_continuous('Growth rate (1/day)')+
       theme(panel.grid = element_blank())
@@ -292,7 +292,7 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=FALSE,conf.ban
 #' @import mgcv
 #' @importFrom stats na.omit uniroot
 get.decurve.tpc<-function(temperature,mu,method='grid.mle2',start.method='general.grid',
-                          plotQ=F,conf.bandQ=T,fpath=NA,id=NA,suppress.grid.mle2.warnings=TRUE,...){
+                          plotQ=F,conf.bandQ=TRUE,fpath=NA,id=NA,suppress.grid.mle2.warnings=TRUE,...){
   tpc.tmp<-na.omit(data.frame(temperature,mu))
   ntemps<-length(unique(tpc.tmp$temperature))
   
@@ -433,7 +433,7 @@ get.decurve.tpc<-function(temperature,mu,method='grid.mle2',start.method='genera
     # use function to generate a single curve plot:
     p1<-plot.decurve(vec,xlim = c(min(tpc.tmp$temperature),
                                   max(tpc.tmp$temperature)),
-                     plot.ci = conf.bandQ,plot.obs = T)
+                     plot.ci = conf.bandQ,plot.obs = TRUE)
     p1<-p1+scale_x_continuous('Temperature (C)')+
       scale_y_continuous('Growth rate (1/day)')+
       theme(panel.grid = element_blank())
