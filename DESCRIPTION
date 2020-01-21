@@ -11,6 +11,7 @@ LazyData: TRUE
 RoxygenNote: 7.0.1
 Encoding: UTF-8
 Imports: bbmle,
+    devtools,
     emdbook,
     ggplot2,
     graphics,
