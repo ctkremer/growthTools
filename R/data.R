@@ -18,7 +18,7 @@
 #'   \item{temperature}{temperature, in Celsius}
 #'   \item{dtime}{time since first measure of population abundance, in hours}
 #'   \item{log.fluor}{natural log of fluorescence}
-#'   \item{genus of phytoplankton population}
+#'   \item{genus}{genus of phytoplankton population}
 #'   \item{species}{species epithet of phytoplankton population}
 #'   \item{group}{functional group phytoplankton species belongs to}
 #'   \item{source}{location where phytoplankton species were isolated, NB is Narragansett Bay}
