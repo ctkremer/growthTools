@@ -10,7 +10,7 @@
   \item{isolate.id}{name of a given phytoplankton isolate}
   \item{temperature}{temperature, in Celsius}
   \item{dilution}{dilution number, ranging from 1-3}
-  \item{replicate}{experimental replicate (4 replicates per temperature/isolate)}
+  \item{replicate}{experimental replicate, 4 replicates per temperature and isolate}
   \item{mu}{estimated growth rate}
   \item{best.model}{time series model generating estimated growth rate}
   \item{id}{unique identifier combining isolate id and dilution only}

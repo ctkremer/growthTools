@@ -22,9 +22,9 @@
   \item{genus of phytoplankton population}
   \item{species}{species epithet of phytoplankton population}
   \item{group}{functional group phytoplankton species belongs to}
-  \item{source}{location where phytoplankton species were isolate (NB = Narragansett Bay)}
-  \item{plate.temperature}{temperature of well plate during fluorescence readings(?)}
-  \item{id}{unique identifier for single experimental phytoplankton populations (experimental units)}
+  \item{source}{location where phytoplankton species were isolated, NB is Narragansett Bay}
+  \item{plate.temperature}{temperature of well plate during fluorescence readings}
+  \item{id}{unique identifier for single experimental phytoplankton populations}
 }}
 \source{
 Elena Litchman/Tatiana Severin, W.K. Kellogg Biological Station, Michigan State University
