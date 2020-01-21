@@ -231,6 +231,7 @@ Note that if one model strongly outperforms the rest, the choice of IC to use li
 Load data set:
 
 ```{r}
+data("example_TPC_data")
 head(example_TPC_data)
 ```
 
