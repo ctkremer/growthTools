@@ -11,6 +11,7 @@ vignette: >
   %\VignetteIndexEntry{growthTools vignette}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteDepends{devtools}
 
 ---
 
@@ -34,6 +35,7 @@ Load essential packages, including `growthTools`.
 ```{r message=FALSE}
 # To direct vignette code to use the growthTools package during development, calling devtools::load_all() is suggested. When ready for release, use the library command. 
 # http://stackoverflow.com/questions/35727645/devtools-build-vignette-cant-find-functions
+# when switching, also remember to remove %\VignetteDepends{devtools} from header
 
 devtools::load_all()
 #library(growthTools)
