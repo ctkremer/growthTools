@@ -90,9 +90,9 @@ flr<-function(x,a,b,B2,s=1E-10){
 #' @return This function returns a linear model regressing ln(abundance) on time
 #' 
 #' @export
-#' @import graphics
+#' @importFrom graphics abline
 #' @importFrom grDevices pdf dev.off
-#' @importFrom stats lm abline
+#' @importFrom stats lm 
 get.gr<-function(x,y,plotQ=F,fpath=NA,id=''){
   lm1<-lm(y~x)
   
@@ -126,10 +126,9 @@ get.gr<-function(x,y,plotQ=F,fpath=NA,id=''){
 #' @return This function returns a nonlinear least-squares regression model
 #' 
 #' @export
-#' @import graphics
+#' @importFrom graphics curve plot
 #' @importFrom grDevices pdf dev.off
 #' @import minpack.lm
-#' @importFrom stats curve
 #' @import zoo
 get.gr.lag<-function(x,y,plotQ=F,fpath=NA,id=''){
   
@@ -187,10 +186,9 @@ get.gr.lag<-function(x,y,plotQ=F,fpath=NA,id=''){
 #' @return This function returns a nonlinear least-squares regression model
 #' 
 #' @export
-#' @import graphics
+#' @importFrom graphics curve plot
 #' @importFrom grDevices pdf dev.off
 #' @import minpack.lm
-#' @importFrom stats curve
 #' @import zoo
 get.gr.sat<-function(x,y,plotQ=F,fpath=NA,id=''){
   
@@ -252,10 +250,9 @@ get.gr.sat<-function(x,y,plotQ=F,fpath=NA,id=''){
 #' @return This function returns a nonlinear least-squares regression model
 #' 
 #' @export
-#' @import graphics
+#' @importFrom graphics curve plot
 #' @importFrom grDevices pdf dev.off
 #' @import minpack.lm
-#' @importFrom stats curve
 #' @import zoo
 get.gr.flr<-function(x,y,plotQ=F,fpath=NA,id=''){
   
@@ -311,10 +308,9 @@ get.gr.flr<-function(x,y,plotQ=F,fpath=NA,id=''){
 #' @return This function returns a nonlinear least-squares regression model
 #' 
 #' @export
-#' @import graphics
+#' @importFrom graphics curve plot
 #' @importFrom grDevices pdf dev.off
 #' @import minpack.lm
-#' @importFrom stats curve
 #' @import zoo
 get.gr.lagsat<-function(x,y,plotQ=F,fpath=NA,id=''){
   
