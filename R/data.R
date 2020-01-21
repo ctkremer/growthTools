@@ -8,7 +8,7 @@
 #'   \item{isolate.id}{name of a given phytoplankton isolate}
 #'   \item{experiment.ID}{unique identifier combining isolate, temperature, and dilution number}
 #'   \item{dilution}{dilution number, ranging from 1-3. Populations were periodically diluted to provide new nutrients for growth}
-#'   \item{replicate}{experimental replicate (4 replicates per temperature/isolate)}
+#'   \item{replicate}{experimental replicate (4 replicates per temperature and isolate)}
 #'   \item{plate.file}{name of data file produced by plate reader, containing fluorescence readings}
 #'   \item{date}{date of measurement, yyyy-mm-dd format}
 #'   \item{time}{time of day of measurement, hh:mm}
@@ -16,7 +16,7 @@
 #'   \item{well}{location of specific population in the 24-well plate}
 #'   \item{fluorescence}{measured fluorescence of population, a standard proxy for abundance}
 #'   \item{temperature}{temperature, in Celsius}
-#'   \item{dtime}{time since first measure of a population's abundance, in hours}
+#'   \item{dtime}{time since first measure of population abundance, in hours}
 #'   \item{log.fluor}{natural log of fluorescence}
 #'   \item{genus of phytoplankton population}
 #'   \item{species}{species epithet of phytoplankton population}
@@ -25,7 +25,7 @@
 #'   \item{plate.temperature}{temperature of well plate during fluorescence readings}
 #'   \item{id}{unique identifier for single experimental phytoplankton populations}
 #' }
-#' @source Elena Litchman/Tatiana Severin, W.K. Kellogg Biological Station, Michigan State University
+#' @source Elena Litchman and Tatiana Severin, W.K. Kellogg Biological Station, Michigan State University
 "abundance"
 
 #' Effect of temperature on phytoplankton growth rates
@@ -45,7 +45,7 @@
 #'   \item{best.model}{time series model generating estimated growth rate}
 #'   \item{id}{unique identifier combining isolate id and dilution only}
 #' }
-#' @source Elena Litchman/Tatiana Severin, W.K. Kellogg Biological Station, Michigan State University
+#' @source Elena Litchman and Tatiana Severin, W.K. Kellogg Biological Station, Michigan State University
 "example_TPC_data"
 
 
