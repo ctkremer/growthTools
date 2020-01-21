@@ -4,7 +4,7 @@
 \alias{predict.decurve}
 \title{Predict values from decurve fit}
 \usage{
-\method{predict}{decurve}(
+predict.decurve(
   fit.info,
   newdata = data.frame(temperature = seq(-2, 40, 0.1)),
   se.fit = FALSE
