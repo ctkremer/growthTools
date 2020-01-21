@@ -43,7 +43,6 @@
 #'   \item{replicate}{experimental replicate, 4 replicates per temperature and isolate}
 #'   \item{mu}{estimated growth rate}
 #'   \item{best.model}{time series model generating estimated growth rate}
-#'   \item{id}{unique identifier combining isolate id and dilution only}
 #' }
 #' @source Elena Litchman and Tatiana Severin, W.K. Kellogg Biological Station, Michigan State University
 "example_TPC_data"
