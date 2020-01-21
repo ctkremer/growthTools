@@ -1,5 +1,7 @@
 # To-do list for package:
 
+# - dependencies: try using @importFrom rather than @import to specify specific functions to import from other packages. This might help avoid problems like bbmle::slice and dplyr::slice, where function names are redundance across packages, but potentially with quite different functionality.
+
 # - clean up example data sets - they contain more columns than are actually used/useful in examples and vignettes. also, consider renaming example_TPC_data
 
 # - make it possible to truncate temperature ranges in predict.nbcurve when applying it iteratively to multiple TPCs.
