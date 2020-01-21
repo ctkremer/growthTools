@@ -151,6 +151,12 @@ decurve2<-function(temperature,topt,phi,b2,d0,d2){
 #' @param suppress.grid.mle2.warnings logical; should warnings arising from grid.mle2 invocation be suppressed (TRUE), or displayed (FALSE)? Default is TRUE.
 #' @param ... Additional arguments passed to grid.mle2 (e.g., control=list(maxit=2000))
 #' 
+#' @examples 
+#' data("example_TPC_data")
+#' sp1 <- example_TPC_data %>% filter(isolate.id=='CH30_4_RI_03' & dilution==1)
+#' nbcurve.traits<-get.nbcurve.tpc(sp1$temperature,sp1$mu,method='grid.mle2',plotQ=TRUE,conf.bandQ = TRUE,fpath=NA)
+#' nbcurve.traits
+#' 
 #' @export
 #' @import bbmle
 #' @import emdbook
