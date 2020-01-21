@@ -157,7 +157,7 @@ decurve2<-function(temperature,topt,phi,b2,d0,d2){
 #' @import ggplot2
 #' @importFrom grDevices pdf dev.off
 #' @import mleTools
-#' @importFrom stats na.omit vcov uniroot
+#' @importFrom stats na.omit uniroot
 get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=FALSE,conf.bandQ=TRUE,
                           fpath=NA,id=NA,suppress.grid.mle2.warnings=TRUE,...){
   tpc.tmp<-na.omit(data.frame(temperature,mu))
@@ -202,7 +202,7 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=FALSE,conf.ban
   
   # pull out parameters
   cf<-as.list(coef(fit))
-  vcov.mat<-vcov(fit)
+  vcov.mat<-bbmle::vcov(fit)
   
   # additional responses/traits:
   tmin<-get.tlim(cf$topt,cf$w,cf$b,type='tmin')
@@ -290,7 +290,7 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=FALSE,conf.ban
 #' @importFrom grDevices pdf dev.off
 #' @import mleTools
 #' @import mgcv
-#' @importFrom stats na.omit vcov uniroot
+#' @importFrom stats na.omit uniroot
 get.decurve.tpc<-function(temperature,mu,method='grid.mle2',start.method='general.grid',
                           plotQ=F,conf.bandQ=T,fpath=NA,id=NA,suppress.grid.mle2.warnings=TRUE,...){
   tpc.tmp<-na.omit(data.frame(temperature,mu))
@@ -381,7 +381,7 @@ get.decurve.tpc<-function(temperature,mu,method='grid.mle2',start.method='genera
   cf<-as.list(coef(fit))
   
   # save vcov matrix
-  vcov.mat<-vcov(fit)
+  vcov.mat<-bbmle::vcov(fit)
   
   # additional responses/traits:
   objective<-function(x){

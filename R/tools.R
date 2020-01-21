@@ -421,6 +421,7 @@ detect<-function(x){
 #' 
 #' @export
 #' @import bbmle
+#' @importFrom stats vcov
 get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag','sat','flr','lagsat'),model.selection=c('AICc'),min.exp.obs=3,internal.r2.cutoff=0,verbose=FALSE,zero.time=T){
   
   # thin vectors if abundance measure is NA
@@ -466,7 +467,7 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
       slope.gr<-coef(gr)[[2]]
       slope.n.gr<-length(x)
       slope.r2.gr<-get.R2(predict(gr),y)
-      se.gr<-sqrt(diag(vcov(gr)))['x']
+      se.gr<-sqrt(diag(stats::vcov(gr)))['x']
       modlist$gr<-gr
     }
     if('lag' %in% methods){
@@ -477,7 +478,7 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
         obs.lag <- y # observed values
         
         slope.gr.lag <- unname(coef(gr.lag)['b'])
-        se.gr.lag <- sqrt(diag(vcov(gr.lag)))['b']
+        se.gr.lag <- sqrt(diag(stats::vcov(gr.lag)))['b']
         
         slope.n.gr.lag <- length(x[x>=b1.cutoff])  # how many observations above cutoff
         slope.r2.gr.lag <- get.R2(pds.lag[x>=b1.cutoff],obs.lag[x>=b1.cutoff])
@@ -502,7 +503,7 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
         obs.sat <- y # observed values 
         
         slope.gr.sat <- unname(coef(gr.sat)['b'])
-        se.gr.sat <- sqrt(diag(vcov(gr.sat)))['b']
+        se.gr.sat <- sqrt(diag(stats::vcov(gr.sat)))['b']
         
         slope.n.gr.sat <- length(x[x<=b2.cutoff])  # how many observations below cutoff
         slope.r2.gr.sat <- get.R2(pds.sat[x<=b2.cutoff],obs.sat[x<=b2.cutoff])
@@ -528,7 +529,7 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
         obs.flr <- y # observed values
         
         slope.gr.flr <- unname(coef(gr.flr)['b'])
-        se.gr.flr <- sqrt(diag(vcov(gr.flr)))['b']
+        se.gr.flr <- sqrt(diag(stats::vcov(gr.flr)))['b']
         
         slope.n.gr.flr <- length(x[x<=b2.cutoff])  # how many observations below cutoff
         slope.r2.gr.flr <- get.R2(pds.flr[x<=b2.cutoff],obs.flr[x<=b2.cutoff])
@@ -555,7 +556,7 @@ get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag'
         obs.lagsat <- y # observed values
         
         slope.gr.lagsat <- unname(coef(gr.lagsat)['b'])
-        se.gr.lagsat <- sqrt(diag(vcov(gr.lagsat)))['b']
+        se.gr.lagsat <- sqrt(diag(stats::vcov(gr.lagsat)))['b']
         
         slope.n.gr.lagsat <- length(x[x<=b2.cutoff & x >=b1.cutoff])  # how many obs btwn cutoffs
         slope.r2.gr.lagsat <- get.R2(pds.lagsat[x<=b2.cutoff & x >=b1.cutoff],
