@@ -55,7 +55,7 @@ test_that("get.decurve.tpc works as expected",{
                     22.1291309,NaN,NaN,NaN,NaN,0.1153003),nrow=6,ncol=2)
   attr(tmp.cis,"dimnames")<-list(c("topt","b1","b2","d0","d2","s"),c("2.5 %","97.5 %"))
   
-  expect_equal(dets$topt,20.71794,tolerance=1E-7)
+  expect_equal(dets$topt,20.71794,tolerance=1E-5)
   expect_equal(dets$b1,0.2036075,tolerance=1E-7)
   expect_equal(dets$b2,0.08491238,tolerance=1E-7)
   expect_equal(dets$d0,2.73132e-07,tolerance=1E-7)
