@@ -46,8 +46,8 @@ test_that("get.decurve.tpc works as expected",{
                        -0.07640984, -0.07830364, -0.08734117, -0.07812054, 0.24811323,
                        0.33837116, 0.24791146, 0.27200425))
   
-  dets<-get.decurve.tpc(tmp$temperature,tmp$mu,method='grid.mle2',plotQ=FALSE,
-                        conf.bandQ = FALSE,fpath=NA)
+  dets<-suppressWarnings(get.decurve.tpc(tmp$temperature,tmp$mu,method='grid.mle2',plotQ=FALSE,
+                        conf.bandQ = FALSE,fpath=NA))
   cis<-dets$ciF
   
   # target confidence interval values
