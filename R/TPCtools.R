@@ -159,12 +159,12 @@ decurve2<-function(temperature,topt,phi,b2,d0,d2){
 #' nbcurve.traits
 #' 
 #' @export
-#' @import bbmle
+#' @importFrom bbmle mle2 vcov predict.mle2
 #' @import emdbook
 #' @import ggplot2
 #' @importFrom grDevices pdf dev.off
 #' @import mleTools
-#' @importFrom stats na.omit uniroot
+#' @importFrom stats na.omit uniroot AIC
 get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=FALSE,conf.bandQ=TRUE,
                           fpath=NA,id=NA,suppress.grid.mle2.warnings=TRUE,...){
   tpc.tmp<-na.omit(data.frame(temperature,mu))
@@ -193,7 +193,7 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=FALSE,conf.ban
 
     # polish best fit model, using formula interface:
     guesses<-as.list(cfg)
-    fit<-mle2(mu~dnorm(mean=nbcurve(temperature,topt,w,a,b),sd=exp(s)),
+    fit<-bbmle::mle2(mu~dnorm(mean=nbcurve(temperature,topt,w,a,b),sd=exp(s)),
               start=guesses,data=tpc.tmp)
   }
   
@@ -203,7 +203,7 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=FALSE,conf.ban
     w.guess <- diff(range(tpc.tmp$temperature))
     a.guess <- -1.11
     b.guess <- 0.05
-    fit<-mle2(mu~dnorm(mean=nbcurve(temperature,topt,w,a,b),sd=exp(s)),
+    fit<-bbmle::mle2(mu~dnorm(mean=nbcurve(temperature,topt,w,a,b),sd=exp(s)),
               start=list(topt=topt.guess,w=w.guess,a=a.guess,b=b.guess,s=log(2)),data=tpc.tmp)
   }
   
@@ -290,14 +290,14 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=FALSE,conf.ban
 #' @param ... Additional arguments passed to grid.mle2 (e.g., control=list(maxit=2000))
 #' 
 #' @export
-#' @import bbmle
+#' @importFrom bbmle mle2 vcov predict.mle2
 #' @import dplyr
 #' @import emdbook
 #' @import ggplot2
 #' @importFrom grDevices pdf dev.off
 #' @import mleTools
 #' @import mgcv
-#' @importFrom stats na.omit uniroot
+#' @importFrom stats na.omit uniroot AIC
 get.decurve.tpc<-function(temperature,mu,method='grid.mle2',start.method='general.grid',
                           plotQ=FALSE,conf.bandQ=TRUE,fpath=NA,id=NA,suppress.grid.mle2.warnings=TRUE,...){
   tpc.tmp<-na.omit(data.frame(temperature,mu))
@@ -369,7 +369,7 @@ get.decurve.tpc<-function(temperature,mu,method='grid.mle2',start.method='genera
     }
     
     # polish best fit model using formula interface
-    fit<-mle2(mu~dnorm(mean=decurve(temperature,topt,b1,b2,d0,d2),sd=s),
+    fit<-bbmle::mle2(mu~dnorm(mean=decurve(temperature,topt,b1,b2,d0,d2),sd=s),
               start=guesses,data=tpc.tmp,control=list(maxit=0))
   }
 
@@ -380,7 +380,7 @@ get.decurve.tpc<-function(temperature,mu,method='grid.mle2',start.method='genera
     b2.guess <- 0.15
     d0.guess <- 0.03
     d2.guess <- 0.18
-    fit<-mle2(mu~dnorm(mean=decurve(temperature,topt,b1,b2,d0,d2),sd=exp(s)),
+    fit<-bbmle::mle2(mu~dnorm(mean=decurve(temperature,topt,b1,b2,d0,d2),sd=exp(s)),
               start=list(topt=topt.guess,b1=b1.guess,b2=b2.guess,d0=d0.guess,d2=d2.guess,s=log(2)),data=tpc.tmp)
   }
   
