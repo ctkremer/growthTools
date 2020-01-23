@@ -9,7 +9,7 @@ get.decurve.tpc(
   mu,
   method = "grid.mle2",
   start.method = "general.grid",
-  plotQ = F,
+  plotQ = FALSE,
   conf.bandQ = TRUE,
   fpath = NA,
   id = NA,
