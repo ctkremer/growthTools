@@ -159,15 +159,12 @@ decurve2<-function(temperature,topt,phi,b2,d0,d2){
 #' nbcurve.traits
 #' 
 #' @export
-#' @importFrom bbmle mle2 vcov
 #' @import emdbook
 #' @import ggplot2
-#' @importFrom grDevices pdf dev.off
 #' @import mleTools
-#' @importFrom stats na.omit uniroot AIC
 get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=FALSE,conf.bandQ=TRUE,
                           fpath=NA,id=NA,suppress.grid.mle2.warnings=TRUE,...){
-  tpc.tmp<-na.omit(data.frame(temperature,mu))
+  tpc.tmp<-stats::na.omit(data.frame(temperature,mu))
   ntemps<-length(unique(tpc.tmp$temperature))
   
   if(ntemps<=4){
@@ -236,7 +233,7 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=FALSE,conf.ban
   vec$nobs<-nrow(tpc.tmp)
   vec$ntemps<-ntemps
   vec$logLik<-logLik(fit)
-  vec$aic<-AIC(fit)
+  vec$aic<-stats::AIC(fit)
   vec$data<-tpc.tmp
   
   # Plot results:
@@ -262,8 +259,8 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=FALSE,conf.ban
       }else{
         full.path<-paste(fpath,"TPC_fit_",id,".pdf",sep='') 
       }
-      ggsave(device = pdf(),filename = full.path,p1,width = 5,height = 4)
-      dev.off()
+      ggsave(device = grDevices::pdf(),filename = full.path,p1,width = 5,height = 4)
+      grDevices::dev.off()
     }else{
       print(p1)
     }
@@ -290,17 +287,14 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=FALSE,conf.ban
 #' @param ... Additional arguments passed to grid.mle2 (e.g., control=list(maxit=2000))
 #' 
 #' @export
-#' @importFrom bbmle mle2 vcov
 #' @import dplyr
 #' @import emdbook
 #' @import ggplot2
-#' @importFrom grDevices pdf dev.off
 #' @import mleTools
 #' @import mgcv
-#' @importFrom stats na.omit uniroot AIC
 get.decurve.tpc<-function(temperature,mu,method='grid.mle2',start.method='general.grid',
                           plotQ=FALSE,conf.bandQ=TRUE,fpath=NA,id=NA,suppress.grid.mle2.warnings=TRUE,...){
-  tpc.tmp<-na.omit(data.frame(temperature,mu))
+  tpc.tmp<-stats::na.omit(data.frame(temperature,mu))
   ntemps<-length(unique(tpc.tmp$temperature))
   
   # is this still necessary?
@@ -396,14 +390,14 @@ get.decurve.tpc<-function(temperature,mu,method='grid.mle2',start.method='genera
   }
   #tmax<-uniroot(f = objective,interval = c(cf$topt,1.5*(cf$topt-log(cf$d2/cf$b2)/(cf$b2-cf$d2))))$root
   #tmin<-uniroot(f = objective,interval = c(1.5*(log(cf$d0/cf$b1)/cf$b2),cf$topt))$root  
-  rt1<-try(uniroot(f = objective,interval = c(cf$topt,100))$root)
+  rt1<-try(stats::uniroot(f = objective,interval = c(cf$topt,100))$root)
   if(inherits(rt1,'try-error')){
     tmax<-NA
   }else{
     tmax<-rt1
   }
   
-  rt2<-try(uniroot(f = objective,interval = c(-400,cf$topt))$root)
+  rt2<-try(stats::uniroot(f = objective,interval = c(-400,cf$topt))$root)
   if(inherits(rt2,'try-error')){
     tmin<-NA
   }else{
@@ -431,7 +425,7 @@ get.decurve.tpc<-function(temperature,mu,method='grid.mle2',start.method='genera
   vec$n<-nrow(tpc.tmp)
   vec$ntemps<-ntemps
   vec$logLik<-logLik(fit)
-  vec$aic<-AIC(fit)
+  vec$aic<-stats::AIC(fit)
   vec$data<-tpc.tmp
   
   # Plot results:
@@ -457,8 +451,8 @@ get.decurve.tpc<-function(temperature,mu,method='grid.mle2',start.method='genera
       }else{
         full.path<-paste(fpath,"TPC_fit_",id,".pdf",sep='') 
       }
-      ggsave(device = pdf(),filename = full.path,p1,width = 5,height = 4)
-      dev.off()
+      ggsave(device = grDevices::pdf(),filename = full.path,p1,width = 5,height = 4)
+      grDevices::dev.off()
     }else{
       print(p1)
     }
@@ -507,7 +501,6 @@ get.R2<-function(pds,obs){
 #' @param verbose 'print details?'
 #' 
 #' @export
-#' @importFrom stats D
 deltavar2<-function (fun, meanval = NULL, vars, Sigma, verbose = FALSE) 
 {
   #expr <- as.expression(substitute(fun))    
@@ -519,7 +512,7 @@ deltavar2<-function (fun, meanval = NULL, vars, Sigma, verbose = FALSE)
       stop("must specify either variable names or named values for means")
     vars <- names(meanval)
   }
-  derivs <- try(lapply(vars, D, expr = expr), silent = TRUE)
+  derivs <- try(lapply(vars, stats::D, expr = expr), silent = TRUE)
   symbderivs <- TRUE
   if (inherits(derivs, "try-error")) {
       symbderivs <- FALSE
@@ -606,6 +599,7 @@ predict.nbcurve<-function(fit.info,newdata=data.frame(temperature=seq(-2,40,0.1)
 #' @param ylim y-axis range (adjusts internally to -0.2 to slightly above umax+CI)
 #' 
 #' @export
+#' @import ggplot2
 plot.nbcurve<-function(fit.info,plot.ci=TRUE,plot.obs=TRUE,xlim=c(-2,40),ylim=c(-0.2,5)){
   
   # Check level of nesting for fit.info, and reduce if necessary

@@ -90,21 +90,18 @@ flr<-function(x,a,b,B2,s=1E-10){
 #' @return This function returns a linear model regressing ln(abundance) on time
 #' 
 #' @export
-#' @importFrom graphics abline
-#' @importFrom grDevices pdf dev.off
-#' @importFrom stats lm 
 get.gr<-function(x,y,plotQ=F,fpath=NA,id=''){
-  lm1<-lm(y~x)
+  lm1<-stats::lm(y~x)
   
   if(plotQ){
     if(!is.na(fpath)){
-      pdf(fpath)
-      plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-      abline(lm1,col='red')
-      dev.off()
+      grDevices::pdf(fpath)
+      graphics::plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
+      graphics::abline(lm1,col='red')
+      grDevices::dev.off()
     }else{
-      plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-      abline(lm1,col='red')
+      graphics::plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
+      graphics::abline(lm1,col='red')
     }
   }
   
@@ -126,21 +123,18 @@ get.gr<-function(x,y,plotQ=F,fpath=NA,id=''){
 #' @return This function returns a nonlinear least-squares regression model
 #' 
 #' @export
-#' @importFrom graphics curve plot
-#' @importFrom grDevices pdf dev.off
-#' @import minpack.lm
-#' @import zoo
+#' @importFrom minpack.lm nlsLM
 get.gr.lag<-function(x,y,plotQ=F,fpath=NA,id=''){
   
   data<-data.frame(x=x,y=y)
   #slopes <- zoo::rollapply(data, 3, localslope, by.column=F)
   
-  fit.lag<-try(minpack.lm::nlsLM(y ~ lag(x,a,b,B1,s=1E-10),
+  fit.lag<-try(nlsLM(y ~ lag(x,a,b,B1,s=1E-10),
                  start = c(B1=mean(x)-(mean(x)-min(x))/2, a=min(y), b=1),data = data,
                  lower = c(B1=-Inf,a=-Inf,b=0.0001),
                  control = nls.lm.control(maxiter=1000,maxfev=1000)),silent=TRUE)
   if(class(fit.lag)=='try-error'){
-    fit.lag<-try(minpack.lm::nlsLM(y ~ lag(x,a,b,B1,s=1E-10),
+    fit.lag<-try(nlsLM(y ~ lag(x,a,b,B1,s=1E-10),
                        start = c(B1=10, a=min(y), b=1),data = data,
                        lower = c(B1=-Inf,a=-Inf,b=0.0001),
                        control = nls.lm.control(maxiter=1000,maxfev=1000)),silent=TRUE)
@@ -155,15 +149,15 @@ get.gr.lag<-function(x,y,plotQ=F,fpath=NA,id=''){
     
     if(plotQ){
       if(!is.na(fpath)){
-        pdf(fpath)
-        plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-        curve(lag(x,cfs$a,cfs$b,cfs$B1,s=1E-10),min(x),max(x),n = 400,add=TRUE,col='blue')
-        curve(lag(x,cfs$a,cfs$b,cfs$B1,s=1E-10),cfs$B1,max(x),n = 400,add=TRUE,col='red')
-        dev.off()
+        grDevices::pdf(fpath)
+        graphics::plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
+        graphics::curve(lag(x,cfs$a,cfs$b,cfs$B1,s=1E-10),min(x),max(x),n = 400,add=TRUE,col='blue')
+        graphics::curve(lag(x,cfs$a,cfs$b,cfs$B1,s=1E-10),cfs$B1,max(x),n = 400,add=TRUE,col='red')
+        grDevices::dev.off()
       }else{
-        plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-        curve(lag(x,cfs$a,cfs$b,cfs$B1,s=1E-10),min(x),max(x),n = 400,add=TRUE,col='blue')
-        curve(lag(x,cfs$a,cfs$b,cfs$B1,s=1E-10),cfs$B1,max(x),n = 400,add=TRUE,col='red')
+        graphics::plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
+        graphics::curve(lag(x,cfs$a,cfs$b,cfs$B1,s=1E-10),min(x),max(x),n = 400,add=TRUE,col='blue')
+        graphics::curve(lag(x,cfs$a,cfs$b,cfs$B1,s=1E-10),cfs$B1,max(x),n = 400,add=TRUE,col='red')
       }
     }
   }
@@ -186,23 +180,20 @@ get.gr.lag<-function(x,y,plotQ=F,fpath=NA,id=''){
 #' @return This function returns a nonlinear least-squares regression model
 #' 
 #' @export
-#' @importFrom graphics curve plot
-#' @importFrom grDevices pdf dev.off
-#' @import minpack.lm
-#' @import zoo
+#' @importFrom minpack.lm nlsLM
 get.gr.sat<-function(x,y,plotQ=F,fpath=NA,id=''){
   
   data<-data.frame(x=x,y=y)
   slopes <- zoo::rollapply(data.frame(x=x,y=y), 3, localslope, by.column=F)
-  a.guess<-coef(lm(y~x))[[1]]
+  a.guess<-coef(stats::lm(y~x))[[1]]
   
-  fit.sat<-try(minpack.lm::nlsLM(y ~ sat(x,a,b,B2,s=1E-10),
+  fit.sat<-try(nlsLM(y ~ sat(x,a,b,B2,s=1E-10),
                  start=c(B2=mean(x)+(max(x)-mean(x))/2,a=a.guess,b=round(max(c(slopes,0.0001)),5)),
                  data = data,
                  lower = c(B2=-Inf,a=-Inf,b=0.0001),
                  control = nls.lm.control(maxiter=1000,maxfev=1000)),silent=TRUE)
   if(class(fit.sat)=='try-error'){
-    fit.sat<-try(minpack.lm::nlsLM(y ~ sat(x,a,b,B2,s=1E-10),
+    fit.sat<-try(nlsLM(y ~ sat(x,a,b,B2,s=1E-10),
                        start=c(B2=10,a=a.guess,b=round(max(c(slopes,0.0001)),5)),
                        data = data,
                        lower = c(B2=-Inf,a=-Inf,b=0.0001),
@@ -218,15 +209,15 @@ get.gr.sat<-function(x,y,plotQ=F,fpath=NA,id=''){
     
     if(plotQ){
       if(!is.na(fpath)){
-        pdf(fpath)
-        plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-        curve(sat(x,cfs$a,cfs$b,cfs$B2,s=1E-10),min(x),max(x),add=TRUE,col='blue')
-        curve(sat(x,cfs$a,cfs$b,cfs$B2,s=1E-10),min(x),cfs$B2,add=TRUE,col='red')
-        dev.off()
+        grDevices::pdf(fpath)
+        graphics::plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
+        graphics::curve(sat(x,cfs$a,cfs$b,cfs$B2,s=1E-10),min(x),max(x),add=TRUE,col='blue')
+        graphics::curve(sat(x,cfs$a,cfs$b,cfs$B2,s=1E-10),min(x),cfs$B2,add=TRUE,col='red')
+        grDevices::dev.off()
       }else{
-        plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-        curve(sat(x,cfs$a,cfs$b,cfs$B2,s=1E-10),min(x),max(x),add=TRUE,col='blue')
-        curve(sat(x,cfs$a,cfs$b,cfs$B2,s=1E-10),min(x),cfs$B2,add=TRUE,col='red')
+        graphics::plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
+        graphics::curve(sat(x,cfs$a,cfs$b,cfs$B2,s=1E-10),min(x),max(x),add=TRUE,col='blue')
+        graphics::curve(sat(x,cfs$a,cfs$b,cfs$B2,s=1E-10),min(x),cfs$B2,add=TRUE,col='red')
       }
     }
   }  
@@ -250,17 +241,15 @@ get.gr.sat<-function(x,y,plotQ=F,fpath=NA,id=''){
 #' @return This function returns a nonlinear least-squares regression model
 #' 
 #' @export
-#' @importFrom graphics curve plot
-#' @importFrom grDevices pdf dev.off
-#' @import minpack.lm
+#' @importFrom minpack.lm nlsLM
 #' @import zoo
 get.gr.flr<-function(x,y,plotQ=F,fpath=NA,id=''){
   
   data<-data.frame(x=x,y=y)
   slopes <- zoo::rollapply(data.frame(x=x,y=y), 3, localslope, by.column=F)
-  a.guess<-coef(lm(y~x))[[1]]
+  a.guess<-coef(stats::lm(y~x))[[1]]
   
-  fit.flr<-try(minpack.lm::nlsLM(y ~ flr(x,a,b,B2,s=1E-10),
+  fit.flr<-try(nlsLM(y ~ flr(x,a,b,B2,s=1E-10),
                  start=c(a=a.guess,b=min(c(-0.1,round(min(slopes),5))),B2=mean(x)),
                  data = data,
                  upper = c(a=Inf,b=-0.00000001,B2=Inf),
@@ -276,15 +265,15 @@ get.gr.flr<-function(x,y,plotQ=F,fpath=NA,id=''){
     
     if(plotQ){
       if(!is.na(fpath)){
-        pdf(fpath)
-        plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-        curve(flr(x,cfs$a,cfs$b,cfs$B2,s=1E-10),cfs$B2,max(x),add=TRUE,col='blue')
-        curve(flr(x,cfs$a,cfs$b,cfs$B2,s=1E-10),min(x),cfs$B2,add=TRUE,col='red')
-        dev.off()
+        grDevices::pdf(fpath)
+        graphics::plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
+        graphics::curve(flr(x,cfs$a,cfs$b,cfs$B2,s=1E-10),cfs$B2,max(x),add=TRUE,col='blue')
+        graphics::curve(flr(x,cfs$a,cfs$b,cfs$B2,s=1E-10),min(x),cfs$B2,add=TRUE,col='red')
+        grDevices::dev.off()
       }else{
-        plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-        curve(flr(x,cfs$a,cfs$b,cfs$B2,s=1E-10),cfs$B2,max(x),add=TRUE,col='blue')
-        curve(flr(x,cfs$a,cfs$b,cfs$B2,s=1E-10),min(x),cfs$B2,add=TRUE,col='red')
+        graphics::plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
+        graphics::curve(flr(x,cfs$a,cfs$b,cfs$B2,s=1E-10),cfs$B2,max(x),add=TRUE,col='blue')
+        graphics::curve(flr(x,cfs$a,cfs$b,cfs$B2,s=1E-10),min(x),cfs$B2,add=TRUE,col='red')
       }
     }
   }
@@ -308,10 +297,7 @@ get.gr.flr<-function(x,y,plotQ=F,fpath=NA,id=''){
 #' @return This function returns a nonlinear least-squares regression model
 #' 
 #' @export
-#' @importFrom graphics curve plot
-#' @importFrom grDevices pdf dev.off
-#' @import minpack.lm
-#' @import zoo
+#' @importFrom minpack.lm nlsLM
 get.gr.lagsat<-function(x,y,plotQ=F,fpath=NA,id=''){
   
   data<-data.frame(x=x,y=y)
@@ -320,7 +306,7 @@ get.gr.lagsat<-function(x,y,plotQ=F,fpath=NA,id=''){
   #a.guess<-coef(lm(y~x))[[1]]
   # round(log(max(slopes)),5)
   
-  fit.lagsat<-try(minpack.lm::nlsLM(y ~ lagsat(x,a,b,B1,B2,s=1E-10),
+  fit.lagsat<-try(nlsLM(y ~ lagsat(x,a,b,B1,B2,s=1E-10),
                     start = c(B1=mean(x)-(mean(x)-min(x))/2,B2=mean(x)+(max(x)-mean(x))/2, a=min(y)+0.1, b=1),
                     data = data,
                     lower = c(B1=-Inf,B2=-Inf,a=-Inf,b=0.0001),
@@ -335,15 +321,15 @@ get.gr.lagsat<-function(x,y,plotQ=F,fpath=NA,id=''){
     
     if(plotQ){
       if(!is.na(fpath)){
-        pdf(fpath)
-        plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-        curve(lagsat(x,cfs$a,cfs$b,cfs$B1,cfs$B2,s=1E-10),min(x),max(x),add=TRUE,col='blue')
-        curve(lagsat(x,cfs$a,cfs$b,cfs$B1,cfs$B2,s=1E-10),cfs$B1,cfs$B2,add=TRUE,col='red')
-        dev.off()
+        grDevices::pdf(fpath)
+        graphics::plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
+        graphics::curve(lagsat(x,cfs$a,cfs$b,cfs$B1,cfs$B2,s=1E-10),min(x),max(x),add=TRUE,col='blue')
+        graphics::curve(lagsat(x,cfs$a,cfs$b,cfs$B1,cfs$B2,s=1E-10),cfs$B1,cfs$B2,add=TRUE,col='red')
+        grDevices::dev.off()
       }else{
-        plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
-        curve(lagsat(x,cfs$a,cfs$b,cfs$B1,cfs$B2,s=1E-10),min(x),max(x),add=TRUE,col='blue')
-        curve(lagsat(x,cfs$a,cfs$b,cfs$B1,cfs$B2,s=1E-10),cfs$B1,cfs$B2,add=TRUE,col='red')
+        graphics::plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
+        graphics::curve(lagsat(x,cfs$a,cfs$b,cfs$B1,cfs$B2,s=1E-10),min(x),max(x),add=TRUE,col='blue')
+        graphics::curve(lagsat(x,cfs$a,cfs$b,cfs$B1,cfs$B2,s=1E-10),cfs$B1,cfs$B2,add=TRUE,col='red')
       }
     }
   }
@@ -362,9 +348,8 @@ get.gr.lagsat<-function(x,y,plotQ=F,fpath=NA,id=''){
 #' @return Slope of the linear regression
 #' 
 #' @export
-#' @importFrom stats lm
 localslope<-function (d) {
-  m <- lm(y~x, as.data.frame(d))
+  m <- stats::lm(y~x, as.data.frame(d))
   return(coef(m)[2])
 }
 
@@ -420,8 +405,6 @@ detect<-function(x){
 #' res$best.slope
 #' 
 #' @export
-#' @importFrom bbmle AICtab AICctab BICtab
-#' @importFrom stats vcov
 get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag','sat','flr','lagsat'),model.selection=c('AICc'),min.exp.obs=3,internal.r2.cutoff=0,verbose=FALSE,zero.time=TRUE){
   
   # thin vectors if abundance measure is NA
