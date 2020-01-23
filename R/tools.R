@@ -123,7 +123,7 @@ get.gr<-function(x,y,plotQ=F,fpath=NA,id=''){
 #' @return This function returns a nonlinear least-squares regression model
 #' 
 #' @export
-#' @importFrom minpack.lm nlsLM
+#' @importFrom minpack.lm nlsLM nls.lm.control
 get.gr.lag<-function(x,y,plotQ=F,fpath=NA,id=''){
   
   data<-data.frame(x=x,y=y)
@@ -180,7 +180,7 @@ get.gr.lag<-function(x,y,plotQ=F,fpath=NA,id=''){
 #' @return This function returns a nonlinear least-squares regression model
 #' 
 #' @export
-#' @importFrom minpack.lm nlsLM
+#' @importFrom minpack.lm nlsLM nls.lm.control
 get.gr.sat<-function(x,y,plotQ=F,fpath=NA,id=''){
   
   data<-data.frame(x=x,y=y)
@@ -241,7 +241,7 @@ get.gr.sat<-function(x,y,plotQ=F,fpath=NA,id=''){
 #' @return This function returns a nonlinear least-squares regression model
 #' 
 #' @export
-#' @importFrom minpack.lm nlsLM
+#' @importFrom minpack.lm nlsLM nls.lm.control
 #' @import zoo
 get.gr.flr<-function(x,y,plotQ=F,fpath=NA,id=''){
   
@@ -297,7 +297,7 @@ get.gr.flr<-function(x,y,plotQ=F,fpath=NA,id=''){
 #' @return This function returns a nonlinear least-squares regression model
 #' 
 #' @export
-#' @importFrom minpack.lm nlsLM
+#' @importFrom minpack.lm nlsLM nls.lm.control
 get.gr.lagsat<-function(x,y,plotQ=F,fpath=NA,id=''){
   
   data<-data.frame(x=x,y=y)
