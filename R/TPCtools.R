@@ -159,7 +159,7 @@ decurve2<-function(temperature,topt,phi,b2,d0,d2){
 #' nbcurve.traits
 #' 
 #' @export
-#' @importFrom bbmle mle2 vcov predict.mle2
+#' @importFrom bbmle mle2 vcov
 #' @import emdbook
 #' @import ggplot2
 #' @importFrom grDevices pdf dev.off
@@ -290,7 +290,7 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=FALSE,conf.ban
 #' @param ... Additional arguments passed to grid.mle2 (e.g., control=list(maxit=2000))
 #' 
 #' @export
-#' @importFrom bbmle mle2 vcov predict.mle2
+#' @importFrom bbmle mle2 vcov
 #' @import dplyr
 #' @import emdbook
 #' @import ggplot2
