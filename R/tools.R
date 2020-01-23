@@ -420,7 +420,7 @@ detect<-function(x){
 #' res$best.slope
 #' 
 #' @export
-#' @import bbmle
+#' @importFrom bbmle AICtab AICctab BICtab
 #' @importFrom stats vcov
 get.growth.rate<-function(x,y,id,plot.best.Q=F,fpath=NA,methods=c('linear','lag','sat','flr','lagsat'),model.selection=c('AICc'),min.exp.obs=3,internal.r2.cutoff=0,verbose=FALSE,zero.time=TRUE){
   
