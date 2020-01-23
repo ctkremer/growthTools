@@ -1,4 +1,4 @@
-context("")
+context("Testing Thermal Performance Curve regression tools")
 library(growthTools)
 
 test_that("get.nbcurve.tpc works as expected",{
