@@ -41,7 +41,8 @@ Note: this function fits a re-parameterized version of the original Norberg curv
 \examples{
 data("example_TPC_data")
 sp1 <- example_TPC_data \%>\% filter(isolate.id=='CH30_4_RI_03' & dilution==1)
-nbcurve.traits<-get.nbcurve.tpc(sp1$temperature,sp1$mu,method='grid.mle2',plotQ=TRUE,conf.bandQ = TRUE,fpath=NA)
+nbcurve.traits<-get.nbcurve.tpc(sp1$temperature,sp1$mu,method='grid.mle2',
+plotQ=TRUE,conf.bandQ = TRUE,fpath=NA)
 nbcurve.traits
 
 }
