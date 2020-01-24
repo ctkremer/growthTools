@@ -186,7 +186,7 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=FALSE,conf.ban
       fit0<-grid.mle2(minuslogl=mu~dnorm(mean=nbcurve(temperature,topt,w,a,b),sd=exp(s)),
                                        grids=grids,start=start,data=tpc.tmp,...)
     }
-    cfg<-coef(fit0$res.best) # this seemed to be throwing problems b/c of an issue with accessing mle2...?
+    cfg<-bbmle::coef(fit0$res.best) # this seemed to be throwing problems b/c of an issue with accessing mle2...?
 
     # polish best fit model, using formula interface:
     guesses<-as.list(cfg)
@@ -205,7 +205,7 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=FALSE,conf.ban
   }
   
   # pull out parameters
-  cf<-as.list(coef(fit))
+  cf<-as.list(bbmle::coef(fit))
   vcov.mat<-bbmle::vcov(fit)
   
   # additional responses/traits:
@@ -213,10 +213,10 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=FALSE,conf.ban
   tmax<-get.tlim(cf$topt,cf$w,cf$b,type='tmax')
   
   # calculate R2
-  rsqr<-get.R2(predict(fit),tpc.tmp$mu)
+  rsqr<-get.R2(bbmle::predict(fit),tpc.tmp$mu)
 
   # Calculate umax and confidence interval using the delta method (see Bolker book, pg 255)
-  pd.umax<-predict(fit,newdata=data.frame(temperature=cf$topt))
+  pd.umax<-bbmle::predict(fit,newdata=data.frame(temperature=cf$topt))
   st.umax<-paste("nbcurve(c(",paste(cf$topt,collapse=','),"),topt,w,a,b)",sep='')
   dvs0.umax<-suppressWarnings(deltavar2(fun=parse(text=st.umax),meanval=cf,Sigma=vcov.mat))
   
@@ -232,7 +232,7 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=FALSE,conf.ban
   vec$vcov<-vcov.mat
   vec$nobs<-nrow(tpc.tmp)
   vec$ntemps<-ntemps
-  vec$logLik<-logLik(fit)
+  vec$logLik<-bbmle::logLik(fit)
   vec$aic<-stats::AIC(fit)
   vec$data<-tpc.tmp
   
@@ -320,7 +320,7 @@ get.decurve.tpc<-function(temperature,mu,method='grid.mle2',start.method='genera
       }else{
         fit0<-grid.mle2(minuslogl=mu~dnorm(mean=decurve(temperature,topt,exp(b1),exp(b2),exp(d0),exp(d2)),sd=exp(s)),grids=grids,start=start,data=tpc.tmp,...)
       }
-      cfg<-as.list(coef(fit0$res.best))
+      cfg<-as.list(bbmle::coef(fit0$res.best))
       
       # extract parameters for polished fit
       guesses<-as.list(cfg)
@@ -355,7 +355,7 @@ get.decurve.tpc<-function(temperature,mu,method='grid.mle2',start.method='genera
       }else{
         fit0<-grid.mle2(minuslogl=mu~dnorm(mean=decurve2(temperature,topt,phi,exp(b2),exp(d0),exp(d2)),sd=exp(s)),grids=grids,start=start,data=tpc.tmp)
       }
-      cfg<-as.list(coef(fit0$res.best))
+      cfg<-as.list(bbmle::coef(fit0$res.best))
 
       # extract parameters for polish fit, converting back to decurve parameters:
       b1.g<-cfg$phi/(exp(cfg$b2)*(exp(cfg$b2)-exp(cfg$d2))*exp(exp(cfg$b2)*cfg$topt))
@@ -379,7 +379,7 @@ get.decurve.tpc<-function(temperature,mu,method='grid.mle2',start.method='genera
   }
   
   # pull out parameters
-  cf<-as.list(coef(fit))
+  cf<-as.list(bbmle::coef(fit))
   
   # save vcov matrix
   vcov.mat<-bbmle::vcov(fit)
@@ -405,10 +405,10 @@ get.decurve.tpc<-function(temperature,mu,method='grid.mle2',start.method='genera
   }
 
   # calculate R2
-  rsqr<-get.R2(predict(fit),tpc.tmp$mu)
+  rsqr<-get.R2(bbmle::predict(fit),tpc.tmp$mu)
   
   # Calculate umax and confidence interval using the delta method (see Bolker book, pg 255)
-  pd.umax<-predict(fit,newdata=data.frame(temperature=cf$topt))
+  pd.umax<-bbmle::predict(fit,newdata=data.frame(temperature=cf$topt))
   st.umax<-paste("decurve(c(",paste(cf$topt,collapse=','),"),topt,b1,b2,d0,d2)",sep='')
   dvs0.umax<-suppressWarnings(deltavar2(fun=parse(text=st.umax),meanval=cf,Sigma=vcov.mat))
   
@@ -424,7 +424,7 @@ get.decurve.tpc<-function(temperature,mu,method='grid.mle2',start.method='genera
   vec$vcov<-vcov.mat
   vec$n<-nrow(tpc.tmp)
   vec$ntemps<-ntemps
-  vec$logLik<-logLik(fit)
+  vec$logLik<-bbmle::logLik(fit)
   vec$aic<-stats::AIC(fit)
   vec$data<-tpc.tmp
   
