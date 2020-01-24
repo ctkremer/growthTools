@@ -161,7 +161,6 @@ decurve2<-function(temperature,topt,phi,b2,d0,d2){
 #' @export
 #' @import emdbook
 #' @import ggplot2
-#' @import mleTools
 get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=FALSE,conf.bandQ=TRUE,
                           fpath=NA,id=NA,suppress.grid.mle2.warnings=TRUE,...){
   tpc.tmp<-stats::na.omit(data.frame(temperature,mu))
@@ -179,11 +178,11 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=FALSE,conf.ban
     start<-list(topt=NA,w=NA,a=NA,b=NA,s=log(2))
     
     if(suppress.grid.mle2.warnings){
-      fit0<-suppressWarnings(grid.mle2(minuslogl=mu~dnorm(mean=nbcurve(temperature,topt,w,a,b),
+      fit0<-suppressWarnings(mleTools::grid.mle2(minuslogl=mu~dnorm(mean=nbcurve(temperature,topt,w,a,b),
                                                           sd=exp(s)),
                                        grids=grids,start=start,data=tpc.tmp,...))
     }else{
-      fit0<-grid.mle2(minuslogl=mu~dnorm(mean=nbcurve(temperature,topt,w,a,b),sd=exp(s)),
+      fit0<-mleTools::grid.mle2(minuslogl=mu~dnorm(mean=nbcurve(temperature,topt,w,a,b),sd=exp(s)),
                                        grids=grids,start=start,data=tpc.tmp,...)
     }
     cfg<-coef(fit0$res.best) # this seemed to be throwing problems b/c of an issue with accessing mle2...?
@@ -290,7 +289,6 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=FALSE,conf.ban
 #' @import dplyr
 #' @import emdbook
 #' @import ggplot2
-#' @import mleTools
 #' @import mgcv
 get.decurve.tpc<-function(temperature,mu,method='grid.mle2',start.method='general.grid',
                           plotQ=FALSE,conf.bandQ=TRUE,fpath=NA,id=NA,suppress.grid.mle2.warnings=TRUE,...){
@@ -316,9 +314,9 @@ get.decurve.tpc<-function(temperature,mu,method='grid.mle2',start.method='genera
       start<-list(topt=topt.guess,b1=NA,b2=NA,d0=NA,d2=NA,s=log(2))
       
       if(suppress.grid.mle2.warnings){
-        fit0<-suppressWarnings(grid.mle2(minuslogl=mu~dnorm(mean=decurve(temperature,topt,exp(b1),exp(b2),exp(d0),exp(d2)),sd=exp(s)),grids=grids,start=start,data=tpc.tmp,...))
+        fit0<-suppressWarnings(mleTools::grid.mle2(minuslogl=mu~dnorm(mean=decurve(temperature,topt,exp(b1),exp(b2),exp(d0),exp(d2)),sd=exp(s)),grids=grids,start=start,data=tpc.tmp,...))
       }else{
-        fit0<-grid.mle2(minuslogl=mu~dnorm(mean=decurve(temperature,topt,exp(b1),exp(b2),exp(d0),exp(d2)),sd=exp(s)),grids=grids,start=start,data=tpc.tmp,...)
+        fit0<-mleTools::grid.mle2(minuslogl=mu~dnorm(mean=decurve(temperature,topt,exp(b1),exp(b2),exp(d0),exp(d2)),sd=exp(s)),grids=grids,start=start,data=tpc.tmp,...)
       }
       cfg<-as.list(bbmle::coef(fit0$res.best))
       
@@ -351,9 +349,9 @@ get.decurve.tpc<-function(temperature,mu,method='grid.mle2',start.method='genera
       
       # execute fit
       if(suppress.grid.mle2.warnings){
-        fit0<-suppressWarnings(grid.mle2(minuslogl=mu~dnorm(mean=decurve2(temperature,topt,phi,exp(b2),exp(d0),exp(d2)),sd=exp(s)),grids=grids,start=start,data=tpc.tmp))
+        fit0<-suppressWarnings(mleTools::grid.mle2(minuslogl=mu~dnorm(mean=decurve2(temperature,topt,phi,exp(b2),exp(d0),exp(d2)),sd=exp(s)),grids=grids,start=start,data=tpc.tmp))
       }else{
-        fit0<-grid.mle2(minuslogl=mu~dnorm(mean=decurve2(temperature,topt,phi,exp(b2),exp(d0),exp(d2)),sd=exp(s)),grids=grids,start=start,data=tpc.tmp)
+        fit0<-mleTools::grid.mle2(minuslogl=mu~dnorm(mean=decurve2(temperature,topt,phi,exp(b2),exp(d0),exp(d2)),sd=exp(s)),grids=grids,start=start,data=tpc.tmp)
       }
       cfg<-as.list(bbmle::coef(fit0$res.best))
 
