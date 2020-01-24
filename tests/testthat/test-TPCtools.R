@@ -1,6 +1,33 @@
 context("Testing Thermal Performance Curve regression tools")
 library(growthTools)
 
+test_that("internals of get.nbcurve.tpc work",{
+  temperature<-c(0, 0, 0, 0, 10, 10, 10, 10, 16, 16, 16, 16, 2, 2, 2, 2, 20,
+                20, 20, 20, 25, 25, 25, 25, 29, 29, 29, 29, 4, 4, 4, 4)
+  mu<-c(0.29570190, 0.31715749, 0.23086634, 0.26492142, 0.34044182, 0.31923753,
+        0.30635082, 0.31520954, 0.54979405, 0.50926419, 0.46722819, 0.71566211,
+        0.12797674, 0.18134072, 0.15040029, 0.20437558, 0.73161025, 0.72734410,
+        0.60578314, 0.65573113, 0.54062615, 0.34272669, 0.71122612, 0.23908063,
+        -0.07640984, -0.07830364, -0.08734117, -0.07812054, 0.24811323,
+        0.33837116, 0.24791146, 0.27200425)
+  
+  tpc.tmp<-stats::na.omit(data.frame(temperature,mu))
+  ntemps<-length(unique(tpc.tmp$temperature))
+  
+  # set up search of a grid of parameter guesses
+  grids<-list(topt=seq(15,35,5),w=seq(10,40,5),a=seq(-0.5,-3,-0.5),b=c(-0.05,0,0.05))
+  start<-list(topt=NA,w=NA,a=NA,b=NA,s=log(2))
+  
+  fit0<-suppressWarnings(grid.mle2(minuslogl=mu~dnorm(mean=nbcurve(temperature,topt,w,a,b),sd=exp(s)),
+                                   grids=grids,start=start,data=tpc.tmp))
+  
+  cfg<-bbmle::coef(fit0$res.best) # this seemed to be throwing problems b/c of an issue with accessing mle2...?
+  target.cfg<-c(20.3754421,104.1459933,-1.4929778,0.1109893,-2.3665936)
+  attr(target.cfg,"names")<-c("topt","w","a","b","s")
+  
+  expect_equal(cfg,target.cfg,tolerance=1E-6)
+})
+
 test_that("get.nbcurve.tpc works as expected",{
   
   tmp<-data.frame(temperature=c(0, 0, 0, 0, 10, 10, 10, 10, 16, 16, 16, 16, 2, 2, 2, 2, 20,
