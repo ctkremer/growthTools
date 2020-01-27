@@ -185,8 +185,11 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=FALSE,conf.ban
       fit0<-mleTools::grid.mle2(minuslogl=mu~dnorm(mean=nbcurve(temperature,topt,w,a,b),sd=exp(s)),
                                        grids=grids,start=start,data=tpc.tmp,...)
     }
-    cfg<-coef(fit0$res.best) # this seemed to be throwing problems b/c of an issue with accessing mle2...?
-
+    print("test")
+    print(fit0$res.best)
+    cfg<-bbmle::coef(fit0$res.best) # this seemed to be throwing problems b/c of an issue with accessing mle2...?
+    print(cfg)
+    
     # polish best fit model, using formula interface:
     guesses<-as.list(cfg)
     fit<-bbmle::mle2(mu~dnorm(mean=nbcurve(temperature,topt,w,a,b),sd=exp(s)),
@@ -231,7 +234,7 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=FALSE,conf.ban
   vec$vcov<-vcov.mat
   vec$nobs<-nrow(tpc.tmp)
   vec$ntemps<-ntemps
-  vec$logLik<-bbmle::logLik(fit)
+  vec$logLik<-stats::logLik(fit)
   vec$aic<-stats::AIC(fit)
   vec$data<-tpc.tmp
   
@@ -318,7 +321,7 @@ get.decurve.tpc<-function(temperature,mu,method='grid.mle2',start.method='genera
       }else{
         fit0<-mleTools::grid.mle2(minuslogl=mu~dnorm(mean=decurve(temperature,topt,exp(b1),exp(b2),exp(d0),exp(d2)),sd=exp(s)),grids=grids,start=start,data=tpc.tmp,...)
       }
-      cfg<-as.list(bbmle::coef(fit0$res.best))
+      cfg<-as.list(bbmle::coef(fit0$res.best)) # clean up use of as.list here and below? seems redundant
       
       # extract parameters for polished fit
       guesses<-as.list(cfg)
@@ -422,7 +425,7 @@ get.decurve.tpc<-function(temperature,mu,method='grid.mle2',start.method='genera
   vec$vcov<-vcov.mat
   vec$n<-nrow(tpc.tmp)
   vec$ntemps<-ntemps
-  vec$logLik<-bbmle::logLik(fit)
+  vec$logLik<-stats::logLik(fit)
   vec$aic<-stats::AIC(fit)
   vec$data<-tpc.tmp
   
