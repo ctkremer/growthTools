@@ -1,4 +1,4 @@
-# growthTools (development version)
+# growthTools 0.1.1
 
 ---
 title: "NEWS"
@@ -12,6 +12,18 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 # *News*
+
+# growthTools 0.1.1 (2020-01-27)
+
+## Second merge from develop branch
+
+* Still private package on GitHub
+* package now passes R CMD check without errors
+* Cleaned up NAMESPACE and DESCRIPTION files to reduce potential conflicts with other packages
+* Added some documentation (e.g., for data sets)
+* Added first unit tests for key functions
+* mleTools should be reinstalled along with growthTools
+* Next version will introduce formal S3 object oriented approach
 
 # growthTools 0.1.0 (2020-01-17)
 
