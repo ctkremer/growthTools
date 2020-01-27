@@ -231,7 +231,7 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=FALSE,conf.ban
   vec$vcov<-vcov.mat
   vec$nobs<-nrow(tpc.tmp)
   vec$ntemps<-ntemps
-  vec$logLik<-stats::logLik(fit)
+  vec$logLik<-bbmle::logLik(fit)
   vec$aic<-stats::AIC(fit)
   vec$data<-tpc.tmp
   
@@ -422,7 +422,7 @@ get.decurve.tpc<-function(temperature,mu,method='grid.mle2',start.method='genera
   vec$vcov<-vcov.mat
   vec$n<-nrow(tpc.tmp)
   vec$ntemps<-ntemps
-  vec$logLik<-stats::logLik(fit)
+  vec$logLik<-bbmle::logLik(fit)
   vec$aic<-stats::AIC(fit)
   vec$data<-tpc.tmp
   

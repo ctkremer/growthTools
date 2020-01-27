@@ -10,5 +10,5 @@
 #' 
 #' @import methods
 #' @importClassesFrom bbmle mle2
-#' @importMethodsFrom bbmle coef predict vcov
+#' @importMethodsFrom bbmle coef predict vcov logLik
 NULL
