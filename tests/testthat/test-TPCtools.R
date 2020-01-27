@@ -18,7 +18,7 @@ test_that("internals of get.nbcurve.tpc work",{
   grids<-list(topt=seq(15,35,5),w=seq(10,40,5),a=seq(-0.5,-3,-0.5),b=c(-0.05,0,0.05))
   start<-list(topt=NA,w=NA,a=NA,b=NA,s=log(2))
   
-  fit0<-suppressWarnings(grid.mle2(minuslogl=mu~dnorm(mean=nbcurve(temperature,topt,w,a,b),sd=exp(s)),
+  fit0<-suppressWarnings(mleTools::grid.mle2(minuslogl=mu~dnorm(mean=nbcurve(temperature,topt,w,a,b),sd=exp(s)),
                                    grids=grids,start=start,data=tpc.tmp))
   
   cfg<-bbmle::coef(fit0$res.best) # this seemed to be throwing problems b/c of an issue with accessing mle2...?
