@@ -44,7 +44,6 @@ devtools::load_all()
 library(ggplot2)
 library(dplyr)
 library(tidyr)
-library(mleTools)
 library(reshape2)
 ```
 
@@ -248,9 +247,32 @@ Now, we can use the function `get.nbcurve.tpc()` to fit thermal performance curv
 # Single data set:
 sp1 <- example_TPC_data %>% filter(isolate.id=='CH30_4_RI_03' & dilution==1)
 
+temperature<-sp1$temperature
+mu<-sp1$mu
+
+tpc.tmp<-stats::na.omit(data.frame(temperature,mu))
+ntemps<-length(unique(tpc.tmp$temperature))
+
+# set up search of a grid of parameter guesses
+grids<-list(topt=seq(15,35,20),w=seq(10,40,30),a=seq(-0.5,-3,-2.5),b=c(-0.05,0,0.05))
+start<-list(topt=NA,w=NA,a=NA,b=NA,s=log(2))
+
+fit0<-suppressWarnings(mleTools::grid.mle2(minuslogl=mu~dnorm(mean=nbcurve(temperature,topt,w,a,b),sd=exp(s)),
+                                    grids=grids,start=start,data=tpc.tmp))
+print(is(fit0$res.best))
+fit0$res.best
+#fit0$res.best@coef
+coef(fit0$res.best)
+```
+
+
+```{r,error=FALSE,warning=F}
+# Single data set:
+sp1 <- example_TPC_data %>% filter(isolate.id=='CH30_4_RI_03' & dilution==1)
+
 # obtain Norberg curve parameters, using a grid search algorithm to consider a range of possible initial parameter values, and plot the results
 nbcurve.traits<-get.nbcurve.tpc(sp1$temperature,sp1$mu,method='grid.mle2',
-                                plotQ=T,conf.bandQ = T,fpath=NA)
+                                plotQ=TRUE,conf.bandQ = TRUE,fpath=NA)
 nbcurve.traits
 ```
 
