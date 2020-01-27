@@ -420,7 +420,7 @@ get.decurve.tpc<-function(temperature,mu,method='grid.mle2',start.method='genera
   vec$ciF<-ciF
   vec$cf<-cf
   vec$vcov<-vcov.mat
-  vec$n<-nrow(tpc.tmp)
+  vec$nobs<-nrow(tpc.tmp)
   vec$ntemps<-ntemps
   vec$logLik<-bbmle::logLik(fit)
   vec$aic<-stats::AIC(fit)
