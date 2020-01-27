@@ -9,4 +9,6 @@
 #' @name growthTools
 #' 
 #' @import methods
+#' @importClassesFrom bbmle mle2
+#' @importMethodsFrom bbmle coef predict vcov
 NULL
