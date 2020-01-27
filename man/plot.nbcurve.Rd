@@ -4,7 +4,7 @@
 \alias{plot.nbcurve}
 \title{Plotting function for single Norberg curve}
 \usage{
-\method{plot}{nbcurve}(
+plot.nbcurve(
   fit.info,
   plot.ci = TRUE,
   plot.obs = TRUE,
