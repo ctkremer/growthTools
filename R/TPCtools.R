@@ -220,7 +220,7 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=FALSE,conf.ban
   dvs0.umax<-suppressWarnings(deltavar2(fun=parse(text=st.umax),meanval=cf,Sigma=vcov.mat))
   
   # simple Fisher confidence intervals:
-  ciF<-ci.FI(fit)
+  ciF<-mleTools::ci.FI(fit)
   
   # save output:
   vec<-as.list(c(cf,rsqr=rsqr,tmin=tmin,tmax=tmax))
@@ -411,7 +411,7 @@ get.decurve.tpc<-function(temperature,mu,method='grid.mle2',start.method='genera
   dvs0.umax<-suppressWarnings(deltavar2(fun=parse(text=st.umax),meanval=cf,Sigma=vcov.mat))
   
   # simple Fisher confidence intervals:
-  ciF<-ci.FI(fit)
+  ciF<-mleTools::ci.FI(fit)
   
   # save output:
   vec<-as.list(c(cf,rsqr=rsqr,tmin=tmin,tmax=tmax))
