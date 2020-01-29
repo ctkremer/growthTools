@@ -56,7 +56,7 @@ print.tpc<-function(object){
   
   cat("\nFit diagnostics:\n")
   cat("R2 = ",round(object$rsqr,4))
-  cat(", logLik = ",object$logLik,"(df = ",attr(nbts$logLik,'df'),"), nobs = ",object$nobs)
+  cat(", logLik = ",object$logLik,"(df = ",attr(object$logLik,'df'),"), nobs = ",object$nobs)
   invisible(object)
 }
 
