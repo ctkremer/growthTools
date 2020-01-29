@@ -169,8 +169,9 @@ plot.tpc<-function(fit,plot_ci=TRUE,plot_obs=TRUE,xlim=c(-2,40),ylim=c(-0.2,5),m
     # save plot at full.path with given file name.
     ggsave(device = grDevices::pdf(),filename = full.path,cplot,width = 5,height = 4)
     grDevices::dev.off()
+    invisible(cplot)
+  }else{
+    return(cplot) 
   }
-  
-  return(cplot) 
 }
 
