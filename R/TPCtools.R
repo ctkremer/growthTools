@@ -164,7 +164,6 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',suppress.grid.mle2.w
   if(ntemps<=4){
     print("Caution in get.nbcurve.tpc - focal data set has <=4 unique temperatures, risk of overfitting is high!")
   }
-  id<-id[1]
   
   if(method=='grid.mle2'){
     
