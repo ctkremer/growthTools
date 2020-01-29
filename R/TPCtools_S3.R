@@ -67,6 +67,7 @@ print.tpc<-function(object){
 #' @param se.fit logical; should standard error values be returned?
 #' 
 #' @export
+#' @method predict tpc
 predict.tpc<-function(fit,newdata,se.fit=FALSE){
   
   # Check level of nesting for fit.info, and reduce if necessary
