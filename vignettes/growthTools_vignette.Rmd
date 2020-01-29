@@ -241,76 +241,132 @@ This data set contains information on the growth rate (mu) of one focal strain o
 
 ## Norberg model:
 
-Now, we can use the function `get.nbcurve.tpc()` to fit thermal performance curves (using the re-parameterized Norberg function - see `?nbcurve()`) to the growth rate data. This is easily done for a single dilution period:
+Now, we can use the function `get.nbcurve.tpc()` to fit thermal performance curves (using the re-parameterized Norberg function - see `?nbcurve()`) to the growth rate data. 
+
+### Single curves:
+
+This is easily done for a single thermal performancecurve, based on data collected over one dilution period:
 
 ```{r,error=FALSE,warning=F}
-# Single data set:
+# Filter out a single data set:
 sp1 <- example_TPC_data %>% filter(isolate.id=='CH30_4_RI_03' & dilution==1)
 
-# obtain Norberg curve parameters, using a grid search algorithm to consider a range of possible initial parameter values, and plot the results
-nbcurve.traits<-get.nbcurve.tpc(sp1$temperature,sp1$mu,method='grid.mle2',
-                                plotQ=TRUE,conf.bandQ = TRUE,fpath=NA)
-nbcurve.traits
+# obtain Norberg curve parameters, using a grid search algorithm to consider a range of possible initial
+# parameter values
+nbcurve.fit<-get.nbcurve.tpc(sp1$temperature,sp1$mu,method='grid.mle2')
 ```
 
-But can also be automatically applied to multiple dilution periods or otherwise independent thermal performance curves (e.g., from different species or populations):
+The resulting object, of class 'tpc', contains a lot of information. A basic summary is available via the default print method:
+
+```{r,error=FALSE,warning=F}
+class(nbcurve.fit)
+
+# view summary
+nbcurve.fit
+```
+
+More detailed information that can be directly accessed, including:
+* TPC model type (Norberg or Double Exponential, currently)
+* Parameter estimates for the TPC model
+* Estimates of cardinal temperature traits (Topt, Tmin, Tmax, maximum growth rate)
+* Diagnostics describing the quality of the model fit
+```{r,error=FALSE,warning=F}
+# Model parameters
+nbcurve.fit$cf
+
+# Fisher information confidence intervals for these parameters:
+nbcurve.fit$cf_ciFI
+
+# Cardinal thermal traits:
+nbcurve.fit[c('topt','tmin','tmax','umax')]
+
+# Confidence intervals for (some) of these traits (more to come):
+nbcurve.fit$topt_ci
+
+# Diagnostics
+nbcurve.fit[c('rsqr','logLik','aic','nobs','ntemps')]
+
+# See also the class constructor function for full details on output fields:
+# ?new_tpc()
+```
+
+Cardinal thermal traits will be the same across all TPC models we consider, where they exist and can be estimated. However, the number and identity of model parameters varies with the TPC equation under consideration. That is why model parameters are contained in the vector `$cf` within the `tpc` object.
+
+Note that the output also provides an estimate of umax, the maximum growth rate (achieved at a temperature of Topt). Using the same method employed to generate confidence bands around TPC regressions, we can also obtain an estimated 95% confidence interval around umax. This can be accessed as well:
+
+```{r,error=FALSE,warning=F}
+nbcurve.fit$umax_ci
+```
+
+Given a set of parameter estimates in a `tpc` object, we can make predictions for growth rate at one or more specific temperatures, using the `predict()` function, as follows:
+
+```{r,error=FALSE,warning=F}
+# by default, the results are predicted growth rates for the observed temperatures underlying the original fit
+head(predict(nbcurve.fit))
+
+# but one or more user-supplied temperatures can be used instead, e.g.:
+predict(nbcurve.fit,newdata=data.frame(temperature=c(12)))
+predict(nbcurve.fit,newdata=data.frame(temperature=c(12,14)))
+
+# standard errors around these values can also be requested:
+predict(nbcurve.fit,newdata=data.frame(temperature=c(12,14)),se.fit=TRUE)
+```
+
+The `predict()` function is useful for another primary objective, which is to visualize a fit thermal performance curve. This is handled by a plot method available for 'tpc' objects, which visualizes the fit thermal performance curve, and can also show the underlying observations and an approximate confidence band around this curve. This can be  a good way to visually assess the quality of the fit. The default plot looks like this:
+
+```{r,error=FALSE,warning=F}
+plot(nbcurve.fit)
+```
+
+These plots can be customized in various ways (see later section on Visualize Thermal Performance Curves). 
+
+
+### Multiple curves
+
+We can also automatically apply this approach to multiple dilution periods or otherwise independent thermal performance curves (e.g., from different species or populations):
 
 ```{r,error=FALSE,warning=F}
 # First, let's look at an example with multiple dilutions but the same strain:
 sp1b <- example_TPC_data %>% filter(isolate.id=='CH30_4_RI_03')
 
 # apply get.nbcurve to the entire data set, grouping by isolate and dilution
-res <- sp1b %>% group_by(isolate.id,dilution) %>% 
-        do(tpcs=get.nbcurve.tpc(.$temperature,.$mu,method='grid.mle2',
-                                plotQ=T,conf.bandQ=T,fpath=NA,id=.$dilution))
-
+nb.res <- sp1b %>% group_by(isolate.id,dilution) %>% 
+        do(tpcs=get.nbcurve.tpc(.$temperature,.$mu,method='grid.mle2'))
 ```
 
-This approach also allows a fair amount of customization. For example, we can save the plots to a file folder, rather than displaying them directly:
-
-```{r}
-# or saving resulting plots:
-#fpath<-'/Users/colin/Research/Software/growthTools/user/'
-
-# provide an explicit fpath to invoke plot saving; when `id` is also provided, this column will be used to produce the plot's title, as well as included in the file name.
-#res <- sp1b %>% group_by(isolate.id,dilution) %>% do(tpcs=get.nbcurve.tpc(.$temperature,.$mu,method='grid.mle2',plotQ=T,conf.bandQ=T,fpath=fpath,id=.$dilution))
-```
-
-You can also turn off plotting all together, or turn off only the confidence bands:
+The result, `res` is a `data.frame` that contains all of our grouping variables, as well as a column `tpcs`. Each entry of this column is a single object of class `tpc`. So, we can access the same information as above for a single curve:
 
 ```{r,error=FALSE,warning=F}
-nb.res <- sp1b %>% group_by(isolate.id,dilution) %>% 
-          do(tpcs=get.nbcurve.tpc(.$temperature,.$mu,method='grid.mle2',
-                                  plotQ=T,conf.bandQ=F,fpath=NA,id=.$dilution))
+head(nb.res)
 
-sp1b %>% group_by(isolate.id,dilution) %>% 
-         do(tpcs=get.nbcurve.tpc(.$temperature,.$mu,method='grid.mle2',
-                                 plotQ=F,conf.bandQ=F,fpath=NA,id=.$dilution))
+# e.g., for the first dilution period
+nb.res$tpcs[[1]]
+nb.res$tpcs[[1]]$topt
 ```
 
-After executing any of these, you can use `summarise` to recover parameter estimates and other diagnostic information corresponding to each curve fit.
+Or we can extract a table of values across multiple curves, using `dplyr` techniques:
 
 ```{r}
 # process results
 nb.res2<-nb.res %>% summarise(isolate.id,dilution,topt=tpcs$topt,tmin=tpcs$tmin,
                               tmax=tpcs$tmax,umax=tpcs$umax,rsqr=tpcs$rsqr,
-                              a=tpcs$a,b=tpcs$b,w=tpcs$w)
+                              a=tpcs$cf$a,b=tpcs$cf$b,w=tpcs$cf$w)
 nb.res2
 ```
 
-A variety of other diagnostics are available, including the log likelihood of the model fit, AIC, the total number of observations the regression is based on, how many unique temperature treatments are involved, and approximate confidence intervals for the coefficients of the model (based on Fisher information). These can be accessed by including additional terms in the summarise command, for example:
+Again, a variety of other diagnostics are available, including the log likelihood of the model fit, AIC, the total number of observations the regression is based on, how many unique temperature treatments are involved, and approximate confidence intervals for the coefficients of the model (based on Fisher information). These can be accessed by including different terms in the summarise command, for example:
 
 ```{r}
 nb.res %>% summarise(isolate.id,dilution,ntemps=tpcs$ntemps,
-                     topt=tpcs$topt,topt.lwr=tpcs$ciF[1,1],topt.upr=tpcs$ciF[1,2])
+                     topt=tpcs$topt,topt.lwr=tpcs$topt_ci[1],topt.upr=tpcs$topt_ci[2])
 ```
 
-Note that the output also provides an estimate of umax, the maximum growth rate (achieved at a temperature of Topt). Using the same method employed to generate confidence bands, we can also obtain an estimated 95% confidence interval around umax:
+We can also generate plots of all of the different fits, using the information in `nb.res`. Basically, for each entry in `nb.res`, generate a plot of the `tpc` and label it with the corresponding isolate and dilution. Each entry in `nb.res.graphs` is then a `ggplot` graph that can be displayed.
 
 ```{r}
-nb.res %>% summarise(isolate.id,dilution,ntemps=tpcs$ntemps,
-                     topt=tpcs$topt,topt.lwr=tpcs$ciF[1,1],topt.upr=tpcs$ciF[1,2],
-                     umax=tpcs$umax,umax.lwr=tpcs$umax-tpcs$umax.ci,umax.upr=tpcs$umax+tpcs$umax.ci)
+nb.res.graphs<-nb.res %>% group_by(isolate.id,dilution) %>% 
+                          do(graphs=plot(.$tpcs[[1]],main=paste(.$isolate.id,.$dilution)))
+nb.res.graphs$graphs[1:3]
 ```
 
 
@@ -318,24 +374,50 @@ nb.res %>% summarise(isolate.id,dilution,ntemps=tpcs$ntemps,
 
 NOTE: many new features introduced into `get.nbcurve.tpc()` have not yet been added to `get.decurve.tpc`, but will be soon (5/21/19).
 
-The package also allows fitting an alternative parametric equation, known currently as the double exponential model, to thermal performance curves. Details on this model can be found in Thomas et al. 2017, Global Change Biology. In brief, it models net population growth rate as the difference between two processes that depend exponentially on temperature: birth and death.
+Many different equations capturing the shape of thermal performance curves have been proposed (see for example Grimaud et al. 2017). The above examples use an equation proposed by Norberg et al. 2004. The current version of the package also allows users to fit a different parametric equation, known as the double exponential model (see Thomas et al. 2017, Global Change Biology, and Kremer et al. in prep). In brief, it models net population growth rate as the difference between two processes that depend exponentially on temperature: birth and death.
 
 Right now, model fitting using this approach is pretty slow; this model is a 5 parameter model (Norberg uses 4 parameters), and several of the parameter estimates tend to covary strongly, so convergence takes many iterations of the optimization algorithm. There are ways to speed things up (by providing a smaller grid of initial parameter guesses to grid.mle2 behind the scenes), but this comes at an elevated risk of finding a local rather than globally optimal set of parameter estimates.
 
 You can access this functionality the same way as fitting the Norberg curve, but using `get.decurve.tpc()` inside of the `dplyr` command:
 
-```{r,warning=F}
-de.res <- sp1b %>% group_by(isolate.id,dilution) %>% 
-          do(tpcs=get.decurve.tpc(.$temperature,.$mu,method='grid.mle2',
-                                  plotQ=T,conf.bandQ=T,fpath=NA,id=.$dilution))
+### Multiple curves
 
+```{r,warning=F}
+# fit decurve to multiple TPCs
+de.res <- sp1b %>% group_by(isolate.id,dilution) %>% 
+          do(tpcs=get.decurve.tpc(.$temperature,.$mu,method='grid.mle2'))
+
+```
+
+Note that although the class of the results of `get.decurve.tpc` and `get.nbcurve.tpc` is the same (`tpc`), some of the contents of the resulting object differ. For example:
+
+```{r,warning=F}
+nb.res$tpcs[[1]]$type
+de.res$tpcs[[1]]$type
+
+nb.res$tpcs[[1]]$cf
+de.res$tpcs[[1]]$cf
+```
+
+As before, we can summarise the results of the multiple double exponential curves that were fit above:
+
+```{r,warning=F}
+# summarise the numerical results
 de.res2 <- de.res %>% summarise(isolate.id,dilution,topt=tpcs$topt,
                                 tmin=tpcs$tmin,tmax=tpcs$tmax,rsqr=tpcs$rsqr,
-                                b1=tpcs$b1,b2=tpcs$b2,d0=tpcs$d0,d2=tpcs$d2)
+                                b1=tpcs$cf$b1,b2=tpcs$cf$b2,d0=tpcs$cf$d0,d2=tpcs$cf$d2)
 de.res2
 ```
 
-It should also be straightforward to fit both types of model to your data, then try to decide which model performs best, using criteria such as R2 or AIC. For now though, here's a basic visual comparison: 
+And again, you can predict values on the fitted curves or make plots, just like with the Norberg model.
+
+```{r,error=FALSE,warning=F}
+head(predict(de.res$tpcs[[1]]))
+
+plot(de.res$tpcs[[1]])
+```
+
+Finally, it should also be straightforward to fit both types of model to your data, then try to decide which model performs best, using criteria such as R2 or AIC. For now though, here's a basic visual comparison: 
 
 ```{r,error=FALSE,warning=F}
 nb.res3<-melt(nb.res2,id.vars=c('isolate.id','dilution'))
@@ -349,9 +431,10 @@ ggplot(res2[res2$variable=='rsqr',],aes(x=type,y=value))+
 ```
 
 
+
 ## Allow for multiple grouping variables:
 
-We could also apply this approach to a larger data set, with more species and additional grouping variables:
+We could also apply this general approach to a larger data set, with more species and additional grouping variables:
 
 ```{r,warning=F}
 table(example_TPC_data[,c('isolate.id','dilution')])
@@ -360,12 +443,11 @@ table(example_TPC_data[,c('isolate.id','dilution')])
 example_TPC_data$id<-paste(example_TPC_data$isolate.id,example_TPC_data$dilution)
 
 res2 <- example_TPC_data %>% group_by(isolate.id,dilution) %>% 
-        do(tpcs=get.nbcurve.tpc(.$temperature,.$mu,method='grid.mle2',
-                                plotQ=F,conf.bandQ=F,fpath=NA,id=.$id))
+        do(tpcs=get.nbcurve.tpc(.$temperature,.$mu,method='grid.mle2'))
 
 clean.res <- res2 %>% summarise(isolate.id,dilution,topt=tpcs$topt,
                                 tmin=tpcs$tmin,tmax=tpcs$tmax,rsqr=tpcs$rsqr,
-                                a=exp(tpcs$a),b=tpcs$b,w=tpcs$w)
+                                a=tpcs$cf$a,b=tpcs$cf$b,w=tpcs$cf$w)
 data.frame(clean.res)
 ```
 
@@ -373,41 +455,41 @@ data.frame(clean.res)
 
 # Visualize Thermal Performance Curves
 
-There are two functions within the package to aid in plotting thermal performance curves (TPCs), that allow us to predict and plot values from a given TPC fit.
+In the earlier section on fitting the Norberg thermal performance curve, there was a brief example of generating a plot of the resulting fit. Now we will examine the plotting function in greater detail. There are two critical functions within the package that allow us to predict and plot values from a given TPC fit.
 
 ## Predict values from a TPC
 
-The first of these is `predict.nbcurve()`, which works quite similarly as other `predict()` functions in R. Basically, we can provide the function with the output from a single `get.nbcurve.tpc` fit and it will return a set of temperatures and predicted growth rates. For example:
+The first of these is the `predict()` function. Basically, we can provide the function with the output from a single `get.nbcurve.tpc` fit and it will return a set of temperatures and predicted growth rates. For example:
 
 ```{r}
 # pull out the fit resulting from a single get.nbcurve.tpc:
-fit.info<-nb.res[1,]$tpcs
+fit<-nb.res$tpcs[[1]]
 
-# generate predictions for a single curve:
-tmp<-predict.nbcurve(fit.info)
+# generate predictions for growth rate at the experimental temperatures used in the original fit:
+tmp<-predict(fit)
 head(tmp)
 ```
 
-By default, the output is for a sequence of temperatures from -2 to 40 C, in steps of 0.1. However, users can specify a custom set of values:
+Alternatively, users can specify a custom set of temperature values - here at 20, 25, and 30 C.
 
 ```{r}
-predict.nbcurve(fit.info,newdata=data.frame(temperature=c(20,25,30)))
+predict(fit,newdata=data.frame(temperature=c(20,25,30)))
 ```
 
 The function can also generate standard errors around the predicted growth rate values, using the delta method (see Bolker book, pg. 255).
 
 ```{r}
-predict.nbcurve(fit.info,newdata=data.frame(temperature=c(20,25,30)),se.fit=TRUE)
+predict(fit,newdata=data.frame(temperature=c(20,25,30)),se.fit=TRUE)
 ```
 
 
 ## Plot values from a TPC
 
-These predicted values can be used as the foundation for plotting fitted Norberg curves:
+These predicted values can be used as the foundation for plotting fitted Norberg curves (or curves based on other TPC models, like the double exponential):
 
 ```{r}
 # generate predictions for a single curve, along with standard errors:
-tmp<-predict.nbcurve(fit.info,se.fit=T)
+tmp<-predict(fit,newdata=data.frame(temperature=seq(-2,40,0.1)),se.fit=T)
 
 # plot the predictions
 ggplot(tmp,aes(x=temperature,y=mu))+
@@ -417,25 +499,24 @@ ggplot(tmp,aes(x=temperature,y=mu))+
   theme_bw()
 ```
 
-For ease, this capacity has been formalized using the `plot.nbcurve()` function, which invokes `predict.nbcurve()` internally:
+For ease, this capacity has been formalized using the `plot` method for `tpc` objects, which invokes `predict` behind the scenes, for example:
 
 ```{r}
 # use function to generate a single curve plot:
-plot.nbcurve(fit.info)
+plot(fit,main='Single TPC')
 ```
 
 We can also control whether the confidence band and raw data are displayed, or alter the range of the plot:
 
 ```{r}
 # use function to generate a single curve plot:
-plot.nbcurve(fit.info,plot.ci = F,plot.obs = F,xlim=c(-2,32),ylim=c(-0.5,1))
+c1<-plot(fit,plot_ci = FALSE,plot_obs = FALSE,xlim=c(-2,32),ylim=c(-0.5,1),main='Single TPC')
+c1
 ```
 
-Finally, users can also save the ggplot2 object created by the `plot.nbcurve()` and then subsequently modify the layout of the plot, for example:
+Finally, users can also save the ggplot2 object created and then subsequently modify the layout of the plot. For example, modify the axes labels to add units and remove the grid lines:
 
 ```{r}
-c1<-plot.nbcurve(fit.info)
-
 # demonstrate changes in layout
 c1+scale_x_continuous('Temperature (C)')+
   scale_y_continuous('Growth rate (1/day)')+
@@ -445,19 +526,19 @@ c1+scale_x_continuous('Temperature (C)')+
 
 ## Plot multiple TPCs at once:
 
-The `plot.nbcurve()` function is suited to displaying the results of a single Norberg TPC, but cannot easily be used to combine multiple TPCs within a single plot. To accomplish this, it's better to take advantage of the `predict.nbcurve()` function, combined with the same `dplyr` capabilities that allow us to fit multiple TPCs in the first place.
+The `plot()` function is suited to displaying the results of a single TPC, but cannot easily be used to combine multiple TPCs within a single plot. To accomplish this, it's better to take advantage of the `predict()` function, combined with the same `dplyr` capabilities that allow us to fit multiple TPCs in the first place.
 
-Recall that when we used `get.nbcurve.tpc` to fit multiple curves, we defined a set of grouping variables that uniquely identified the growth rate data for each individual TPC. The resulting output is a complex data frame that retains columns for each of these grouping variables, as well as a new column (which we called `tpcs`), which holds the individual Norberg curve fits.
+Recall that when we used `get.nbcurve.tpc` to fit multiple curves, we defined a set of grouping variables that uniquely identified the growth rate data for each individual TPC. The resulting output is a complex data frame that retains columns for each of these grouping variables, as well as a new column (which we called `tpcs`), which holds the individual Norberg curve fits as objects of class `tpc`.
 
-We can take this output and process it using `predict.nbcurve()` as follows:
+We can take this output and process it using `predict()` as follows:
 
 ```{r,warning=F}
 # generate predictions for multiple curves:
-tmp2 <- nb.res %>% group_by(isolate.id,dilution) %>% do(predict.nbcurve(.$tpcs,se.fit=T))
+tmp2 <- nb.res %>% group_by(isolate.id,dilution) %>% do(predict(.$tpcs[[1]],newdata=data.frame(temperature=seq(-2,40,0.1)),se.fit=TRUE))
 head(tmp2)
 ```
 
-Subsequently, we can take this resulting data frame and plot it with ggplot2, using the grouping variables to visually distinguish different curves:
+Subsequently, we can take this resulting data.frame and plot it with ggplot2, using the grouping variables to visually distinguish different curves:
 
 ```{r}
 # plot multiple curves simultaneously
@@ -472,7 +553,7 @@ multi.curve<-ggplot(tmp2,aes(x=temperature,y=mu))+
 multi.curve
 ```
 
-Finally, it is possible to ammend these multi-curve plots with the underlying observations used as the foundation of the regressions. This takes advantage of the fact that the original observations are reported in the `data` field of output from `get.nbcurve.tpc()`.
+Finally, it is possible to ammend these multi-curve plots with the underlying observations used as the foundation of the regressions. This takes advantage of the fact that the original observations are reported in the `data` field of `tpc` objects.
 
 ```{r,warning=F}
 # recapitulate corresponding data frame of observations:
@@ -480,5 +561,15 @@ tmp2.obs <- nb.res %>% group_by(isolate.id,dilution) %>% do(.$tpcs[[1]]$data)
 head(tmp2.obs)
 
 multi.curve+geom_point(data=tmp2.obs,aes(colour=factor(dilution)),alpha=0.4)
+```
+
+
+## Saving plots
+
+We can also save plots to a file folder, rather than displaying them directly:
+
+```{r}
+#fpath<-'/Users/colin/Research/Software/growthTools/user/'
+#plot(fit,plot_ci = T,plot_obs = T,ylim=c(-0.2,1),fpath = fpath,main='Single example TPC')
 ```
 
