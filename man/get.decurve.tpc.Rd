@@ -9,10 +9,6 @@ get.decurve.tpc(
   mu,
   method = "grid.mle2",
   start.method = "general.grid",
-  plotQ = FALSE,
-  conf.bandQ = TRUE,
-  fpath = NA,
-  id = NA,
   suppress.grid.mle2.warnings = TRUE,
   ...
 )
@@ -25,14 +21,6 @@ get.decurve.tpc(
 \item{method}{Specify which fitting algorithm to use, 'mle2' or 'grid.mle2'}
 
 \item{start.method}{Specify method for generating starting grid for 'grid.mle2' option}
-
-\item{plotQ}{Should regression be visualized?}
-
-\item{conf.bandQ}{Should we calculate a confidence band around the regression? logical.}
-
-\item{fpath}{If visual requested, and valid file path provided here, plot will be saved as a .pdf file. Default is NA.}
-
-\item{id}{Character string providing any information ID'ing the specifc curve being fit; used to label plots, if any are requested. Default is NA.}
 
 \item{suppress.grid.mle2.warnings}{logical; should warnings arising from grid.mle2 invocation be suppressed (TRUE), or displayed (FALSE)? Default is TRUE.}
 

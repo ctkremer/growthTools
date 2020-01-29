@@ -4,7 +4,15 @@
 \alias{plot.tpc}
 \title{Plotting function for single thermal performance curve}
 \usage{
-\method{plot}{tpc}(fit, plot_ci = TRUE, plot_obs = TRUE, xlim = c(-2, 40), ylim = c(-0.2, 5))
+\method{plot}{tpc}(
+  fit,
+  plot_ci = TRUE,
+  plot_obs = TRUE,
+  xlim = c(-2, 40),
+  ylim = c(-0.2, 5),
+  main = NA,
+  fpath = NA
+)
 }
 \arguments{
 \item{fit}{The result of a single TPC curve fit from get.nbcurve.tpc or similar}
@@ -12,6 +20,10 @@
 \item{xlim}{x-axis range (temperature)}
 
 \item{ylim}{y-axis range (adjusts internally from -0.2 to slightly above umax+CI)}
+
+\item{main}{Character string providing plot title (usually id info for the plotted curve)}
+
+\item{fpath}{If visual requested, and valid file path provided here, plot will be saved as a .pdf file. Default is NA.}
 
 \item{plot.ci}{logical, should the resulting plot include 95\% confidence bands}
 
