@@ -131,7 +131,7 @@ plot.tpc<-function(fit,plot_ci=TRUE,plot_obs=TRUE,xlim=c(-2,40),ylim=c(-0.2,5),m
   }
   
   # adjust plotting window to specific curve?
-  ylim<-c(ylim[1],1.1*(fit$umax+fit$umax_ci[2]))
+  #ylim<-c(ylim[1],1.1*(fit$umax+fit$umax_ci[2]))
   
   # generate predictions along a range of temperatures
   preds<-predict(fit,newdata=data.frame(temperature=seq(xlim[1],xlim[2],length.out = 100)),se.fit = plot_ci)    
