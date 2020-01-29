@@ -144,10 +144,6 @@ decurve2<-function(temperature,topt,phi,b2,d0,d2){
 #' @param temperature Temperature
 #' @param mu Exponential growth rate
 #' @param method Specify which fitting algorithm to use, 'mle2' or 'grid.mle2'
-#' @param plotQ Should regression be visualized?
-#' @param conf.bandQ Should we calculate a confidence band around the regression? logical.
-#' @param fpath If visual requested, and valid file path provided here, plot will be saved as a .pdf file. Default is NA.
-#' @param id Character string providing any information ID'ing the specifc curve being fit; used to label plots, if any are requested. Default is NA.
 #' @param suppress.grid.mle2.warnings logical; should warnings arising from grid.mle2 invocation be suppressed (TRUE), or displayed (FALSE)? Default is TRUE.
 #' @param ... Additional arguments passed to grid.mle2 (e.g., control=list(maxit=2000))
 #' 
@@ -161,8 +157,7 @@ decurve2<-function(temperature,topt,phi,b2,d0,d2){
 #' @export
 #' @import emdbook
 #' @import ggplot2
-get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=FALSE,conf.bandQ=TRUE,
-                          fpath=NA,id=NA,suppress.grid.mle2.warnings=TRUE,...){
+get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',suppress.grid.mle2.warnings=TRUE,...){
   tpc.tmp<-stats::na.omit(data.frame(temperature,mu))
   ntemps<-length(unique(tpc.tmp$temperature))
   
@@ -249,35 +244,6 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=FALSE,conf.ban
   vec$logLik<-logLik(fit)
   vec$aic<-stats::AIC(fit)
   vec$data<-tpc.tmp
-  
-  # Plot results:
-  if(plotQ){
-    
-    # use function to generate a single curve plot:
-    p1<-plot(vec,xlim = c(min(tpc.tmp$temperature),max(tpc.tmp$temperature)),
-                 plot_ci = conf.bandQ,plot_obs = TRUE)
-    p1<-p1+scale_x_continuous('Temperature (C)')+
-      scale_y_continuous('Growth rate (1/day)')+
-      theme(panel.grid = element_blank())
-    
-    if(!is.na(id)){
-      p1<-p1+ggtitle(id)
-    }
-
-    if(!is.na(fpath)){
-      if(is.na(id)){
-        time<-Sys.time()
-        time<-gsub(x = time,pattern = ":",replacement = "_")
-        full.path<-paste(fpath,"TPC_fit_",time,".pdf",sep='')        
-      }else{
-        full.path<-paste(fpath,"TPC_fit_",id,".pdf",sep='') 
-      }
-      ggsave(device = grDevices::pdf(),filename = full.path,p1,width = 5,height = 4)
-      grDevices::dev.off()
-    }else{
-      print(p1)
-    }
-  }
 
   # Finished, return relevant stats.  
   return(vec)
@@ -292,10 +258,6 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=FALSE,conf.ban
 #' @param mu Exponential growth rate
 #' @param method Specify which fitting algorithm to use, 'mle2' or 'grid.mle2'
 #' @param start.method Specify method for generating starting grid for 'grid.mle2' option
-#' @param plotQ Should regression be visualized?
-#' @param conf.bandQ Should we calculate a confidence band around the regression? logical.
-#' @param fpath If visual requested, and valid file path provided here, plot will be saved as a .pdf file. Default is NA.
-#' @param id Character string providing any information ID'ing the specifc curve being fit; used to label plots, if any are requested. Default is NA.
 #' @param suppress.grid.mle2.warnings logical; should warnings arising from grid.mle2 invocation be suppressed (TRUE), or displayed (FALSE)? Default is TRUE.
 #' @param ... Additional arguments passed to grid.mle2 (e.g., control=list(maxit=2000))
 #' 
@@ -305,12 +267,9 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=FALSE,conf.ban
 #' @import ggplot2
 #' @import mgcv
 get.decurve.tpc<-function(temperature,mu,method='grid.mle2',start.method='general.grid',
-                          plotQ=FALSE,conf.bandQ=TRUE,fpath=NA,id=NA,suppress.grid.mle2.warnings=TRUE,...){
+                          suppress.grid.mle2.warnings=TRUE,...){
   tpc.tmp<-stats::na.omit(data.frame(temperature,mu))
   ntemps<-length(unique(tpc.tmp$temperature))
-  
-  # is this still necessary?
-  id<-id[1]
   
   if(ntemps<=5){
     print("Caution in get.decurve.tpc - focal data set has <=5 unique temperatures, risk of overfitting is high!")
@@ -455,35 +414,6 @@ get.decurve.tpc<-function(temperature,mu,method='grid.mle2',start.method='genera
   vec$logLik<-logLik(fit)
   vec$aic<-stats::AIC(fit)
   vec$data<-tpc.tmp
-  
-  # Plot results:
-  if(plotQ){
-    
-    # use function to generate a single curve plot:
-    p1<-plot(vec,xlim = c(min(tpc.tmp$temperature),max(tpc.tmp$temperature)),
-                 plot_ci = conf.bandQ,plot_obs = TRUE)
-    p1<-p1+scale_x_continuous('Temperature (C)')+
-      scale_y_continuous('Growth rate (1/day)')+
-      theme(panel.grid = element_blank())
-    
-    if(!is.na(id)){
-      p1<-p1+ggtitle(id)
-    }
-    
-    if(!is.na(fpath)){
-      if(is.na(id)){
-        time<-Sys.time()
-        time<-gsub(x = time,pattern = ":",replacement = "_")
-        full.path<-paste(fpath,"TPC_fit_",time,".pdf",sep='')        
-      }else{
-        full.path<-paste(fpath,"TPC_fit_",id,".pdf",sep='') 
-      }
-      ggsave(device = grDevices::pdf(),filename = full.path,p1,width = 5,height = 4)
-      grDevices::dev.off()
-    }else{
-      print(p1)
-    }
-  }
   
   # Finished, return relevant stats.  
   return(vec)
