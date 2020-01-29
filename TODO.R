@@ -1,8 +1,12 @@
 # To-do list for package:
 
-# - dependencies: try using @importFrom rather than @import to specify specific functions to import from other packages. This might help avoid problems like bbmle::slice and dplyr::slice, where function names are redundance across packages, but potentially with quite different functionality.
-
 # - add calculatoin to get.decurve.tpc() to compute missing variable (d1) given other parameter estimates.
+
+# - change ci.FI to remove '.'
+
+# - remove plotting option from get.nbcurve.tpc. handle this separately using plot.tpc after initial calculations are run. update vignette accordingly. should make things much faster during vignette building.
+
+# - write a confint.tpc method to provide confidence intervals easily
 
 # - clean up example data sets - they contain more columns than are actually used/useful in examples and vignettes. also, consider renaming example_TPC_data
 
