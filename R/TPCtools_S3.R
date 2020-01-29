@@ -121,7 +121,7 @@ predict.tpc<-function(fit,newdata,se.fit=FALSE){
 #' 
 #' @export
 #' @import ggplot2
-plot.tpc<-function(fit,plot_ci=TRUE,plot_obs=TRUE,xlim=c(-2,40),ylim=c(-0.2,5)){
+plot.tpc<-function(fit,plot_ci=TRUE,plot_obs=TRUE,xlim=c(-2,40),ylim=c(-0.2,5),main=''){
   
   # Check level of nesting for fit.info, and reduce if necessary
   if(length(fit)==1){
@@ -141,7 +141,8 @@ plot.tpc<-function(fit,plot_ci=TRUE,plot_obs=TRUE,xlim=c(-2,40),ylim=c(-0.2,5)){
     scale_x_continuous('Temperature')+
     scale_y_continuous('Growth rate')+
     coord_cartesian(xlim=xlim,ylim=ylim)+
-    theme_bw()
+    theme_bw()+
+    ggtitle(main)
   
   # add confidence bands?
   if(plot_ci){
