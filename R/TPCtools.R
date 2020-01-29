@@ -223,12 +223,27 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=FALSE,conf.ban
   ciF<-mleTools::ci.FI(fit)
   
   # save output:
-  vec<-as.list(c(cf,rsqr=rsqr,tmin=tmin,tmax=tmax))
-  vec$umax<-pd.umax
-  vec$umax.ci<-1.96*sqrt(dvs0.umax)
-  vec$ciF<-ciF
+  
+  # create empty object of class 'tpc'
+  vec<-new_tpc()
+  
+  # populate tpc object
+  vec$type<-"nbcurve"
   vec$cf<-cf
+  vec$cf_ciFI<-ciF
   vec$vcov<-vcov.mat
+  
+  vec$umax<-pd.umax
+  vec$umax_ci<-pd.umax+c(-1,1)*1.96*sqrt(dvs0.umax)
+  names(vec$umax_ci)<-c('2.5 %','97.5 %')
+  vec$topt<-cf$topt
+  vec$topt_ci<-ciF[1,1:2]
+  vec$tmin<-tmin
+  #vec$tmin_ci<-
+  vec$tmax<-tmax
+  #vec$tmax_ci<-
+  
+  vec$rsqr<-rsqr
   vec$nobs<-nrow(tpc.tmp)
   vec$ntemps<-ntemps
   vec$logLik<-logLik(fit)
@@ -239,9 +254,8 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',plotQ=FALSE,conf.ban
   if(plotQ){
     
     # use function to generate a single curve plot:
-    p1<-plot.nbcurve(vec,xlim = c(min(tpc.tmp$temperature),
-                                  max(tpc.tmp$temperature)),
-                         plot.ci = conf.bandQ,plot.obs = TRUE)
+    p1<-plot(vec,xlim = c(min(tpc.tmp$temperature),max(tpc.tmp$temperature)),
+                 plot_ci = conf.bandQ,plot_obs = TRUE)
     p1<-p1+scale_x_continuous('Temperature (C)')+
       scale_y_continuous('Growth rate (1/day)')+
       theme(panel.grid = element_blank())
@@ -413,13 +427,29 @@ get.decurve.tpc<-function(temperature,mu,method='grid.mle2',start.method='genera
   # simple Fisher confidence intervals:
   ciF<-mleTools::ci.FI(fit)
   
+  
   # save output:
-  vec<-as.list(c(cf,rsqr=rsqr,tmin=tmin,tmax=tmax))
-  vec$umax<-pd.umax
-  vec$umax.ci<-1.96*sqrt(dvs0.umax)
-  vec$ciF<-ciF
+  
+  # create empty object of class 'tpc'
+  vec<-new_tpc()
+  
+  # populate tpc object
+  vec$type<-"decurve"
   vec$cf<-cf
+  vec$cf_ciFI<-ciF
   vec$vcov<-vcov.mat
+  
+  vec$umax<-pd.umax
+  vec$umax_ci<-pd.umax+c(-1,1)*1.96*sqrt(dvs0.umax)
+  names(vec$umax_ci)<-c('2.5 %','97.5 %')
+  vec$topt<-cf$topt
+  vec$topt_ci<-ciF[1,1:2]
+  vec$tmin<-tmin
+  #vec$tmin_ci<-
+  vec$tmax<-tmax
+  #vec$tmax_ci<-
+  
+  vec$rsqr<-rsqr
   vec$nobs<-nrow(tpc.tmp)
   vec$ntemps<-ntemps
   vec$logLik<-logLik(fit)
@@ -430,9 +460,8 @@ get.decurve.tpc<-function(temperature,mu,method='grid.mle2',start.method='genera
   if(plotQ){
     
     # use function to generate a single curve plot:
-    p1<-plot.decurve(vec,xlim = c(min(tpc.tmp$temperature),
-                                  max(tpc.tmp$temperature)),
-                     plot.ci = conf.bandQ,plot.obs = TRUE)
+    p1<-plot(vec,xlim = c(min(tpc.tmp$temperature),max(tpc.tmp$temperature)),
+                 plot_ci = conf.bandQ,plot_obs = TRUE)
     p1<-p1+scale_x_continuous('Temperature (C)')+
       scale_y_continuous('Growth rate (1/day)')+
       theme(panel.grid = element_blank())
@@ -554,159 +583,3 @@ fd2.central<-function(fx,h){
   (fx[3]-2*fx[2]+fx[1])/(h^2)
 }
 
-
-#' Predict values from nbcurve fit
-#' 
-#' @param fit.info The result of a single TPC curve fit from get.nbcurve.tpc
-#' @param newdata A new data frame, containing a sequence of `temperature` values at which model predictions should be made; defaults to (-2,40)
-#' @param se.fit logical; should standard error values be returned?
-#' 
-#' @export
-predict.nbcurve<-function(fit.info,newdata=data.frame(temperature=seq(-2,40,0.1)),se.fit=FALSE){
-  
-  # Check level of nesting for fit.info, and reduce if necessary
-  if(length(fit.info)==1){
-    fit.info<-fit.info[[1]]
-  }
-  
-  # generate predictions across a range of temperatures
-  mu<-nbcurve(newdata$temperature, topt = fit.info$topt, w = fit.info$w, a = fit.info$a, b = fit.info$b)
-  newdata$mu<-mu
-  
-  if(se.fit){
-    st<-paste("nbcurve(c(",paste(newdata$temperature,collapse=','),"),topt,w,a,b)",sep='')
-    dvs0<-suppressWarnings(deltavar2(fun=parse(text=st),meanval=fit.info$cf,Sigma=fit.info$vcov))
-    newdata$se.fit<-sqrt(dvs0)
-    
-    # Better approach? Pass correct local environment to deltavar... BUSTED
-    #dvs0<-deltavar3(fun=nbcurve(xs,topt,w,a,b),meanval=cf,Sigma = vcov(fit),cenv=current.env)
-    #dvs0<-suppressWarnings(deltavar(fun=nbcurve(xs,topt,w,a,b),meanval=cf,Sigma=vcov(fit)))
-  }
-  
-  return(newdata)
-}
-
-
-
-#' Plotting function for single Norberg curve
-#' 
-#' @param fit.info The result of a single TPC curve fit from get.nbcurve.tpc
-#' @param plot.ci logical, should the resulting plot include 95\% confidence bands
-#' @param plot.obs logical, should resulting plot include raw data
-#' @param xlim x-axis range (temperature)
-#' @param ylim y-axis range (adjusts internally to -0.2 to slightly above umax+CI)
-#' 
-#' @export
-#' @import ggplot2
-plot.nbcurve<-function(fit.info,plot.ci=TRUE,plot.obs=TRUE,xlim=c(-2,40),ylim=c(-0.2,5)){
-  
-  # Check level of nesting for fit.info, and reduce if necessary
-  if(length(fit.info)==1){
-    fit.info<-fit.info[[1]]
-  }
-  
-  # adjust plotting window to specific curve?
-  ylim<-c(ylim[1],1.1*(fit.info$umax+fit.info$umax.ci))
-  
-  # generate predictions along a range of temperatures
-  if(plot.ci){
-    preds<-predict.nbcurve(fit.info,se.fit = TRUE)    
-  }else{
-    preds<-predict.nbcurve(fit.info)    
-  }
-  
-  # generate basic plot
-  cplot<-ggplot(preds,aes(x=.data$temperature,y=.data$mu))+
-    geom_hline(yintercept = 0)+
-    geom_line()+
-    coord_cartesian(xlim=xlim,ylim=ylim)+
-    theme_bw()
-  
-  # add confidence bands?
-  if(plot.ci){
-    cplot<-cplot+geom_ribbon(aes(ymin=.data$mu-1.96*.data$se.fit,ymax=.data$mu+1.96*.data$se.fit),alpha=0.2)
-  }
-  
-  # add observations?
-  if(plot.obs){
-    cplot<-cplot+geom_point(data=fit.info$data)
-  }
-  
-  return(cplot) 
-}
-
-
-#' Predict values from decurve fit
-#' 
-#' @param fit.info The result of a single TPC curve fit from get.decurve.tpc
-#' @param newdata A new data frame, containing a sequence of `temperature` values at which model predictions should be made; defaults to (-2,40)
-#' @param se.fit logical; should standard error values be returned?
-#' 
-#' @export
-predict.decurve<-function(fit.info,newdata=data.frame(temperature=seq(-2,40,0.1)),se.fit=FALSE){
-  
-  # Check level of nesting for fit.info, and reduce if necessary
-  if(length(fit.info)==1){
-    fit.info<-fit.info[[1]]
-  }
-  
-  # generate predictions across a range of temperatures
-  mu<-decurve(newdata$temperature, topt = fit.info$topt, b1 = fit.info$b1, b2 = fit.info$b2, d0 = fit.info$d0, d2 = fit.info$d2)
-  newdata$mu<-mu
-  
-  if(se.fit){
-    st<-paste("decurve(c(",paste(newdata$temperature,collapse=','),"),topt,b1,b2,d0,d2)",sep='')
-    dvs0<-suppressWarnings(deltavar2(fun=parse(text=st),meanval=fit.info$cf,Sigma=fit.info$vcov))
-    newdata$se.fit<-sqrt(dvs0)
-  }
-  
-  return(newdata)
-}
-
-
-#' Plotting function for single Double Exponential curve
-#' 
-#' @param fit.info The result of a single TPC curve fit from get.decurve.tpc
-#' @param plot.ci logical, should the resulting plot include 95\% confidence bands
-#' @param plot.obs logical, should resulting plot include raw data
-#' @param xlim x-axis range (temperature)
-#' @param ylim y-axis range (adjusts internally to -0.2 to slightly above umax+CI)
-#' 
-#' @export
-#' @import ggplot2
-plot.decurve<-function(fit.info,plot.ci=TRUE,plot.obs=TRUE,xlim=c(-2,40),ylim=c(-0.2,5)){
-  
-  # Check level of nesting for fit.info, and reduce if necessary
-  if(length(fit.info)==1){
-    fit.info<-fit.info[[1]]
-  }
-  
-  # adjust plotting window to specific curve?
-  ylim<-c(ylim[1],1.1*(fit.info$umax+fit.info$umax.ci))
-  
-  # generate predictions along a range of temperatures
-  if(plot.ci){
-    preds<-predict.decurve(fit.info,se.fit = TRUE)    
-  }else{
-    preds<-predict.decurve(fit.info)    
-  }
-  
-  # generate basic plot
-  cplot<-ggplot(preds,aes(x=.data$temperature,y=.data$mu))+
-    geom_hline(yintercept = 0)+
-    geom_line()+
-    coord_cartesian(xlim=xlim,ylim=ylim)+
-    theme_bw()
-  
-  # add confidence bands?
-  if(plot.ci){
-    cplot<-cplot+geom_ribbon(aes(ymin=.data$mu-1.96*.data$se.fit,ymax=.data$mu+1.96*.data$se.fit),alpha=0.2)
-  }
-  
-  # add observations?
-  if(plot.obs){
-    cplot<-cplot+geom_point(data=fit.info$data)
-  }
-  
-  return(cplot) 
-}
