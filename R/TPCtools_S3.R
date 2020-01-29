@@ -118,10 +118,12 @@ predict.tpc<-function(fit,newdata,se.fit=FALSE){
 #' @param plot.obs logical, should resulting plot include raw data
 #' @param xlim x-axis range (temperature)
 #' @param ylim y-axis range (adjusts internally from -0.2 to slightly above umax+CI)
+#' @param main Character string providing plot title (usually id info for the plotted curve)
+#' @param fpath If visual requested, and valid file path provided here, plot will be saved as a .pdf file. Default is NA.
 #' 
 #' @export
 #' @import ggplot2
-plot.tpc<-function(fit,plot_ci=TRUE,plot_obs=TRUE,xlim=c(-2,40),ylim=c(-0.2,5),main=''){
+plot.tpc<-function(fit,plot_ci=TRUE,plot_obs=TRUE,xlim=c(-2,40),ylim=c(-0.2,5),main=NA,fpath=NA){
   
   # Check level of nesting for fit.info, and reduce if necessary
   if(length(fit)==1){
@@ -152,6 +154,21 @@ plot.tpc<-function(fit,plot_ci=TRUE,plot_obs=TRUE,xlim=c(-2,40),ylim=c(-0.2,5),m
   # add observations?
   if(plot_obs){
     cplot<-cplot+geom_point(data=fit$data)
+  }
+  
+  # if function received a file path
+  if(!is.na(fpath)){
+    if(is.na(main)){ # and a plot ID
+      time<-Sys.time()
+      time<-gsub(x = time,pattern = ":",replacement = "_")
+      full.path<-paste(fpath,"TPC_fit_",time,".pdf",sep='')        
+    }else{ # or not
+      full.path<-paste(fpath,"TPC_fit_",main,".pdf",sep='') 
+    }
+    
+    # save plot at full.path with given file name.
+    ggsave(device = grDevices::pdf(),filename = full.path,cplot,width = 5,height = 4)
+    grDevices::dev.off()
   }
   
   return(cplot) 
