@@ -11,7 +11,8 @@
   xlim = c(-2, 40),
   ylim = c(-0.2, 5),
   main = NA,
-  fpath = NA
+  fpath = NA,
+  ...
 )
 }
 \arguments{
@@ -27,7 +28,9 @@
 
 \item{main}{Character string providing plot title (usually id info for the plotted curve)}
 
-\item{fpath}{If visual requested, and valid file path provided here, plot will be saved as a .pdf file. Default is NA.}
+\item{fpath}{If visual requested, and valid file path provided, save plot as a .pdf file}
+
+\item{\dots}{Additional arguments (not used)}
 }
 \description{
 Plotting function for single thermal performance curve

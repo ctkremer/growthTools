@@ -4,10 +4,12 @@
 \alias{print.tpc}
 \title{Print method for TPC objects}
 \usage{
-\method{print}{tpc}(x)
+\method{print}{tpc}(x, ...)
 }
 \arguments{
 \item{x}{Object of class tpc}
+
+\item{\dots}{Additional arguments (not used)}
 }
 \description{
 Print method for TPC objects

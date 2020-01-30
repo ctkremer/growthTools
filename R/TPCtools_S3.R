@@ -43,6 +43,7 @@ new_tpc<-function(){
 #' Print method for TPC objects
 #' 
 #' @param x Object of class tpc
+#' @param \dots Additional arguments (not used)
 #' 
 #' @export
 print.tpc<-function(x,...){
@@ -67,6 +68,7 @@ print.tpc<-function(x,...){
 #' @param object The result of a single TPC curve fit from get.nbcurve.tpc, an object of class tpc
 #' @param newdata A new data frame, containing a sequence of `temperature` values at which model predictions should be made; defaults to (-2,40)
 #' @param se.fit logical; should standard error values be returned?
+#' @param \dots Additional arguments (not used)
 #' 
 #' @export
 #' @method predict tpc
@@ -121,7 +123,8 @@ predict.tpc<-function(object,newdata,se.fit=FALSE,...){
 #' @param xlim x-axis range (temperature)
 #' @param ylim y-axis range (adjusts internally from -0.2 to slightly above umax+CI)
 #' @param main Character string providing plot title (usually id info for the plotted curve)
-#' @param fpath If visual requested, and valid file path provided here, plot will be saved as a .pdf file. Default is NA.
+#' @param fpath If visual requested, and valid file path provided, save plot as a .pdf file
+#' @param \dots Additional arguments (not used)
 #' 
 #' @export
 #' @import ggplot2
