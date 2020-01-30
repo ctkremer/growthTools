@@ -36,10 +36,19 @@ nbcurve.legacy<-function(x,copt,w,a,b){
   res
 }
 
-#' Re-parameterized Norberg functions
+#' Re-parameterized Norberg equation
 #' 
-#' With this formulation, optimum temperature is explicitly the temperature at which
-#' a species achieves its highest growth rate.
+#' One standard thermal performance curve model comes from Norberg et al. 2004, where growth rate varies
+#' with temperature as the product of an exponential and a quadratic function. A significant limitation of 
+#' this formulation is that the 'optimum' temperature parameter in Norberg et al. 2004 does not actually 
+#' correspond exactly to the temperature at which growth rate is maximized (see Thomas et al. 2012, etc.).
+#' However, it is possible to re-parameterize the Norberg equation to depend explicitly on a parameter Topt 
+#' that does correspond as expected to maximum growth rate (e.g., Baker et al. 2016). We use the latter form
+#' of the Norberg equation in this package. Users wishing to access the original equation can see `?nbcurve.legacy`
+#' 
+#' Mathematically, the re-parameterized Norberg equation is given by:
+#' \deqn{\mu = e^{a+bT} (1 - ((\phi/(b w))^2)}
+#' where \eqn{\phi = -2 - 2 b Topt + 2 b T + (4 + (b w)^2)^(1/2)}
 #' 
 #' @param x Temperature
 #' @param topt Optimum temperature
