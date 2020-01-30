@@ -45,7 +45,7 @@ new_tpc<-function(){
 #' @param x Object of class tpc
 #' 
 #' @export
-print.tpc<-function(x){
+print.tpc<-function(x,...){
   cat("Thermal Performance Curve fit\n")
   cat("Model type: ",x$type,"\n")
   cat("\nEstimated parameters:\n")
@@ -70,7 +70,7 @@ print.tpc<-function(x){
 #' 
 #' @export
 #' @method predict tpc
-predict.tpc<-function(object,newdata,se.fit=FALSE){
+predict.tpc<-function(object,newdata,se.fit=FALSE,...){
   
   # Check level of nesting for fit.info, and reduce if necessary
   if(length(object)==1){
@@ -125,7 +125,7 @@ predict.tpc<-function(object,newdata,se.fit=FALSE){
 #' 
 #' @export
 #' @import ggplot2
-plot.tpc<-function(x,plot_ci=TRUE,plot_obs=TRUE,xlim=c(-2,40),ylim=c(-0.2,5),main=NA,fpath=NA){
+plot.tpc<-function(x,plot_ci=TRUE,plot_obs=TRUE,xlim=c(-2,40),ylim=c(-0.2,5),main=NA,fpath=NA,...){
   
   # Check level of nesting for fit.info, and reduce if necessary
   if(length(x)==1){
