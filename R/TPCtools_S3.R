@@ -42,63 +42,65 @@ new_tpc<-function(){
 
 #' Print method for TPC objects
 #' 
+#' @param x Object of class tpc
+#' 
 #' @export
-print.tpc<-function(object){
+print.tpc<-function(x){
   cat("Thermal Performance Curve fit\n")
-  cat("Model type: ",object$type,"\n")
+  cat("Model type: ",x$type,"\n")
   cat("\nEstimated parameters:\n")
-  tmp<-cbind(object$cf,object$cf_ciFI)
-  colnames(tmp)<-c('parameter',colnames(object$cf_ciFI))
+  tmp<-cbind(x$cf,x$cf_ciFI)
+  colnames(tmp)<-c('parameter',colnames(x$cf_ciFI))
   print(tmp)
   # figure out how to make this look tidier? Maybe model after:
   # Cf[, cs.ind] <- format(round(coef.se, max(1L, digits - 
   #digmin)), digits = digits)
   
   cat("\nFit diagnostics:\n")
-  cat("R2 = ",round(object$rsqr,4))
-  cat(", logLik = ",object$logLik,"(df = ",attr(object$logLik,'df'),"), nobs = ",object$nobs)
-  invisible(object)
+  cat("R2 = ",round(x$rsqr,4))
+  cat(", logLik = ",x$logLik,"(df = ",attr(x$logLik,'df'),"), nobs = ",x$nobs)
+  invisible(x)
 }
 
 #' Predict values from a TPC fit
 #' 
-#' @param fit The result of a single TPC curve fit from get.nbcurve.tpc
+#' @param object The result of a single TPC curve fit from get.nbcurve.tpc, an object of class tpc
 #' @param newdata A new data frame, containing a sequence of `temperature` values at which model predictions should be made; defaults to (-2,40)
 #' @param se.fit logical; should standard error values be returned?
 #' 
 #' @export
 #' @method predict tpc
-predict.tpc<-function(fit,newdata,se.fit=FALSE){
+predict.tpc<-function(object,newdata,se.fit=FALSE){
   
   # Check level of nesting for fit.info, and reduce if necessary
-  if(length(fit)==1){
-    fit<-fit[[1]]
+  if(length(object)==1){
+    object<-object[[1]]
   }
   
   # instead of providing a default newdata, instead return values from observed 
   # temperatures as default if newdata is missing
   # should also check format of newdata is correct...
   if (missing(newdata) || is.null(newdata)) {
-    newdata<-fit$data
+    newdata<-object$data
   }
   
   # generate predictions across a range of temperatures
-  switch(fit$type,
-         nbcurve={mu<-nbcurve(newdata$temperature, topt = fit$cf$topt, w = fit$cf$w, 
-                              a = fit$cf$a, b = fit$cf$b)},
-         decurve={mu<-decurve(newdata$temperature, topt = fit$cf$topt, b1 = fit$cf$b1, 
-                              b2 = fit$cf$b2, d0 = fit$cf$d0, d2 = fit$cf$d2)},
+  switch(object$type,
+         nbcurve={mu<-nbcurve(newdata$temperature, topt = object$cf$topt, w = object$cf$w, 
+                              a = object$cf$a, b = object$cf$b)},
+         decurve={mu<-decurve(newdata$temperature, topt = object$cf$topt, b1 = object$cf$b1, 
+                              b2 = object$cf$b2, d0 = object$cf$d0, d2 = object$cf$d2)},
          stop(print("unrecognized tpc model type in predict.tpc!")))
   newdata$mu<-mu
   
   if(se.fit){
     insert<-paste(newdata$temperature,collapse=',')
     
-    switch(fit$type,
+    switch(object$type,
            nbcurve={st<-paste("nbcurve(c(",insert,"),topt,w,a,b)",sep='')},
            decurve={st<-paste("decurve(c(",insert,"),topt,b1,b2,d0,d2)",sep='')},
            stop(print("unrecognized tpc model type in predict.tpc!")))
-    dvs0<-suppressWarnings(deltavar2(fun=parse(text=st),meanval=fit$cf,Sigma=fit$vcov))
+    dvs0<-suppressWarnings(deltavar2(fun=parse(text=st),meanval=object$cf,Sigma=object$vcov))
     newdata$se.fit<-sqrt(dvs0)
     
     # Better approach? Pass correct local environment to deltavar... BUSTED
@@ -113,9 +115,9 @@ predict.tpc<-function(fit,newdata,se.fit=FALSE){
 
 #' Plotting function for single thermal performance curve
 #' 
-#' @param fit The result of a single TPC curve fit from get.nbcurve.tpc or similar
-#' @param plot.ci logical, should the resulting plot include 95\% confidence bands
-#' @param plot.obs logical, should resulting plot include raw data
+#' @param x The result of a single TPC curve fit from get.nbcurve.tpc or similar
+#' @param plot_ci logical, should the resulting plot include 95\% confidence bands
+#' @param plot_obs logical, should resulting plot include raw data
 #' @param xlim x-axis range (temperature)
 #' @param ylim y-axis range (adjusts internally from -0.2 to slightly above umax+CI)
 #' @param main Character string providing plot title (usually id info for the plotted curve)
@@ -123,18 +125,18 @@ predict.tpc<-function(fit,newdata,se.fit=FALSE){
 #' 
 #' @export
 #' @import ggplot2
-plot.tpc<-function(fit,plot_ci=TRUE,plot_obs=TRUE,xlim=c(-2,40),ylim=c(-0.2,5),main=NA,fpath=NA){
+plot.tpc<-function(x,plot_ci=TRUE,plot_obs=TRUE,xlim=c(-2,40),ylim=c(-0.2,5),main=NA,fpath=NA){
   
   # Check level of nesting for fit.info, and reduce if necessary
-  if(length(fit)==1){
-    fit<-fit[[1]]
+  if(length(x)==1){
+    x<-x[[1]]
   }
   
   # adjust plotting window to specific curve?
-  #ylim<-c(ylim[1],1.1*(fit$umax+fit$umax_ci[2]))
+  #ylim<-c(ylim[1],1.1*(x$umax+x$umax_ci[2]))
   
   # generate predictions along a range of temperatures
-  preds<-predict(fit,newdata=data.frame(temperature=seq(xlim[1],xlim[2],length.out = 100)),se.fit = plot_ci)    
+  preds<-predict(x,newdata=data.frame(temperature=seq(xlim[1],xlim[2],length.out = 100)),se.fit = plot_ci)    
   
   # generate basic plot
   cplot<-ggplot(preds,aes(x=.data$temperature,y=.data$mu))+
@@ -153,7 +155,7 @@ plot.tpc<-function(fit,plot_ci=TRUE,plot_obs=TRUE,xlim=c(-2,40),ylim=c(-0.2,5),m
   
   # add observations?
   if(plot_obs){
-    cplot<-cplot+geom_point(data=fit$data)
+    cplot<-cplot+geom_point(data=x$data)
   }
   
   # if function received a file path
