@@ -21,7 +21,7 @@ test_that("internals of get.nbcurve.tpc work",{
   fit0<-suppressWarnings(mleTools::grid.mle2(minuslogl=mu~dnorm(mean=nbcurve(temperature,topt,w,a,b),sd=exp(s)),
                                    grids=grids,start=start,data=tpc.tmp))
   
-  cfg<-bbmle::coef(fit0$res.best) # this seemed to be throwing problems b/c of an issue with accessing mle2...?
+  cfg<-coef(fit0$res.best)
   target.cfg<-c(20.3754421,104.1459933,-1.4929778,0.1109893,-2.3665936)
   attr(target.cfg,"names")<-c("topt","w","a","b","s")
   
@@ -39,8 +39,7 @@ test_that("get.nbcurve.tpc works as expected",{
                        -0.07640984, -0.07830364, -0.08734117, -0.07812054, 0.24811323,
                        0.33837116, 0.24791146, 0.27200425))
   
-  nbts<-get.nbcurve.tpc(tmp$temperature,tmp$mu,method='grid.mle2',plotQ=FALSE,
-                                  conf.bandQ = FALSE,fpath=NA)
+  nbts<-get.nbcurve.tpc(tmp$temperature,tmp$mu,method='grid.mle2')
   cis<-nbts$cf_ciFI
   
   # target confidence interval values
@@ -76,8 +75,7 @@ test_that("get.decurve.tpc works as expected",{
                        -0.07640984, -0.07830364, -0.08734117, -0.07812054, 0.24811323,
                        0.33837116, 0.24791146, 0.27200425))
   
-  dets<-suppressWarnings(get.decurve.tpc(tmp$temperature,tmp$mu,method='grid.mle2',plotQ=FALSE,
-                        conf.bandQ = FALSE,fpath=NA))
+  dets<-suppressWarnings(get.decurve.tpc(tmp$temperature,tmp$mu,method='grid.mle2'))
   cis<-dets$cf_ciFI
   
   # target confidence interval values
