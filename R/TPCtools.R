@@ -159,8 +159,7 @@ decurve2<-function(temperature,topt,phi,b2,d0,d2){
 #' @examples 
 #' data("example_TPC_data")
 #' sp1 <- example_TPC_data %>% filter(isolate.id=='CH30_4_RI_03' & dilution==1)
-#' nbcurve.traits<-get.nbcurve.tpc(sp1$temperature,sp1$mu,method='grid.mle2',
-#' plotQ=TRUE,conf.bandQ = TRUE,fpath=NA)
+#' nbcurve.traits<-get.nbcurve.tpc(sp1$temperature,sp1$mu,method='grid.mle2')
 #' nbcurve.traits
 #' 
 #' @export
