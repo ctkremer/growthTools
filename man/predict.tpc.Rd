@@ -4,10 +4,10 @@
 \alias{predict.tpc}
 \title{Predict values from a TPC fit}
 \usage{
-\method{predict}{tpc}(fit, newdata, se.fit = FALSE)
+\method{predict}{tpc}(object, newdata, se.fit = FALSE)
 }
 \arguments{
-\item{fit}{The result of a single TPC curve fit from get.nbcurve.tpc}
+\item{object}{The result of a single TPC curve fit from get.nbcurve.tpc, an object of class tpc}
 
 \item{newdata}{A new data frame, containing a sequence of `temperature` values at which model predictions should be made; defaults to (-2,40)}
 
