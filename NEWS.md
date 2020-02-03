@@ -15,6 +15,13 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # *News*
 
+# growthTools 0.1.2 (2020-01-27)
+
+## First bublic release
+
+* Same as v0.1.1, but cleaned out /user/ folder
+* Now a public repo, will be archived via Zenodo
+
 # growthTools 0.1.1 (2020-01-27)
 
 ## Second merge from develop branch
