@@ -1,7 +1,3 @@
-# growthTools 0.1.2
-
-# growthTools 0.1.1
-
 ---
 title: "NEWS"
 author: "Colin T. Kremer"
