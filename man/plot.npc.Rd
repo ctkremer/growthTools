@@ -8,8 +8,8 @@
   x,
   plot_ci = TRUE,
   plot_obs = TRUE,
-  xlim = c(0, 100),
-  ylim = c(-0.2, 5),
+  xlim = NULL,
+  ylim = NULL,
   main = NA,
   fpath = NA,
   ...
