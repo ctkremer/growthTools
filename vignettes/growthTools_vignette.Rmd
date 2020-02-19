@@ -573,3 +573,65 @@ We can also save plots to a file folder, rather than displaying them directly:
 #plot(fit,plot_ci = T,plot_obs = T,ylim=c(-0.2,1),fpath = fpath,main='Single example TPC')
 ```
 
+
+
+# Fit Monod Curves
+
+Microbial growth rate can also vary with the availability (concentration) of essential nutrients, such as 
+nitrogen or phosphorus. The growthTools package includes a growing set of routines for fitting canonical
+functions to these relationships (which we term 'nutrient performanc curves'), such as the Monod curve 
+(Monod 1942). The syntax is very similar to that used for fitting thermal performance curves.
+
+## Fit a single Monod curve:
+
+Here's an example of what one of these data sets on growth vs. nutrient concentration might look like:
+
+```{r}
+dat<-data.frame(nutrients=c(0.1,0.5,1,2,5,10),mu=c(0.02,0.1,0.2,0.4,0.5,0.52))
+plot(mu~nutrients,data=dat)
+``` 
+
+We can fit a Monod function to these data using 'mle2'. Note that currently a grid.mle2 method is not
+implemented, as these fits are lower dimension and generally more resilient than for thermal performance curves.
+
+```{r}
+fit.monod<-get.monod(nutrients=dat$nutrients,mu=dat$mu,method='mle2',fix_intercept = T)
+```
+
+As with thermal performance curves, there are built-in methods for printing summary information from the fit,
+as well as displaying a plot of the fitted relationship.
+
+```{r}
+print(fit.monod)
+plot(fit.monod)
+```
+
+Finally, the `get.monod` function includes the option of either fixing the intercept at 0 (so no growth is 
+allowed when a nutrient is absent), or allowing the intercept term z to be independently estimated. For example:
+
+```{r}
+fit.monod.2<-get.monod(nutrients=dat$nutrients,mu=dat$mu,method='mle2',fix_intercept = F)
+print(fit.monod)
+print(fit.monod.2)
+plot(fit.monod.2)
+```
+
+
+## Fit multiple Monod curves:
+
+Again, as with thermal performance curves, the `get.monod` function works with tools from the `tidyverse` so we
+can fit multiple data sets at once. For example:
+
+```{r}
+monod.tmp<-data.frame(sps=c(rep('A',6),rep('B',6)),nutrients=rep(c(0.1,0.5,1,2,5,10),2),mu=c(c(0.02,0.1,0.2,0.4,0.5,0.52),3*c(0.02,0.1,0.2,0.4,0.5,0.52)))
+
+res <- monod.tmp %>% group_by(sps) %>% 
+  do(npcs=get.monod(.$nutrients,.$mu,method='mle2'))
+
+res2 <- res %>% summarise(sps,umax=npcs$cf$umax,k=npcs$cf$k,
+                          z=npcs$cf$z,s=npcs$cf$s,rsqr=npcs$rsqr)
+res2
+```
+
+
+
