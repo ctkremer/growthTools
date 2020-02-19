@@ -8,12 +8,17 @@
 #' @param umax maximum growth rate
 #' @param k half saturation constant
 #' @param z intercept
+#' @param log.k logical, is k specified on natural log scale
 #' 
 #' @return Predicted exponential growth rate at nutrient concentration x
 #' 
 #' @export
-monod_curve<-function(x,umax,k,z){
-  res<-umax*x/(x+k)+z
+monod_curve<-function(x,umax,k,z,log.k=FALSE){
+  if(log.k){
+    res<-umax*x/(x+exp(k))+z
+  }else{
+    res<-umax*x/(x+k)+z
+  }
   res
 }
 
@@ -136,8 +141,8 @@ plot.npc<-function(x,plot_ci=TRUE,plot_obs=TRUE,xlim=NULL,ylim=NULL,main=NA,fpat
   }
   
   # adjust plotting window to specific curve?
-  if(is.null(ylim)) ylim <- c(0,1.3*max(x$data$nutrients,na.rm=T)[1])
-  if(is.null(xlim)) xlim <- c(0,1.3*max(x$data$nutrients,na.rm=T)[1])
+  if(is.null(ylim)) ylim <- c(0,1.3*max(x$data$mu,na.rm=T)[1])
+  if(is.null(xlim)) xlim <- c(0,1.2*max(x$data$nutrients,na.rm=T)[1])
   
   # generate predictions along a range of nutrients
   preds<-predict(x,newdata=data.frame(nutrients=seq(xlim[1],xlim[2],length.out = 100)),se.fit = plot_ci)    
@@ -212,17 +217,24 @@ get.monod<-function(nutrients,mu,method='mle2',fix_intercept=TRUE,...){
   if(method=='mle2'){
     
     umax.guess <- max(monod.tmp$mu)[1]
-    k.guess <- max(monod.tmp$nutrients)[1]/3
+    k.guess <- log(max(monod.tmp$nutrients)[1]/3)
     z.guess <- 0
     if(fix_intercept){
-      fit<-bbmle::mle2(mu~dnorm(mean=monod_curve(nutrients,umax,k,z),sd=exp(s)),
+      fit0<-bbmle::mle2(mu~dnorm(mean=monod_curve(nutrients,umax,k,z,log.k=TRUE),sd=exp(s)),
                        start=list(umax=umax.guess,k=k.guess,z=z.guess,s=log(2)),
                        fixed=list(z=0),data=monod.tmp)
     }else{
-      fit<-bbmle::mle2(mu~dnorm(mean=monod_curve(nutrients,umax,k,z),sd=exp(s)),
+      fit0<-bbmle::mle2(mu~dnorm(mean=monod_curve(nutrients,umax,k,z,log.k=TRUE),sd=exp(s)),
                        start=list(umax=umax.guess,k=k.guess,z=z.guess,s=log(2)),
                        data=monod.tmp)
     }
+    # reframe result on non-logged scale
+    tmp.cfs<-as.list(coef(fit0))
+    print(tmp.cfs)
+    tmp.cfs$k<-exp(tmp.cfs$k)
+    fit<-bbmle::mle2(mu~dnorm(mean=monod_curve(nutrients,umax,k,z,log.k=FALSE),sd=exp(s)),
+                     start=tmp.cfs,control=list(maxit=0),
+                     data=monod.tmp)
   }
   
   # pull out parameters
@@ -241,7 +253,7 @@ get.monod<-function(nutrients,mu,method='mle2',fix_intercept=TRUE,...){
   # populate npc object
   vec$type<-'monod'
   vec$cf<-cf
-  vec$ciFI<-ciFI
+  vec$cf_ciFI<-ciFI
   vec$vcov<-vcov.mat
   vec$nobs<-nrow(monod.tmp)
   vec$nnutr<-nnutr
