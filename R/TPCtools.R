@@ -231,7 +231,6 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',suppress.grid.mle2.w
   
   # populate tpc object
   vec$type<-"nbcurve"
-  vec$fit<-fit
   vec$cf<-cf
   vec$cf_ciFI<-ciF
   vec$vcov<-vcov.mat
@@ -402,7 +401,6 @@ get.decurve.tpc<-function(temperature,mu,method='grid.mle2',start.method='genera
   
   # populate tpc object
   vec$type<-"decurve"
-  vec$fit<-fit
   vec$cf<-cf
   vec$cf_ciFI<-ciF
   vec$vcov<-vcov.mat
