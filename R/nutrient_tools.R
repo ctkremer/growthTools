@@ -128,7 +128,7 @@ predict.npc<-function(object,newdata,se.fit=FALSE,...){
 #' 
 #' @export
 #' @import ggplot2
-plot.npc<-function(x,plot_ci=TRUE,plot_obs=TRUE,xlim=c(0,100),ylim=c(-0.2,5),main=NA,fpath=NA,...){
+plot.npc<-function(x,plot_ci=TRUE,plot_obs=TRUE,xlim=NULL,ylim=NULL,main=NA,fpath=NA,...){
   
   # Check level of nesting for fit.info, and reduce if necessary
   if(length(x)==1){
@@ -136,7 +136,8 @@ plot.npc<-function(x,plot_ci=TRUE,plot_obs=TRUE,xlim=c(0,100),ylim=c(-0.2,5),mai
   }
   
   # adjust plotting window to specific curve?
-  #ylim<-c(ylim[1],1.1*(x$umax+x$umax_ci[2]))
+  if(is.null(ylim)) ylim <- c(0,1.1*(x$umax))
+  if(is.null(xlim)) xlim <- c(0,1.1*max(x$data$nutrients,na.rm=T)[1])
   
   # generate predictions along a range of nutrients
   preds<-predict(x,newdata=data.frame(nutrients=seq(xlim[1],xlim[2],length.out = 100)),se.fit = plot_ci)    
