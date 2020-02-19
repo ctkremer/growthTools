@@ -501,6 +501,7 @@ deltavar2<-function (fun, meanval = NULL, vars, Sigma, verbose = FALSE)
   if (vecexp && is.list(nderivs)) 
     nderivs <- do.call("cbind", nderivs)
   if (is.matrix(nderivs)) {
+    nderivs<-nderivs[,(names(meanval) %in% colnames(Sigma))] # added by CTK
     r <- apply(nderivs, 1, function(z) c(z %*% Sigma %*% 
                                            matrix(z)))
   }
