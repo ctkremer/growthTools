@@ -234,7 +234,6 @@ get.monod<-function(nutrients,mu,method='mle2',fix_intercept=TRUE,...){
     }
     # reframe result on non-logged scale
     tmp.cfs<-as.list(coef(fit))
-    print(tmp.cfs)
     tmp.cfs$k<-exp(tmp.cfs$k)
     fit0<-bbmle::mle2(mu~dnorm(mean=monod_curve(nutrients,umax,k,z,log.k=FALSE),sd=exp(s)),
                      start=tmp.cfs,control=list(maxit=0),
