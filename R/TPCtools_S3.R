@@ -11,6 +11,9 @@ new_tpc<-function(){
   # tpc type
   tpcObj$type<-character()
   
+  # tpc fit object
+  tpcObj$fit<-list()
+    
   # estimated parameters from fit
   tpcObj$cf<-list()
   tpcObj$cf_ciFI<-matrix()
