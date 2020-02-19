@@ -4,7 +4,7 @@
 \alias{monod_curve}
 \title{Monod curve equation}
 \usage{
-monod_curve(x, umax, k, z = 0)
+monod_curve(x, umax, k, z)
 }
 \arguments{
 \item{x}{nutrients}
@@ -13,7 +13,7 @@ monod_curve(x, umax, k, z = 0)
 
 \item{k}{half saturation constant}
 
-\item{z}{intercept, defaults to 0}
+\item{z}{intercept}
 }
 \value{
 Predicted exponential growth rate at nutrient concentration x
