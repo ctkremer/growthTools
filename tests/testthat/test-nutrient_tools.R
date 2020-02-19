@@ -21,7 +21,8 @@ test_that("Monod fitting with get.monod, fixed intercept", {
   #plot(mu~nutrients,data=dat)
   
   fit.monod<-get.monod(nutrients=dat$nutrients,mu=dat$mu,method='mle2',fix_intercept = T)
-  cis<-fit.monod$ciFI
+  cis<-fit.monod$cf_ciFI
+  #fit.monod$cf
   #plot(fit.monod)
   
   tmp.cis<-matrix(c(0.5510411,1.0216724,-3.8929826,
