@@ -105,7 +105,7 @@ predict.npc<-function(object,newdata,se.fit=FALSE,...){
   
   # generate predictions across a range of temperatures
   switch(object$type,
-         monod={mu<-monod_curve(newdata$nutrients,umax=object$cf$umax,k=object$cf$k,z=object$cf$z)},
+         monod={mu<-monod_curve(newdata$nutrients,umax=object$cf$umax,k=object$cf$k,z=object$cf$z,log.k=TRUE)},
          stop(print("unrecognized npc model type in predict.npc!")))
   newdata$mu<-mu
   
@@ -113,7 +113,7 @@ predict.npc<-function(object,newdata,se.fit=FALSE,...){
     insert<-paste(newdata$nutrients,collapse=',')
     
     switch(object$type,
-           monod={st<-paste("monod_curve(c(",insert,"),umax,k,z)",sep='')},
+           monod={st<-paste("monod_curve(c(",insert,"),umax,k,z,log.k=TRUE)",sep='')},
            stop(print("unrecognized npc model type in predict.npc!")))
     dvs0<-suppressWarnings(deltavar2(fun=parse(text=st),meanval=object$cf,Sigma=object$vcov))
     newdata$se.fit<-sqrt(dvs0)
