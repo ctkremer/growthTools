@@ -7,12 +7,12 @@
 #' @param x nutrients
 #' @param umax maximum growth rate
 #' @param k half saturation constant
-#' @param z intercept, defaults to 0
+#' @param z intercept
 #' 
 #' @return Predicted exponential growth rate at nutrient concentration x
 #' 
 #' @export
-monod_curve<-function(x,umax,k,z=0){
+monod_curve<-function(x,umax,k,z){
   res<-umax*x/(x+k)+z
   res
 }
@@ -96,7 +96,7 @@ predict.npc<-function(object,newdata,se.fit=FALSE,...){
   
   # generate predictions across a range of temperatures
   switch(object$type,
-         monod={mu<-monod_curve(newdata$nutrients,umax=object$cf$umax,k=object$cf$k,z=0)},
+         monod={mu<-monod_curve(newdata$nutrients,umax=object$cf$umax,k=object$cf$k,z=object$cf$z)},
          stop(print("unrecognized npc model type in predict.npc!")))
   newdata$mu<-mu
   
@@ -104,7 +104,7 @@ predict.npc<-function(object,newdata,se.fit=FALSE,...){
     insert<-paste(newdata$nutrients,collapse=',')
     
     switch(object$type,
-           nbcurve={st<-paste("monod_curve(c(",insert,"),nutrients,umax,k,z)",sep='')},
+           monod={st<-paste("monod_curve(c(",insert,"),umax,k,z)",sep='')},
            stop(print("unrecognized npc model type in predict.npc!")))
     dvs0<-suppressWarnings(deltavar2(fun=parse(text=st),meanval=object$cf,Sigma=object$vcov))
     newdata$se.fit<-sqrt(dvs0)
@@ -138,7 +138,7 @@ plot.npc<-function(x,plot_ci=TRUE,plot_obs=TRUE,xlim=c(0,100),ylim=c(-0.2,5),mai
   # adjust plotting window to specific curve?
   #ylim<-c(ylim[1],1.1*(x$umax+x$umax_ci[2]))
   
-  # generate predictions along a range of temperatures
+  # generate predictions along a range of nutrients
   preds<-predict(x,newdata=data.frame(nutrients=seq(xlim[1],xlim[2],length.out = 100)),se.fit = plot_ci)    
   
   # generate basic plot
@@ -196,7 +196,7 @@ plot.npc<-function(x,plot_ci=TRUE,plot_obs=TRUE,xlim=c(0,100),ylim=c(-0.2,5),mai
 #' @export
 #' @import emdbook
 #' @import ggplot2
-get.monod<-function(nutrients,mu,method='mle2',...){
+get.monod<-function(nutrients,mu,method='mle2',fix_intercept=TRUE,...){
   monod.tmp<-stats::na.omit(data.frame(nutrients,mu))
   nnutr<-length(unique(monod.tmp$nutrients))
   
@@ -212,8 +212,16 @@ get.monod<-function(nutrients,mu,method='mle2',...){
     
     umax.guess <- max(monod.tmp$mu)[1]
     k.guess <- max(monod.tmp$nutrients)[1]/3
-    fit<-bbmle::mle2(mu~dnorm(mean=monod_curve(nutrients,umax,k,z=0),sd=exp(s)),
-                     start=list(umax=umax.guess,k=k.guess,s=log(2)),data=monod.tmp)
+    z.guess <- 0
+    if(fix_intercept){
+      fit<-bbmle::mle2(mu~dnorm(mean=monod_curve(nutrients,umax,k,z),sd=exp(s)),
+                       start=list(umax=umax.guess,k=k.guess,z=z.guess,s=log(2)),
+                       fixed=list(z=0),data=monod.tmp)
+    }else{
+      fit<-bbmle::mle2(mu~dnorm(mean=monod_curve(nutrients,umax,k,z),sd=exp(s)),
+                       start=list(umax=umax.guess,k=k.guess,z=z.guess,s=log(2)),
+                       data=monod.tmp)
+    }
   }
   
   # pull out parameters
@@ -230,7 +238,7 @@ get.monod<-function(nutrients,mu,method='mle2',...){
   vec<-new_npc()
   
   # populate npc object
-  vec<-as.list(c(type='monod'))
+  vec$type<-'monod'
   vec$cf<-cf
   vec$ciFI<-ciFI
   vec$vcov<-vcov.mat
