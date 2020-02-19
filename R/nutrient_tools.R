@@ -35,6 +35,10 @@ new_npc<-function(){
   
   # estimated parameters from fit
   npcObj$cf<-list()
+  npcObj$umax<-double()
+  npcObj$k<-double()
+  npcObj$z<-double()
+  npcObj$s<-double()
   npcObj$cf_ciFI<-matrix()
   npcObj$vcov<-matrix()
   
@@ -211,7 +215,7 @@ get.monod<-function(nutrients,mu,method='mle2',fix_intercept=TRUE,...){
   }
 
   if(method=='grid.mle2'){
-    print("Caution: this option not fully beta tested... 2/13/20")
+    print("Error: this option not yet implemented... 2/13/20")
   }
   
   if(method=='mle2'){
@@ -220,19 +224,19 @@ get.monod<-function(nutrients,mu,method='mle2',fix_intercept=TRUE,...){
     k.guess <- log(max(monod.tmp$nutrients)[1]/3)
     z.guess <- 0
     if(fix_intercept){
-      fit0<-bbmle::mle2(mu~dnorm(mean=monod_curve(nutrients,umax,k,z,log.k=TRUE),sd=exp(s)),
+      fit<-bbmle::mle2(mu~dnorm(mean=monod_curve(nutrients,umax,k,z,log.k=TRUE),sd=exp(s)),
                        start=list(umax=umax.guess,k=k.guess,z=z.guess,s=log(2)),
                        fixed=list(z=0),data=monod.tmp)
     }else{
-      fit0<-bbmle::mle2(mu~dnorm(mean=monod_curve(nutrients,umax,k,z,log.k=TRUE),sd=exp(s)),
+      fit<-bbmle::mle2(mu~dnorm(mean=monod_curve(nutrients,umax,k,z,log.k=TRUE),sd=exp(s)),
                        start=list(umax=umax.guess,k=k.guess,z=z.guess,s=log(2)),
                        data=monod.tmp)
     }
     # reframe result on non-logged scale
-    tmp.cfs<-as.list(coef(fit0))
+    tmp.cfs<-as.list(coef(fit))
     print(tmp.cfs)
     tmp.cfs$k<-exp(tmp.cfs$k)
-    fit<-bbmle::mle2(mu~dnorm(mean=monod_curve(nutrients,umax,k,z,log.k=FALSE),sd=exp(s)),
+    fit0<-bbmle::mle2(mu~dnorm(mean=monod_curve(nutrients,umax,k,z,log.k=FALSE),sd=exp(s)),
                      start=tmp.cfs,control=list(maxit=0),
                      data=monod.tmp)
   }
@@ -245,7 +249,7 @@ get.monod<-function(nutrients,mu,method='mle2',fix_intercept=TRUE,...){
   rsqr<-get.R2(predict(fit),monod.tmp$mu)
   
   # simple Fisher confidence intervals:
-  ciFI<-mleTools::ci.FI(fit)
+  ciFI<-mleTools::ci.FI(fit0)
   
   # create empty object of class 'npc'
   vec<-new_npc()
@@ -253,6 +257,10 @@ get.monod<-function(nutrients,mu,method='mle2',fix_intercept=TRUE,...){
   # populate npc object
   vec$type<-'monod'
   vec$cf<-cf
+  vec$umax<-vec$cf$umax
+  vec$k<-exp(vec$cf$k)
+  vec$z<-vec$cf$z
+  vec$s<-vec$cf$s
   vec$cf_ciFI<-ciFI
   vec$vcov<-vcov.mat
   vec$nobs<-nrow(monod.tmp)
