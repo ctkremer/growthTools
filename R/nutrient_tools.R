@@ -9,15 +9,21 @@
 #' @param k half saturation constant
 #' @param z intercept
 #' @param log.k logical, is k specified on natural log scale
+#' @param log.umax logical, is umax specified on natural log scale
 #' 
 #' @return Predicted exponential growth rate at nutrient concentration x
 #' 
 #' @export
-monod_curve<-function(x,umax,k,z,log.k=FALSE){
+monod_curve<-function(x,umax,k,z,log.k=FALSE,log.umax=FALSE){
   if(log.k){
-    res<-umax*x/(x+exp(k))+z
+    res<-x/(x+exp(k))
   }else{
-    res<-umax*x/(x+k)+z
+    res<-x/(x+k)
+  }
+  if(log.umax){
+    res<-exp(umax)*res-exp(z)
+  }else{
+    res<-umax*res-exp(z)
   }
   res
 }
@@ -105,7 +111,8 @@ predict.npc<-function(object,newdata,se.fit=FALSE,...){
   
   # generate predictions across a range of temperatures
   switch(object$type,
-         monod={mu<-monod_curve(newdata$nutrients,umax=object$cf$umax,k=object$cf$k,z=object$cf$z,log.k=TRUE)},
+         monod={mu<-monod_curve(newdata$nutrients,umax=object$cf$umax,k=object$cf$k,z=object$cf$z,
+                                log.k=TRUE,log.umax=TRUE)},
          stop(print("unrecognized npc model type in predict.npc!")))
   newdata$mu<-mu
   
@@ -113,7 +120,7 @@ predict.npc<-function(object,newdata,se.fit=FALSE,...){
     insert<-paste(newdata$nutrients,collapse=',')
     
     switch(object$type,
-           monod={st<-paste("monod_curve(c(",insert,"),umax,k,z,log.k=TRUE)",sep='')},
+           monod={st<-paste("monod_curve(c(",insert,"),umax,k,z,log.k=TRUE,log.umax=TRUE)",sep='')},
            stop(print("unrecognized npc model type in predict.npc!")))
     dvs0<-suppressWarnings(deltavar2(fun=parse(text=st),meanval=object$cf,Sigma=object$vcov))
     newdata$se.fit<-sqrt(dvs0)
@@ -145,11 +152,11 @@ plot.npc<-function(x,plot_ci=TRUE,plot_obs=TRUE,xlim=NULL,ylim=NULL,main=NA,fpat
   }
   
   # adjust plotting window to specific curve?
-  if(is.null(ylim)) ylim <- c(0,1.3*max(x$data$mu,na.rm=T)[1])
+  if(is.null(ylim)) ylim <- c(1.3*min(x$data$mu,na.rm=T)[1],1.3*max(x$data$mu,na.rm=T)[1])
   if(is.null(xlim)) xlim <- c(0,1.2*max(x$data$nutrients,na.rm=T)[1])
   
   # generate predictions along a range of nutrients
-  preds<-predict(x,newdata=data.frame(nutrients=seq(xlim[1],xlim[2],length.out = 100)),se.fit = plot_ci)    
+  preds<-predict(x,newdata=data.frame(nutrients=seq(xlim[1],xlim[2],length.out = 200)),se.fit = plot_ci)    
   
   # generate basic plot
   cplot<-ggplot(preds,aes(x=.data$nutrients,y=.data$mu))+
@@ -220,22 +227,23 @@ get.monod<-function(nutrients,mu,method='mle2',fix_intercept=TRUE,...){
   
   if(method=='mle2'){
     
-    umax.guess <- max(monod.tmp$mu)[1]
+    umax.guess <- log(max(c(max(monod.tmp$mu)[1],0.01)))
     k.guess <- log(max(monod.tmp$nutrients)[1]/3)
-    z.guess <- 0
+    z.guess <- log(0.000001)
     if(fix_intercept){
-      fit<-bbmle::mle2(mu~dnorm(mean=monod_curve(nutrients,umax,k,z,log.k=TRUE),sd=exp(s)),
+      fit<-bbmle::mle2(mu~dnorm(mean=monod_curve(nutrients,umax,k,z,log.k=TRUE,log.umax=TRUE),sd=exp(s)),
                        start=list(umax=umax.guess,k=k.guess,z=z.guess,s=log(2)),
-                       fixed=list(z=0),data=monod.tmp)
+                       fixed=list(z=z.guess),data=monod.tmp)
     }else{
-      fit<-bbmle::mle2(mu~dnorm(mean=monod_curve(nutrients,umax,k,z,log.k=TRUE),sd=exp(s)),
+      fit<-bbmle::mle2(mu~dnorm(mean=monod_curve(nutrients,umax,k,z,log.k=TRUE,log.umax=TRUE),sd=exp(s)),
                        start=list(umax=umax.guess,k=k.guess,z=z.guess,s=log(2)),
                        data=monod.tmp)
     }
     # reframe result on non-logged scale
     tmp.cfs<-as.list(coef(fit))
+    tmp.cfs$umax<-exp(tmp.cfs$umax)
     tmp.cfs$k<-exp(tmp.cfs$k)
-    fit0<-bbmle::mle2(mu~dnorm(mean=monod_curve(nutrients,umax,k,z,log.k=FALSE),sd=exp(s)),
+    fit0<-bbmle::mle2(mu~dnorm(mean=monod_curve(nutrients,umax,k,z,log.k=FALSE,log.umax=FALSE),sd=exp(s)),
                      start=tmp.cfs,control=list(maxit=0),
                      data=monod.tmp)
   }
@@ -256,7 +264,7 @@ get.monod<-function(nutrients,mu,method='mle2',fix_intercept=TRUE,...){
   # populate npc object
   vec$type<-'monod'
   vec$cf<-cf
-  vec$umax<-vec$cf$umax
+  vec$umax<-exp(vec$cf$umax)
   vec$k<-exp(vec$cf$k)
   vec$z<-vec$cf$z
   vec$s<-vec$cf$s

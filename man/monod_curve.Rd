@@ -4,7 +4,7 @@
 \alias{monod_curve}
 \title{Monod curve equation}
 \usage{
-monod_curve(x, umax, k, z, log.k = FALSE)
+monod_curve(x, umax, k, z, log.k = FALSE, log.umax = FALSE)
 }
 \arguments{
 \item{x}{nutrients}
@@ -16,6 +16,8 @@ monod_curve(x, umax, k, z, log.k = FALSE)
 \item{z}{intercept}
 
 \item{log.k}{logical, is k specified on natural log scale}
+
+\item{log.umax}{logical, is umax specified on natural log scale}
 }
 \value{
 Predicted exponential growth rate at nutrient concentration x
