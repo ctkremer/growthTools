@@ -7,23 +7,44 @@
 #' @param x nutrients
 #' @param umax maximum growth rate
 #' @param k half saturation constant
-#' @param z intercept
 #' @param log.k logical, is k specified on natural log scale
 #' @param log.umax logical, is umax specified on natural log scale
 #' 
 #' @return Predicted exponential growth rate at nutrient concentration x
 #' 
 #' @export
-monod_curve<-function(x,umax,k,z,log.k=FALSE,log.umax=FALSE){
+monod_curve<-function(x,umax,k,log.k=FALSE,log.umax=FALSE){
   if(log.k){
     res<-x/(x+exp(k))
   }else{
     res<-x/(x+k)
   }
   if(log.umax){
-    res<-exp(umax)*res-exp(z)
+    res<-exp(umax)*res
   }else{
-    res<-umax*res-exp(z)
+    res<-umax*res
+  }
+  res
+}
+
+#' Monod curve with loss term equation
+#' 
+#' Details here.
+#' 
+#' @param x nutrients
+#' @param umax maximum growth rate
+#' @param k half saturation constant
+#' @param z ln(intercept)
+#' @param log.pars logical, are parameters specified on natural log scale
+#' 
+#' @return Predicted exponential growth rate at nutrient concentration x
+#' 
+#' @export
+monod_curve_type2<-function(x,umax,k,z,log.pars=FALSE){
+  if(log.pars){
+    res<-exp(umax)*x/(x+exp(k))-exp(z)
+  }else{
+    res<-umax*x/(x+k)-z
   }
   res
 }
@@ -40,12 +61,9 @@ new_npc<-function(){
   npcObj$type<-character()
   
   # estimated parameters from fit
-  npcObj$cf<-list()
-  npcObj$umax<-double()
-  npcObj$k<-double()
-  npcObj$z<-double()
-  npcObj$s<-double()
-  npcObj$cf_ciFI<-matrix()
+  npcObj$model_cf<-list()
+  npcObj$display_cf<-list()
+  npcObj$display_ci<-matrix()
   npcObj$vcov<-matrix()
   
   # fit diagnostics
@@ -111,8 +129,10 @@ predict.npc<-function(object,newdata,se.fit=FALSE,...){
   
   # generate predictions across a range of temperatures
   switch(object$type,
-         monod={mu<-monod_curve(newdata$nutrients,umax=object$cf$umax,k=object$cf$k,z=object$cf$z,
+         monod={mu<-monod_curve(newdata$nutrients,umax=object$model_cf$umax,k=object$model_cf$k,
                                 log.k=TRUE,log.umax=TRUE)},
+         monod2={mu<-monod_curve_type2(newdata$nutrients,umax=object$model_cf$umax,k=object$model_cf$k,
+                                       z=object$model_cf$z,log.pars=TRUE)},
          stop(print("unrecognized npc model type in predict.npc!")))
   newdata$mu<-mu
   
@@ -120,11 +140,11 @@ predict.npc<-function(object,newdata,se.fit=FALSE,...){
     insert<-paste(newdata$nutrients,collapse=',')
     
     switch(object$type,
-           monod={st<-paste("monod_curve(c(",insert,"),umax,k,z,log.k=TRUE,log.umax=TRUE)",sep='')},
-           stop(print("unrecognized npc model type in predict.npc!")))
-    dvs0<-suppressWarnings(deltavar2(fun=parse(text=st),meanval=object$cf,Sigma=object$vcov))
+           monod={st<-paste("monod_curve(c(",insert,"),umax,k,log.k=TRUE,log.umax=TRUE)",sep='')},
+           monod2={st<-paste("monod_curve_type2(c(",insert,"),umax,k,z,log.pars=TRUE)",sep='')},
+           stop(print("unrecognized npc model type in predict.npc se calcs!")))
+    dvs0<-suppressWarnings(deltavar2(fun=parse(text=st),meanval=object$model_cf,Sigma=object$vcov))
     newdata$se.fit<-sqrt(dvs0)
-    
   }
   
   return(newdata)
@@ -213,7 +233,7 @@ plot.npc<-function(x,plot_ci=TRUE,plot_obs=TRUE,xlim=NULL,ylim=NULL,main=NA,fpat
 #' @export
 #' @import emdbook
 #' @import ggplot2
-get.monod<-function(nutrients,mu,method='mle2',fix_intercept=TRUE,...){
+get.monod<-function(nutrients,mu,method='mle2',...){
   monod.tmp<-stats::na.omit(data.frame(nutrients,mu))
   nnutr<-length(unique(monod.tmp$nutrients))
   
@@ -226,50 +246,122 @@ get.monod<-function(nutrients,mu,method='mle2',fix_intercept=TRUE,...){
   }
   
   if(method=='mle2'){
-    
-    umax.guess <- log(max(c(max(monod.tmp$mu)[1],0.01)))
-    k.guess <- log(max(monod.tmp$nutrients)[1]/3)
-    z.guess <- log(0.000001)
-    if(fix_intercept){
-      fit<-bbmle::mle2(mu~dnorm(mean=monod_curve(nutrients,umax,k,z,log.k=TRUE,log.umax=TRUE),sd=exp(s)),
-                       start=list(umax=umax.guess,k=k.guess,z=z.guess,s=log(2)),
-                       fixed=list(z=z.guess),data=monod.tmp)
-    }else{
-      fit<-bbmle::mle2(mu~dnorm(mean=monod_curve(nutrients,umax,k,z,log.k=TRUE,log.umax=TRUE),sd=exp(s)),
-                       start=list(umax=umax.guess,k=k.guess,z=z.guess,s=log(2)),
-                       data=monod.tmp)
-    }
+    k.guess <- max(monod.tmp$nutrients)[1]/3
+    umax.guess <- max(c(max(monod.tmp$mu)[1],0.01))
+    fit<-bbmle::mle2(mu~dnorm(mean=monod_curve(nutrients,umax,k,log.k=TRUE,log.umax=TRUE),sd=exp(s)),
+                       start=list(umax=log(umax.guess),k=log(k.guess),s=log(2)),data=monod.tmp)
+
     # reframe result on non-logged scale
-    tmp.cfs<-as.list(coef(fit))
+    model_cf<-as.list(coef(fit))
+    tmp.cfs<-model_cf
     tmp.cfs$umax<-exp(tmp.cfs$umax)
     tmp.cfs$k<-exp(tmp.cfs$k)
-    fit0<-bbmle::mle2(mu~dnorm(mean=monod_curve(nutrients,umax,k,z,log.k=FALSE,log.umax=FALSE),sd=exp(s)),
+    fit0<-bbmle::mle2(mu~dnorm(mean=monod_curve(nutrients,umax,k,log.k=FALSE,log.umax=FALSE),sd=exp(s)),
                      start=tmp.cfs,control=list(maxit=0),
                      data=monod.tmp)
   }
   
-  # pull out parameters
-  cf<-as.list(coef(fit))
-  vcov.mat<-vcov(fit)
+  # pull out parameters on regular scale
+  display_cf<-as.list(coef(fit0))
+  
+  # simple Fisher confidence intervals on regular scale:
+  ci<-mleTools::ci.FI(fit0)
+  
+  # vcov on log scale
+  vcov_mat<-vcov(fit)
   
   # calculate R2
   rsqr<-get.R2(predict(fit),monod.tmp$mu)
-  
-  # simple Fisher confidence intervals:
-  ciFI<-mleTools::ci.FI(fit0)
   
   # create empty object of class 'npc'
   vec<-new_npc()
   
   # populate npc object
   vec$type<-'monod'
-  vec$cf<-cf
-  vec$umax<-exp(vec$cf$umax)
-  vec$k<-exp(vec$cf$k)
-  vec$z<-vec$cf$z
-  vec$s<-vec$cf$s
-  vec$cf_ciFI<-ciFI
-  vec$vcov<-vcov.mat
+  vec$model_cf<-model_cf
+  vec$display_cf<-display_cf
+  vec$display_ci<-ci
+  vec$vcov<-vcov_mat
+  vec$nobs<-nrow(monod.tmp)
+  vec$nnutr<-nnutr
+  vec$rsqr<-rsqr
+  vec$logLik<-logLik(fit)
+  vec$aic<-stats::AIC(fit)
+  vec$data<-monod.tmp
+  
+  # Finished, return relevant stats.  
+  return(vec)
+}
+
+
+#' Fit Monod curve with loss term to growth rate vs. nutrient concentration data
+#' 
+#' Note: this function currently does not use grid.mle2, as the regressions are usually pretty stable; add this 
+#' feature later.
+#' 
+#' @param nutrients Nutrient concentration
+#' @param mu Exponential growth rate
+#' @param method Specify which fitting algorithm to use, 'mle2' or 'grid.mle2'
+#' @param ... Additional arguments passed to grid.mle2 (e.g., control=list(maxit=2000))
+#' 
+#' @examples 
+#' 
+#' @export
+#' @import emdbook
+#' @import ggplot2
+get.monod2<-function(nutrients,mu,method='mle2',...){
+  monod.tmp<-stats::na.omit(data.frame(nutrients,mu))
+  nnutr<-length(unique(monod.tmp$nutrients))
+  
+  if(nnutr<=3){
+    print("Caution in get.monod - focal data set has <=3 unique nutrients, risk of overfitting is high!")
+  }
+  
+  if(method=='grid.mle2'){
+    print("Error: this option not yet implemented... 2/13/20")
+  }
+  
+  if(method=='mle2'){
+    
+    k.guess <- max(monod.tmp$nutrients)[1]/3
+    z.guess <- max(c(0.000001,abs(min(monod.tmp$mu)[1])))
+    umax.guess <- max(c(max(monod.tmp$mu)[1],0.01))+z.guess
+    fit<-bbmle::mle2(mu~dnorm(mean=monod_curve_type2(nutrients,umax,k,z,log.pars=TRUE),sd=exp(s)),
+                       start=list(umax=log(umax.guess),k=log(k.guess),z=log(z.guess),s=log(2)),
+                       data=monod.tmp)
+
+    # reframe result on non-logged scale
+    model_cf<-as.list(coef(fit))
+    tmp.cfs<-model_cf
+    tmp.cfs$umax<-exp(tmp.cfs$umax)
+    tmp.cfs$k<-exp(tmp.cfs$k)
+    tmp.cfs$z<-exp(tmp.cfs$z)
+    fit0<-bbmle::mle2(mu~dnorm(mean=monod_curve_type2(nutrients,umax,k,z,log.pars=FALSE),sd=exp(s)),
+                      start=tmp.cfs,control=list(maxit=0),
+                      data=monod.tmp)
+  }
+  
+  # pull out parameters on regular scale
+  display_cf<-as.list(coef(fit0))
+  
+  # simple Fisher confidence intervals on regular scale:
+  ci<-mleTools::ci.FI(fit0)
+  
+  # vcov on log scale
+  vcov_mat<-vcov(fit)
+  
+  # calculate R2
+  rsqr<-get.R2(predict(fit),monod.tmp$mu)
+  
+  # create empty object of class 'npc'
+  vec<-new_npc()
+  
+  # populate npc object
+  vec$type<-'monod2'
+  vec$model_cf<-model_cf
+  vec$display_cf<-display_cf
+  vec$display_ci<-ci
+  vec$vcov<-vcov_mat
   vec$nobs<-nrow(monod.tmp)
   vec$nnutr<-nnutr
   vec$rsqr<-rsqr
