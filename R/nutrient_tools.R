@@ -172,7 +172,7 @@ plot.npc<-function(x,plot_ci=TRUE,plot_obs=TRUE,xlim=NULL,ylim=NULL,main=NA,fpat
   }
   
   # adjust plotting window to specific curve?
-  if(is.null(ylim)) ylim <- c(1.3*min(x$data$mu,na.rm=T)[1],1.3*max(x$data$mu,na.rm=T)[1])
+  if(is.null(ylim)) ylim <- c(1.3*min(c(min(x$data$mu,na.rm=T)[1],0)),1.3*max(x$data$mu,na.rm=T)[1])
   if(is.null(xlim)) xlim <- c(0,1.2*max(x$data$nutrients,na.rm=T)[1])
   
   # generate predictions along a range of nutrients
