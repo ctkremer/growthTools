@@ -4,7 +4,7 @@
 \alias{get.monod}
 \title{Fit Monod curve to growth rate vs. nutrient concentration data}
 \usage{
-get.monod(nutrients, mu, method = "mle2", fix_intercept = TRUE, ...)
+get.monod(nutrients, mu, method = "mle2", ...)
 }
 \arguments{
 \item{nutrients}{Nutrient concentration}

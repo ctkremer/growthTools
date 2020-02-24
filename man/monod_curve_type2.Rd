@@ -4,7 +4,7 @@
 \alias{monod_curve_type2}
 \title{Monod curve with loss term equation}
 \usage{
-monod_curve_type2(x, umax, k, z, log.k = FALSE, log.umax = FALSE)
+monod_curve_type2(x, umax, k, z, log.pars = FALSE)
 }
 \arguments{
 \item{x}{nutrients}
@@ -15,9 +15,7 @@ monod_curve_type2(x, umax, k, z, log.k = FALSE, log.umax = FALSE)
 
 \item{z}{ln(intercept)}
 
-\item{log.k}{logical, is k specified on natural log scale}
-
-\item{log.umax}{logical, is umax specified on natural log scale}
+\item{log.pars}{logical, are parameters specified on natural log scale}
 }
 \value{
 Predicted exponential growth rate at nutrient concentration x
