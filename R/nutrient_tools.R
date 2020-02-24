@@ -90,8 +90,8 @@ print.npc<-function(x,...){
   cat("Nutrient performance Curve fit\n")
   cat("Model type: ",x$type,"\n")
   cat("\nEstimated parameters:\n")
-  tmp<-cbind(x$cf,x$cf_ciFI)
-  colnames(tmp)<-c('parameter',colnames(x$cf_ciFI))
+  tmp<-cbind(x$display_cf,x$display_ci)
+  colnames(tmp)<-c('parameter',colnames(x$display_ci))
   print(tmp)
   # figure out how to make this look tidier? Maybe model after:
   # Cf[, cs.ind] <- format(round(coef.se, max(1L, digits - 
