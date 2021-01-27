@@ -219,11 +219,7 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',suppress.grid.mle2.w
   # Calculate umax and confidence interval using the delta method (see Bolker book, pg 255)
   pd.umax<-predict(fit,newdata=data.frame(temperature=cf$topt))
   st.umax<-paste("nbcurve(c(",paste(cf$topt,collapse=','),"),topt,w,a,b)",sep='')
-  #dvs0.umax<-suppressWarnings(deltavar2(fun=parse(text=st.umax),meanval=cf,Sigma=vcov.mat))
-  print(vcov.mat)
-  print(cf)
-  print(st.umax)
-  dvs0.umax<-deltavar2(fun=parse(text=st.umax),meanval=cf,Sigma=vcov.mat)
+  dvs0.umax<-suppressWarnings(deltavar2(fun=parse(text=st.umax),meanval=cf,Sigma=vcov.mat))
   
   # simple Fisher confidence intervals:
   ciF<-mleTools::ci.FI(fit)
