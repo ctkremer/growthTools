@@ -506,10 +506,6 @@ deltavar2<-function (fun, meanval = NULL, vars, Sigma, verbose = TRUE)
     nderivs <- do.call("cbind", nderivs)
   if (is.matrix(nderivs)) {
     nderivs<-nderivs[,(names(meanval) %in% colnames(Sigma))] # added by CTK
-#    nd49<<-nderivs
-#    s49<<-Sigma
-#    print(nderivs)
-#    print(Sigma)
     r <- apply(nderivs, 1, function(z) c(z %*% Sigma %*% 
                                            matrix(z)))
   }
