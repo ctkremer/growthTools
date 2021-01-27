@@ -14,7 +14,7 @@
 
 #' Norberg function
 #' 
-#' See Norberg et al. 2001, Thomas et al. 2012
+#' See Norberg et al. 2004, Thomas et al. 2012
 #' 
 #' Note that with the original formulation, 'Optimum temperature' is the temperature at
 #' which growth rate coincides with the exponential portion of this equation. Only if b
@@ -219,7 +219,11 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',suppress.grid.mle2.w
   # Calculate umax and confidence interval using the delta method (see Bolker book, pg 255)
   pd.umax<-predict(fit,newdata=data.frame(temperature=cf$topt))
   st.umax<-paste("nbcurve(c(",paste(cf$topt,collapse=','),"),topt,w,a,b)",sep='')
-  dvs0.umax<-suppressWarnings(deltavar2(fun=parse(text=st.umax),meanval=cf,Sigma=vcov.mat))
+  #dvs0.umax<-suppressWarnings(deltavar2(fun=parse(text=st.umax),meanval=cf,Sigma=vcov.mat))
+  print(vcov.mat)
+  print(cf)
+  print(st.umax)
+  dvs0.umax<-deltavar2(fun=parse(text=st.umax),meanval=cf,Sigma=vcov.mat)
   
   # simple Fisher confidence intervals:
   ciF<-mleTools::ci.FI(fit)
@@ -465,7 +469,7 @@ get.R2<-function(pds,obs){
 #' @param verbose 'print details?'
 #' 
 #' @export
-deltavar2<-function (fun, meanval = NULL, vars, Sigma, verbose = FALSE) 
+deltavar2<-function (fun, meanval = NULL, vars, Sigma, verbose = TRUE) 
 {
   #expr <- as.expression(substitute(fun))    
   expr<-fun  # Changed by CTK
@@ -502,6 +506,10 @@ deltavar2<-function (fun, meanval = NULL, vars, Sigma, verbose = FALSE)
     nderivs <- do.call("cbind", nderivs)
   if (is.matrix(nderivs)) {
     nderivs<-nderivs[,(names(meanval) %in% colnames(Sigma))] # added by CTK
+#    nd49<<-nderivs
+#    s49<<-Sigma
+#    print(nderivs)
+#    print(Sigma)
     r <- apply(nderivs, 1, function(z) c(z %*% Sigma %*% 
                                            matrix(z)))
   }
@@ -509,7 +517,7 @@ deltavar2<-function (fun, meanval = NULL, vars, Sigma, verbose = FALSE)
   r
 }
 
-
+nbcurve
 
 #' Approximate 2nd derivative (finite difference)
 #' 
