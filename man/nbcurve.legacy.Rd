@@ -21,7 +21,7 @@ nbcurve.legacy(x, copt, w, a, b)
 Predicted exponential growth rate at temperature x
 }
 \description{
-See Norberg et al. 2001, Thomas et al. 2012
+See Norberg et al. 2004, Thomas et al. 2012
 }
 \details{
 Note that with the original formulation, 'Optimum temperature' is the temperature at

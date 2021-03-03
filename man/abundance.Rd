@@ -4,7 +4,8 @@
 \name{abundance}
 \alias{abundance}
 \title{Microbial abundance time series}
-\format{A data frame with 46046 rows and 19 variables:
+\format{
+A data frame with 46046 rows and 19 variables:
 \describe{
   \item{isolate.id}{name of a given phytoplankton isolate}
   \item{experiment.ID}{unique identifier combining isolate, temperature, and dilution number}
@@ -25,7 +26,8 @@
   \item{source}{location where phytoplankton species were isolated, NB is Narragansett Bay}
   \item{plate.temperature}{temperature of well plate during fluorescence readings}
   \item{id}{unique identifier for single experimental phytoplankton populations}
-}}
+}
+}
 \source{
 Elena Litchman and Tatiana Severin, W.K. Kellogg Biological Station, Michigan State University
 }

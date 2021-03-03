@@ -4,7 +4,8 @@
 \name{example_TPC_data}
 \alias{example_TPC_data}
 \title{Effect of temperature on phytoplankton growth rates}
-\format{A data frame with 160 rows and 8 variables:
+\format{
+A data frame with 160 rows and 8 variables:
 \describe{
   \item{experiment.ID}{unique identifier combining isolate, temperature, and dilution number}
   \item{isolate.id}{name of a given phytoplankton isolate}
@@ -13,7 +14,8 @@
   \item{replicate}{experimental replicate, 4 replicates per temperature and isolate}
   \item{mu}{estimated growth rate}
   \item{best.model}{time series model generating estimated growth rate}
-}}
+}
+}
 \source{
 Elena Litchman and Tatiana Severin, W.K. Kellogg Biological Station, Michigan State University
 }
