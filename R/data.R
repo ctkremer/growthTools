@@ -48,4 +48,17 @@
 "example_TPC_data"
 
 
+#' Effect of phosphate on phytoplankton growth rates
+#'
+#' A data set containing estimated growth rates of one phytoplankton isolates across a range
+#' of phosphate concentrations. Growth rates were estimated from abundance time series (abundance data set) 
+#' using methods in the growthTools package.
+#'
+#' @format A data frame with 40 rows and 2 variables:
+#' \describe{
+#'   \item{phosphate}{phosphate concentration, in umol/L}
+#'   \item{growth.rate}{estimated growth rate}
+#' }
+#' @source Elena Litchman, Allyson Hutchins, Tatiana Severin, W.K. Kellogg Biological Station, Michigan State University
+"example_monod_data"
 
