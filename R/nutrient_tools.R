@@ -164,6 +164,7 @@ predict.npc<-function(object,newdata,se.fit=FALSE,...){
 #' 
 #' @export
 #' @import ggplot2
+#' 
 plot.npc<-function(x,plot_ci=TRUE,plot_obs=TRUE,xlim=NULL,ylim=NULL,main=NA,fpath=NA,...){
   
   # Check level of nesting for fit.info, and reduce if necessary
@@ -229,6 +230,12 @@ plot.npc<-function(x,plot_ci=TRUE,plot_obs=TRUE,xlim=NULL,ylim=NULL,main=NA,fpat
 #' @param ... Additional arguments passed to grid.mle2 (e.g., control=list(maxit=2000))
 #' 
 #' @examples 
+#' data("example_monod_data")
+#' fit<-get.monod(nutrients$phosphate,nutrients$growth.rate)
+#' fit
+#' 
+#' # not run:
+#' #plot(fit)
 #' 
 #' @export
 #' @import emdbook
