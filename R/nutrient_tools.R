@@ -231,7 +231,7 @@ plot.npc<-function(x,plot_ci=TRUE,plot_obs=TRUE,xlim=NULL,ylim=NULL,main=NA,fpat
 #' 
 #' @examples 
 #' data("example_monod_data")
-#' fit<-get.monod(nutrients$phosphate,nutrients$growth.rate)
+#' fit<-get.monod(example_monod_data$phosphate,example_monod_data$growth.rate)
 #' fit
 #' 
 #' # not run:
