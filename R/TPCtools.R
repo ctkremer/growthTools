@@ -501,16 +501,16 @@ deltavar2<-function (fun, meanval = NULL, vars, Sigma, verbose = FALSE)
     Sigma <- diag(Sigma)
   if (vecexp && is.list(nderivs)) 
     nderivs <- do.call("cbind", nderivs)
-  if (is.matrix(nderivs)) {
-    nderivs<-t(matrix(nderivs[,(names(meanval) %in% colnames(Sigma))])) # added by CTK
+  if (is.matrix(nderivs)) { 
+    # turning off this transformation of nderivs, which was causing predict.monod to fail
+    # caution: test this for predict.tpc, which motivated this line in the first place...
+    #nderivs<-t(matrix(nderivs[,(names(meanval) %in% colnames(Sigma))])) # added by CTK
     r <- apply(nderivs, 1, function(z) c(z %*% Sigma %*% 
                                            matrix(z)))
   }
   else r <- c(nderivs %*% Sigma %*% matrix(nderivs))
   r
 }
-
-nbcurve
 
 #' Approximate 2nd derivative (finite difference)
 #' 
