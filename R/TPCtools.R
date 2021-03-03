@@ -161,6 +161,7 @@ decurve2<-function(temperature,topt,phi,b2,d0,d2){
 #' sp1 <- example_TPC_data %>% filter(isolate.id=='CH30_4_RI_03' & dilution==1)
 #' nbcurve.traits<-get.nbcurve.tpc(sp1$temperature,sp1$mu,method='grid.mle2')
 #' nbcurve.traits
+#' # plot(nbcurve.traits)
 #' 
 #' @export
 #' @import emdbook
@@ -465,7 +466,7 @@ get.R2<-function(pds,obs){
 #' @param verbose 'print details?'
 #' 
 #' @export
-deltavar2<-function (fun, meanval = NULL, vars, Sigma, verbose = TRUE) 
+deltavar2<-function (fun, meanval = NULL, vars, Sigma, verbose = FALSE) 
 {
   #expr <- as.expression(substitute(fun))    
   expr<-fun  # Changed by CTK
