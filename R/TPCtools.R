@@ -479,7 +479,7 @@ get.droopcurve.tpc<-function(temperature,mu,method='grid.mle2',start.method='gen
       
       # set up search of a grid of parameter guesses
       grids<-list(b1=log(seq(0.01,0.41,0.2)),b2=log(seq(0.1,0.5,0.2)),
-                  d0=log(seq(0.01,0.11,0.05)),d1=log(seq(0.01,0.41,0.2)),
+                  d0=log(c(0.001,0.01,0.1)),d1=log(c(0.001,0.01,0.1)),
                   d2=log(seq(0.1,0.7,0.2)),X=log(c(1,2,5,10,50,100)))
       start<-list(tb1=NA,b2=NA,d0=NA,d1=NA,d2=NA,X=NA,s=log(2))
       
