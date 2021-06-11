@@ -555,7 +555,7 @@ get.droopcurve.tpc<-function(temperature,mu,method='grid.mle2',start.method='gen
   # Calculate umax and confidence interval using the delta method (see Bolker book, pg 255)
   if(!is.na(topt)){
     pd.umax<-predict(fit,newdata=data.frame(temperature=topt))
-    st.umax<-paste("droopcurve(b1,b2,d0,d1,d2,X)",sep='')
+    st.umax<-paste("droopcurve(c(",paste(topt,collapse=','),"),b1,b2,d0,d1,d2,X)",sep='')
     dvs0.umax<-suppressWarnings(deltavar2(fun=parse(text=st.umax),meanval=cf,Sigma=vcov.mat))
   }
   
