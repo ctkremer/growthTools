@@ -475,13 +475,13 @@ get.droopcurve.tpc<-function(temperature,mu,method='grid.mle2',start.method='gen
     
     if(start.method=='general.grid'){
       tpc.tmp.tb<-tpc.tmp %>% group_by(temperature) %>% summarise(mu=mean(mu))
-      topt.guess<-mean(tpc.tmp.tb$temperature[tpc.tmp.tb$mu==max(tpc.tmp.tb$mu)])
+      #topt.guess<-mean(tpc.tmp.tb$temperature[tpc.tmp.tb$mu==max(tpc.tmp.tb$mu)])
       
       # set up search of a grid of parameter guesses
       grids<-list(b1=log(seq(0.01,0.41,0.2)),b2=log(seq(0.1,0.5,0.2)),
                   d0=log(c(0.001,0.01,0.1)),d1=log(c(0.001,0.01,0.1)),
                   d2=log(seq(0.1,0.7,0.2)),X=log(c(1,2,5,10,50,100)))
-      start<-list(tb1=NA,b2=NA,d0=NA,d1=NA,d2=NA,X=NA,s=log(2))
+      start<-list(b1=NA,b2=NA,d0=NA,d1=NA,d2=NA,X=NA,s=log(2))
       
       if(suppress.grid.mle2.warnings){
         fit0<-suppressWarnings(mleTools::grid.mle2(minuslogl=mu~dnorm(mean=droopcurve(temperature,exp(b1),exp(b2),exp(d0),exp(d1),exp(d2),exp(X)),sd=exp(s)),grids=grids,start=start,data=tpc.tmp,...))
