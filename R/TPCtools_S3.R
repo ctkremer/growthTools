@@ -94,7 +94,7 @@ predict.tpc<-function(object,newdata,se.fit=FALSE,...){
                               b2 = object$cf$b2, d0 = object$cf$d0, d2 = object$cf$d2)},
          droopcurve={mu<-droopcurve(newdata$temperature, b1 = object$cf$b1, 
                               b2 = object$cf$b2, d0 = object$cf$d0, d1 = object$cf$d1,
-                              d2 = object$cf$d2, X = object$cf$X,)},
+                              d2 = object$cf$d2, X = object$cf$X)},
          stop(print("unrecognized tpc model type in predict.tpc!")))
   newdata$mu<-mu
   
