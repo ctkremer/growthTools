@@ -145,6 +145,25 @@ decurve2<-function(temperature,topt,phi,b2,d0,d2){
   res
 }
 
+#' Droop extention of double exponential model
+#' 
+#' Developed by David Anderson, emerges from considering effects of nutrient limitation
+#' in a quota-based growth model (Droop model), when it is assumed that nutrient quota
+#' equilibrates faster than population dynamics.
+#'
+#' @param temperature Temperature(s) to calculate growth rate at
+#' @param b1 Birth rate at 0 Celsius
+#' @param b2 Temperature scaling of birth rate, > 0
+#' @param d0 Temperature-independent death rate
+#' @param d2 Temperature scaling of death rate, > 0 (and d2 > b2)
+#' @param X ratio of Qmin to Vmax
+#'
+#' @return Growth rate at one or more temperatures
+#' 
+#' @export   
+droopcurve <- function(temperature,b1,b2,d0,d1,d2,X){
+  b1*exp(b2*temperature)*X/(b1*exp(b2*temperature) + X)-(d0+d1*exp(d2*temperature))
+}
 
 #' Fit Norberg curve to growth rate vs. temperature data
 #' 
@@ -427,6 +446,153 @@ get.decurve.tpc<-function(temperature,mu,method='grid.mle2',start.method='genera
   return(vec)
 }
 
+
+
+#' Fit Droop-based Double Exponential curve to growth rate vs. temperature data
+#' 
+#' @param temperature Temperature
+#' @param mu Exponential growth rate
+#' @param method Specify which fitting algorithm to use, 'mle2' or 'grid.mle2'
+#' @param start.method Specify method for generating starting grid for 'grid.mle2' option
+#' @param suppress.grid.mle2.warnings logical; should warnings arising from grid.mle2 invocation be suppressed (TRUE), or displayed (FALSE)? Default is TRUE.
+#' @param ... Additional arguments passed to grid.mle2 (e.g., control=list(maxit=2000))
+#' 
+#' @export
+#' @import dplyr
+#' @import emdbook
+#' @import ggplot2
+#' @import mgcv
+get.droopcurve.tpc<-function(temperature,mu,method='grid.mle2',start.method='general.grid',
+                          suppress.grid.mle2.warnings=TRUE,...){
+  tpc.tmp<-stats::na.omit(data.frame(temperature,mu))
+  ntemps<-length(unique(tpc.tmp$temperature))
+  
+  if(ntemps<=6){
+    print("Caution in get.droopcurve.tpc - focal data set has <=6 unique temperatures, risk of overfitting is high!")
+  }
+  
+  if(method=='grid.mle2'){
+    
+    if(start.method=='general.grid'){
+      tpc.tmp.tb<-tpc.tmp %>% group_by(temperature) %>% summarise(mu=mean(mu))
+      topt.guess<-mean(tpc.tmp.tb$temperature[tpc.tmp.tb$mu==max(tpc.tmp.tb$mu)])
+      
+      # set up search of a grid of parameter guesses
+      grids<-list(b1=log(seq(0.01,0.41,0.2)),b2=log(seq(0.1,0.5,0.2)),
+                  d0=log(seq(0.01,0.11,0.05)),d1=log(seq(0.01,0.41,0.2)),
+                  d2=log(seq(0.1,0.7,0.2)),X=log(c(1,2,5,10,50,100)))
+      start<-list(tb1=NA,b2=NA,d0=NA,d1=NA,d2=NA,X=NA,s=log(2))
+      
+      if(suppress.grid.mle2.warnings){
+        fit0<-suppressWarnings(mleTools::grid.mle2(minuslogl=mu~dnorm(mean=droopcurve(temperature,exp(b1),exp(b2),exp(d0),exp(d1),exp(d2),exp(X)),sd=exp(s)),grids=grids,start=start,data=tpc.tmp,...))
+      }else{
+        fit0<-mleTools::grid.mle2(minuslogl=mu~dnorm(mean=droopcurve(temperature,exp(b1),exp(b2),exp(d0),exp(d1),exp(d2),exp(X)),sd=exp(s)),grids=grids,start=start,data=tpc.tmp,...)
+      }
+      cfg<-as.list(coef(fit0$res.best)) # clean up use of as.list here and below? seems redundant
+      
+      # extract parameters for polished fit
+      guesses<-as.list(cfg)
+      guesses<-list(b1=exp(cfg$b1),b2=exp(cfg$b2),d0=exp(cfg$d0),d1=exp(cfg$d1),d2=exp(cfg$d2),X=exp(cfg$X),s=exp(cfg$s))
+    }
+    
+    # polish best fit model using formula interface
+    fit<-bbmle::mle2(mu~dnorm(mean=droopcurve(temperature,b1,b2,d0,d1,d2,X),sd=s),
+                     start=guesses,data=tpc.tmp,control=list(maxit=0))
+  }
+  
+  if(method=='mle2'){
+    print("Caution: this option not fully beta tested... 7/30/18")
+    b1.guess <- 0.09
+    b2.guess <- 0.15
+    d0.guess <- 0.03
+    d1.guess <- 0.07
+    d2.guess <- 0.18
+    X.guess <- 10
+    fit<-bbmle::mle2(mu~dnorm(mean=droopcurve(temperature,b1,b2,d0,d1,d2,X),sd=exp(s)),
+                     start=list(b1=b1.guess,b2=b2.guess,d0=d0.guess,d1=d1.guess,d2=d2.guess,X=X.guess,s=log(2)),
+                     data=tpc.tmp)
+  }
+  
+  # pull out parameters
+  cf<-as.list(coef(fit))
+  
+  # save vcov matrix
+  vcov.mat<-vcov(fit)
+  
+  # additional responses/traits:
+  objective<-function(x){
+    droopcurve(x,cf$b1,cf$b2,cf$d0,cf$d1,cf$d2,cf$X)
+  }
+  
+  # tmax attempt
+  rt1<-try(stats::uniroot(f = objective,interval = c(mean(tpc.tmp$temperature),100))$root)
+  if(inherits(rt1,'try-error')){
+    tmax<-NA
+  }else{
+    tmax<-rt1
+  }
+  
+  # tmin attempt
+  rt2<-try(stats::uniroot(f = objective,interval = c(-400,mean(tpc.tmp$temperature)))$root)
+  if(inherits(rt2,'try-error')){
+    tmin<-NA
+  }else{
+    tmin<-rt2
+  }
+  
+  # solve for Topt numerically
+  # Write this
+  mx<-try(optimize(f = objective,lower=min(tpc.tmp$temperature),upper=max(tpc.tmp$temperature),maximum = T))
+  if(inherits(mx,'try-error')){
+    topt<-NA    
+  }else{
+    topt<-mx$maximum
+  }
+
+  # calculate R2
+  rsqr<-get.R2(predict(fit),tpc.tmp$mu)
+  
+  # Calculate umax and confidence interval using the delta method (see Bolker book, pg 255)
+  if(!is.na(topt)){
+    pd.umax<-predict(fit,newdata=data.frame(temperature=topt))
+    st.umax<-paste("droopcurve(b1,b2,d0,d1,d2,X)",sep='')
+    dvs0.umax<-suppressWarnings(deltavar2(fun=parse(text=st.umax),meanval=cf,Sigma=vcov.mat))
+  }
+  
+  # simple Fisher confidence intervals:
+  ciF<-mleTools::ci.FI(fit)
+  
+  # save output:
+  
+  # create empty object of class 'tpc'
+  vec<-new_tpc()
+  
+  # populate tpc object
+  vec$type<-"droopcurve"
+  vec$cf<-cf
+  vec$cf_ciFI<-ciF
+  vec$vcov<-vcov.mat
+  
+  vec$umax<-pd.umax
+  vec$umax_ci<-pd.umax+c(-1,1)*1.96*sqrt(dvs0.umax)
+  names(vec$umax_ci)<-c('2.5 %','97.5 %')
+  vec$topt<-topt
+  vec$topt_ci<-c(NA,NA) # Don't know how to figure these out w/ out explicit Topt parameter, requires more thought
+  vec$tmin<-tmin
+  #vec$tmin_ci<-
+  vec$tmax<-tmax
+  #vec$tmax_ci<-
+  
+  vec$rsqr<-rsqr
+  vec$nobs<-nrow(tpc.tmp)
+  vec$ntemps<-ntemps
+  vec$logLik<-logLik(fit)
+  vec$aic<-stats::AIC(fit)
+  vec$data<-tpc.tmp
+  
+  # Finished, return relevant stats.  
+  return(vec)
+}
 
 
 

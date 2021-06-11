@@ -92,6 +92,9 @@ predict.tpc<-function(object,newdata,se.fit=FALSE,...){
                               a = object$cf$a, b = object$cf$b)},
          decurve={mu<-decurve(newdata$temperature, topt = object$cf$topt, b1 = object$cf$b1, 
                               b2 = object$cf$b2, d0 = object$cf$d0, d2 = object$cf$d2)},
+         droopcurve={mu<-droopcurve(newdata$temperature, b1 = object$cf$b1, 
+                              b2 = object$cf$b2, d0 = object$cf$d0, d1 = object$cf$d1,
+                              d2 = object$cf$d2, X = object$cf$X,)},
          stop(print("unrecognized tpc model type in predict.tpc!")))
   newdata$mu<-mu
   
@@ -101,6 +104,7 @@ predict.tpc<-function(object,newdata,se.fit=FALSE,...){
     switch(object$type,
            nbcurve={st<-paste("nbcurve(c(",insert,"),topt,w,a,b)",sep='')},
            decurve={st<-paste("decurve(c(",insert,"),topt,b1,b2,d0,d2)",sep='')},
+           droopcurve={st<-paste("droopcurve(c(",insert,"),b1,b2,d0,d1,d2,X)",sep='')},
            stop(print("unrecognized tpc model type in predict.tpc!")))
     dvs0<-suppressWarnings(deltavar2(fun=parse(text=st),meanval=object$cf,Sigma=object$vcov))
     newdata$se.fit<-sqrt(dvs0)
