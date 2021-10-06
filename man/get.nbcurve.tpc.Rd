@@ -8,6 +8,8 @@ get.nbcurve.tpc(
   temperature,
   mu,
   method = "grid.mle2",
+  grids = NA,
+  start = NA,
   suppress.grid.mle2.warnings = TRUE,
   ...
 )
@@ -18,6 +20,10 @@ get.nbcurve.tpc(
 \item{mu}{Exponential growth rate}
 
 \item{method}{Specify which fitting algorithm to use, 'mle2' or 'grid.mle2'}
+
+\item{grids}{List of sequences to use as starting values for estimated model parameters (see mleTools::grid.mle2 for details). Defaults used if not specified.}
+
+\item{start}{List of single starting values for estimated model parameters not specified in grids (see mleTools::grid.mle2 for details)}
 
 \item{suppress.grid.mle2.warnings}{logical; should warnings arising from grid.mle2 invocation be suppressed (TRUE), or displayed (FALSE)? Default is TRUE.}
 

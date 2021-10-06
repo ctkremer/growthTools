@@ -172,6 +172,8 @@ droopcurve <- function(temperature,b1,b2,d0,d1,d2,X){
 #' @param temperature Temperature
 #' @param mu Exponential growth rate
 #' @param method Specify which fitting algorithm to use, 'mle2' or 'grid.mle2'
+#' @param grids List of sequences to use as starting values for estimated model parameters (see mleTools::grid.mle2 for details). Defaults used if not specified.
+#' @param start List of single starting values for estimated model parameters not specified in grids (see mleTools::grid.mle2 for details)
 #' @param suppress.grid.mle2.warnings logical; should warnings arising from grid.mle2 invocation be suppressed (TRUE), or displayed (FALSE)? Default is TRUE.
 #' @param ... Additional arguments passed to grid.mle2 (e.g., control=list(maxit=2000))
 #' 
@@ -185,7 +187,7 @@ droopcurve <- function(temperature,b1,b2,d0,d1,d2,X){
 #' @export
 #' @import emdbook
 #' @import ggplot2
-get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',suppress.grid.mle2.warnings=TRUE,...){
+get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',grids=NA,start=NA,suppress.grid.mle2.warnings=TRUE,...){
   tpc.tmp<-stats::na.omit(data.frame(temperature,mu))
   ntemps<-length(unique(tpc.tmp$temperature))
   
@@ -196,8 +198,12 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',suppress.grid.mle2.w
   if(method=='grid.mle2'){
     
     # set up search of a grid of parameter guesses
-    grids<-list(topt=seq(15,35,5),w=seq(10,40,5),a=seq(-0.5,-3,-0.5),b=c(-0.05,0,0.05))
-    start<-list(topt=NA,w=NA,a=NA,b=NA,s=log(2))
+    if(is.na(grids)!=is.na(start)){
+      print("error! When using method=='grid.mle2', you must supply both grids and start, or neither")}
+    if(is.na(grids) & is.na(start)){
+      grids<-list(topt=seq(15,35,5),w=seq(10,40,5),a=seq(-0.5,-3,-0.5),b=c(-0.05,0,0.05))
+      start<-list(topt=NA,w=NA,a=NA,b=NA,s=log(2))      
+    }
     
     if(suppress.grid.mle2.warnings){
       fit0<-suppressWarnings(mleTools::grid.mle2(minuslogl=mu~dnorm(mean=nbcurve(temperature,topt,w,a,b),
