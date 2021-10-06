@@ -198,8 +198,8 @@ get.nbcurve.tpc<-function(temperature,mu,method='grid.mle2',grids=NA,start=NA,su
   if(method=='grid.mle2'){
     
     # set up search of a grid of parameter guesses
-    if(is.na(grids)!=is.na(start)){
-      print("error! When using method=='grid.mle2', you must supply both grids and start, or neither")}
+    #if((length(grids)==1 & is.na(grids)) != (length(start)==1 & is.na(start))){
+    #  print("error! When using method=='grid.mle2', you must supply both grids and start, or neither")}
     if(is.na(grids) & is.na(start)){
       grids<-list(topt=seq(15,35,5),w=seq(10,40,5),a=seq(-0.5,-3,-0.5),b=c(-0.05,0,0.05))
       start<-list(topt=NA,w=NA,a=NA,b=NA,s=log(2))      
