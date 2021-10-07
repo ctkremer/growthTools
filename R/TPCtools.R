@@ -145,11 +145,11 @@ decurve2<-function(temperature,topt,phi,b2,d0,d2){
   res
 }
 
-#' Droop extention of double exponential model
+#' Droop extension of double exponential model
 #' 
 #' Developed by David Anderson, emerges from considering effects of nutrient limitation
 #' in a quota-based growth model (Droop model), when it is assumed that nutrient quota
-#' equilibrates faster than population dynamics.
+#' equillibrates faster than population dynamics.
 #'
 #' @param temperature Temperature(s) to calculate growth rate at
 #' @param b1 Birth rate at 0 Celsius
