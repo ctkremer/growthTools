@@ -218,6 +218,15 @@ plot.npc<-function(x,plot_ci=TRUE,plot_obs=TRUE,xlim=NULL,ylim=NULL,main=NA,fpat
   }
 }
 
+#' logLik extraction method for NPC objects
+#' 
+#' @param x Object of class npc
+#' @param \dots Additional arguments (not used)
+#' 
+#' @export
+logLik.npc<-function(x,...){
+  x$logLik
+}
 
 #' Fit Monod curve to growth rate vs. nutrient concentration data
 #' 

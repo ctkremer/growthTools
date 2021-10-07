@@ -184,3 +184,15 @@ plot.tpc<-function(x,plot_ci=TRUE,plot_obs=TRUE,xlim=c(-2,40),ylim=c(-0.2,5),mai
   }
 }
 
+
+#' logLik extraction method for TPC objects
+#' 
+#' @param x Object of class tpc
+#' @param \dots Additional arguments (not used)
+#' 
+#' @export
+logLik.tpc<-function(x,...){
+  x$logLik
+}
+
+
