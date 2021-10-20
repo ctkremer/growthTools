@@ -50,7 +50,7 @@
 
 #' Effect of phosphate on phytoplankton growth rates
 #'
-#' A data set containing estimated growth rates of one phytoplankton isolates across a range
+#' A data set containing estimated growth rates of one phytoplankton isolate across a range
 #' of phosphate concentrations. Growth rates were estimated from abundance time series (abundance data set) 
 #' using methods in the growthTools package.
 #'
@@ -62,3 +62,16 @@
 #' @source Elena Litchman, Allyson Hutchins, Tatiana Severin, W.K. Kellogg Biological Station, Michigan State University
 "example_monod_data"
 
+#' Effect of light (irradiance) on phytoplankton growth rates
+#'
+#' A data set containing estimated growth rates of one phytoplankton isolate across a range
+#' of light levels.
+#'
+#' @format A data frame with 36 rows and 3 variables:
+#' \describe{
+#'   \item{species}{species name}
+#'   \item{light}{light level in photons m-2 s-1}
+#'   \item{mu}{estimated growth rate}
+#' }
+#' @source Sam Fey, Tamara Layden, Reed College
+"example_light_data"
