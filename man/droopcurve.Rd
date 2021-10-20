@@ -2,7 +2,7 @@
 % Please edit documentation in R/TPCtools.R
 \name{droopcurve}
 \alias{droopcurve}
-\title{Droop extention of double exponential model}
+\title{Droop extension of double exponential model}
 \usage{
 droopcurve(temperature, b1, b2, d0, d1, d2, X)
 }
@@ -25,5 +25,5 @@ Growth rate at one or more temperatures
 \description{
 Developed by David Anderson, emerges from considering effects of nutrient limitation
 in a quota-based growth model (Droop model), when it is assumed that nutrient quota
-equilibrates faster than population dynamics.
+equillibrates faster than population dynamics.
 }

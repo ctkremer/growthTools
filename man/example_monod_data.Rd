@@ -18,7 +18,7 @@ Elena Litchman, Allyson Hutchins, Tatiana Severin, W.K. Kellogg Biological Stati
 example_monod_data
 }
 \description{
-A data set containing estimated growth rates of one phytoplankton isolates across a range
+A data set containing estimated growth rates of one phytoplankton isolate across a range
 of phosphate concentrations. Growth rates were estimated from abundance time series (abundance data set) 
 using methods in the growthTools package.
 }

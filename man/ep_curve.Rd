@@ -4,22 +4,28 @@
 \alias{ep_curve}
 \title{Eiler-Peeters curve equation}
 \usage{
-ep_curve(x, umax, k, log.k = FALSE, log.umax = FALSE)
+ep_curve(x, a, umax, Lopt, log.a = FALSE, log.umax = FALSE, log.Lopt = FALSE)
 }
 \arguments{
-\item{x}{nutrients}
+\item{x}{light level, typically umol photons m^-2 s^-1}
+
+\item{a}{slope of initial increase in growth rate at low light levels, aka affinity}
 
 \item{umax}{maximum growth rate}
 
-\item{k}{half saturation constant}
+\item{Lopt}{optimal light level where maximum growth occurs}
 
-\item{log.k}{logical, is k specified on natural log scale}
+\item{log.a}{logical, is a specified on natural log scale}
 
 \item{log.umax}{logical, is umax specified on natural log scale}
+
+\item{log.Lopt}{logical, is Lopt specified on natural log scale}
 }
 \value{
-Predicted exponential growth rate at nutrient concentration x
+Predicted exponential growth rate at light level x
 }
 \description{
-Details here.
+See Eilers & Peeters 1988, Ecological Modeling. Function allows for linearly increasing growth rates at low light levels, 
+which saturate at maximum growth rate of umax at the optimum light level Lopt, and then decline as light levels increase
+due to photoinhibition.
 }
