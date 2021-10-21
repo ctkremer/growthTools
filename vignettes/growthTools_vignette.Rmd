@@ -41,8 +41,8 @@ Load essential packages, including `growthTools`.
 # when switching, also remember to remove %\VignetteDepends{devtools} from header
 # see https://community.rstudio.com/t/using-packages-that-are-not-imported-as-part-of-examples-in-a-vignette/2317
 
-devtools::load_all()
-#library(growthTools)
+#devtools::load_all()
+library(growthTools)
 
 library(ggplot2)
 library(dplyr)
