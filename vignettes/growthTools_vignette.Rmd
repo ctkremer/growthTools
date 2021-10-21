@@ -4,7 +4,7 @@ author: "Colin T. Kremer"
 date: "`r Sys.Date()`"
 output: 
   rmarkdown::html_vignette:
-    toc: true # table of content true
+    toc: true # table of contents true
     toc_depth: 2  # up to two depths of headings (specified by #, ## and ###)
     number_sections: true  ## if you want number sections at each table header
 vignette: >
@@ -22,11 +22,14 @@ opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
 
 # Overview
 
-The growthTools package is designed to help automate the estimation of exponential growth rates from large numbers of population time series (multiple measures of abundance or fluorescence over time), while adjusting for the possible presence of intervals of time where populations are not growing exponentially (e.g., lags in growth or saturating abundances due to density dependence). Additionally, the growthTools package includes functions for fitting two different parametric functions to data describing how exponential growth rate changes with temperature (aka thermal reaction norms or thermal performance curves).
+The growthTools package has two primary functions: (1) estimating exponential growth rates of microbial populations based on time series of abundances (or proxies of abundance), and (2) estimating parametric relationships between measures of microbial performance (e.g., exponential growth, metabolic rates) and abiotic factors including temperature, nutrients, and light, as a way of characterizing species' functional traits. In particular, the tools developed here are intended to help automate these estimation processes across large data sets containing information on many species/genotypes under many environmental conditions. 
 
-The growthTools package relies heavily on data manipulation tools from the dplyr package to facilitate the automation of these analysis for large numbers of populations/strains/species.
+The growthTools package relies heavily on data manipulation tools from the dplyr package to facilitate this automation, as well as maximum likelihood techniques to estimate relationships, using the companion mleTools and bbmle packages.
+
 
 # Calculate exponential population growth rates
+
+Goal: estimate exponential growth rates from large numbers of population time series (multiple measures of abundance or fluorescence over time), while adjusting for the possible presence of intervals of time where populations are not growing exponentially (e.g., lags in growth,  saturation in abundance, both, or other complexities).
 
 ## Getting Started
 
@@ -59,24 +62,25 @@ sdat<-data.frame(trt=c(rep('A',10),rep('B',10),rep('C',10),rep('D',10)),
 
 ## Working with a single time series
 
-We can take a quick look at the abundance time series created in this mock data set:
+We can take a quick look at the log-abundance time series created in this mock data set:
 
 ```{r,width=6,heigh=4.5}
 ggplot(sdat,aes(x=dtime,y=ln.fluor))+
   geom_point(aes(colour=trt))+theme_bw()+
   scale_x_continuous(name = 'Time',breaks = seq(0,10,2))+
-  scale_y_continuous(name = 'ln(Abundance)')
+  scale_y_continuous(name = 'ln(Abundance)')+
+  scale_color_discrete('Treatment')
 ```
 
 
-First, let's focus on applying this technique to a single time series, to get a feel for the methodology. In the process, a series of 5 different possible models are fit to the supplied time series data: (1) a linear model, (2) a lagged growth model, (3) a saturating growth model, (4) a model of exponential decline that hits a floor, characteristic of a detection threshold, and (5) a model where growth experiences both an initial lag and achieves saturation.
+First, let's focus on applying this technique to a single time series, to get a feel for the methodology. We'll focus on log-abundance as our dependent variable, such that exponential relationships appear linear. The default approach attempts to fit a series of 5 different possible models are fit to the supplied time series: (1) a linear model, (2) a lagged growth model, (3) a saturating growth model, (4) a model of exponential decline that hits a floor, characteristic of a detection threshold, and (5) a model where growth experiences both an initial lag and achieves saturation.
 
 Note that by default:
 * before fitting occurs, the x-axis (time) is shifted to start at time=0, if necessary. This can improve the stability of the regression fitting. To avoid this, you can specify `zero.time=FALSE` when calling `get.growth.rate()`)
 * any regression where the inferred phase of exponential growth (increasing or decreasing linear portion) contains fewer than three observations is automatically excluded from consideration, and will not appear in the output. This can be adjusted using the `min.exp.obs` option, but values less than 3 are not recommended.
-* the remaining models are then competed against each other based on Akaike Information Criteria adjusted for small sample sizes (AICc). Users may instead select AIC or BIC.
+* the remaining models are then competed against each other based on Akaike Information Criteria adjusted for small sample sizes (AICc). Users may optionally select AIC or BIC.
 
-The best model identified during model comparison is used to provide the reported estimate of exponential growth. 
+The best model identified during the model comparison step is used to provide the reported estimate of exponential growth. 
 
 Here is an example from a single time series:
 
@@ -230,22 +234,30 @@ Note that if one model strongly outperforms the rest, the choice of IC to use li
 
 # Fit Thermal Performance Curve to growth rate data
 
-Load data set:
+First, we'll load an example data set. It contains information on the exponential growth rate (mu) of one focal strain of a diatom (isolate.id) collected from Narragansett Bay, RI in 2017. This isolate was grown at a range of different temperatures, over three separate dilution periods, and replicated three times at each level. The final column, 'best.model' reflects the model used to provide the growth rate estimates, using functions from the `growthTools` package as described in the preceding section.
+
+Load and examine data set:
 
 ```{r}
 data("example_TPC_data")
 head(example_TPC_data)
+
+plot(mu~temperature,col=dilution,example_TPC_data)
 ```
 
-This data set contains information on the growth rate (mu) of one focal strain of a diatom (isolate.id) collected from Narragannsett Bay, RI in 2017. This isolate was grown at a range of differen temperatures, over three separate dilution periods, and replicated three times at each level. The final column, 'best.model' reflects the model used to provide the growth rate estimates, using functions from the `growthTools` package as described in the preceding section.
+Many different parametric equations have been proposed to capture the shape of this relationship, which is generally left-skewed and unimodal. The growthTools package currently contains two specific equations: 
+* a modified version of the equation prposed by Norberg (2004). See `?nbcurve()` for the modified version. 
+* the double-exponential model from Thomas et al. 2017, which is similar to a model proposed by Hinshelwood many years ago. See `?decurve()` for details.
+
+Next we'll talk about how these equations are actually fit to the data, starting with the Norberg model.
 
 ## Norberg model:
 
-Now, we can use the function `get.nbcurve.tpc()` to fit thermal performance curves (using the re-parameterized Norberg function - see `?nbcurve()`) to the growth rate data. 
+To fit the Norberg model to these data, we'll use the workhorse function `get.nbcurve.tpc()`. The name of the function indicates which model we're fitting (nbcurve), and that what we're fitting is a thermal performance curve (tpc) 
 
 ### Single curves:
 
-This is easily done for a single thermal performancecurve, based on data collected over one dilution period:
+This is easily done for a single thermal performance curve, in this example based on growth rates estimated previously in this vignette (over one dilution period above):
 
 ```{r,error=FALSE,warning=F}
 # Filter out a single data set:
@@ -261,28 +273,35 @@ The resulting object, of class 'tpc', contains a lot of information. A basic sum
 ```{r,error=FALSE,warning=F}
 class(nbcurve.fit)
 
-# view summary
+# view summary (this calls print(nbcurve.fit) behind the scenes)
 nbcurve.fit
 ```
 
-More detailed information that can be directly accessed, including:
-* TPC model type (Norberg or Double Exponential, currently)
-* Parameter estimates for the TPC model
-* Estimates of cardinal temperature traits (Topt, Tmin, Tmax, maximum growth rate)
-* Diagnostics describing the quality of the model fit
+More detailed information on this fit can be directly accessed, including:
+
+TPC model type (in case you forget...), parameter estimates specific to this model type (Norberg), and corresponding Fisher information confidence intervals
 ```{r,error=FALSE,warning=F}
+nbcurve.fit$type
+
 # Model parameters
 nbcurve.fit$cf
 
 # Fisher information confidence intervals for these parameters:
 nbcurve.fit$cf_ciFI
+```
 
+
+Estimates of cardinal temperature traits (Topt, Tmin, Tmax, maximum growth rate), which are generally not model-specific, and associated confidence intervals
+```{r,error=FALSE,warning=F}
 # Cardinal thermal traits:
 nbcurve.fit[c('topt','tmin','tmax','umax')]
 
 # Confidence intervals for (some) of these traits (more to come):
 nbcurve.fit$topt_ci
+```
 
+Diagnostics describing the quality of the model fit
+```{r,error=FALSE,warning=F}
 # Diagnostics
 nbcurve.fit[c('rsqr','logLik','aic','nobs','ntemps')]
 
@@ -290,7 +309,7 @@ nbcurve.fit[c('rsqr','logLik','aic','nobs','ntemps')]
 # ?new_tpc()
 ```
 
-Cardinal thermal traits will be the same across all TPC models we consider, where they exist and can be estimated. However, the number and identity of model parameters varies with the TPC equation under consideration. That is why model parameters are contained in the vector `$cf` within the `tpc` object.
+Cardinal thermal traits will be the same across all TPC models we consider, where they exist and can be estimated. However, the number and identity of model parameters varies with the TPC equation under consideration. That is why model parameters are contained in the vector `$cf` within the `tpc` object. For example, the double exponential TPC model uses 5 parameters instead of 4.
 
 Note that the output also provides an estimate of umax, the maximum growth rate (achieved at a temperature of Topt). Using the same method employed to generate confidence bands around TPC regressions, we can also obtain an estimated 95% confidence interval around umax. This can be accessed as well:
 
@@ -312,13 +331,13 @@ predict(nbcurve.fit,newdata=data.frame(temperature=c(12,14)))
 predict(nbcurve.fit,newdata=data.frame(temperature=c(12,14)),se.fit=TRUE)
 ```
 
-The `predict()` function is useful for another primary objective, which is to visualize a fit thermal performance curve. This is handled by a plot method available for 'tpc' objects, which visualizes the fit thermal performance curve, and can also show the underlying observations and an approximate confidence band around this curve. This can be  a good way to visually assess the quality of the fit. The default plot looks like this:
+The `predict()` function is useful for another primary objective, which is to visualize a fitted thermal performance curve. This is handled by a plot method available for 'tpc' objects, which contains both the fitted equation, and optionally also the underlying observations and an approximate confidence band around this curve. This can be  a good way to visually assess the quality of the fit. The default plot looks like this:
 
 ```{r,error=FALSE,warning=F}
 plot(nbcurve.fit)
 ```
 
-These plots can be customized in various ways (see later section on Visualize Thermal Performance Curves). 
+These plots can be customized in various ways (see later section on Visualizing Thermal Performance Curves). Alternatively, you can use the predict function to generate the values shown in the plotted curve and then design your own plots. 
 
 
 ### Multiple curves
@@ -344,7 +363,7 @@ nb.res$tpcs[[1]]
 nb.res$tpcs[[1]]$topt
 ```
 
-Or we can extract a table of values across multiple curves, using `dplyr` techniques:
+Or we can extract a table of values across multiple curves, using `dplyr` techniques. Note here that if you want to access model-specific parameters, such as the Norberg model's `a` parameter, you have to reach an extra level deep into the `tpcs`, accessing first the list of coefficients, `cf`, and then the specific parameter of interest. Hence the `tpcs$cf$a`.
 
 ```{r}
 # process results
@@ -354,7 +373,7 @@ nb.res2<-nb.res %>% summarise(isolate.id,dilution,topt=tpcs$topt,tmin=tpcs$tmin,
 nb.res2
 ```
 
-Again, a variety of other diagnostics are available, including the log likelihood of the model fit, AIC, the total number of observations the regression is based on, how many unique temperature treatments are involved, and approximate confidence intervals for the coefficients of the model (based on Fisher information). These can be accessed by including different terms in the summarise command, for example:
+Again, a variety of other diagnostics are available, including the log likelihood of the model fit, AIC, the total number of observations the regression is based on, how many unique temperature treatments are involved, and approximate confidence intervals for the coefficients of the model (based on Fisher information). These can be accessed by including different terms in the `summarise` command, for example:
 
 ```{r}
 nb.res %>% summarise(isolate.id,dilution,ntemps=tpcs$ntemps,
@@ -365,22 +384,21 @@ We can also generate plots of all of the different fits, using the information i
 
 ```{r}
 nb.res.graphs<-nb.res %>% group_by(isolate.id,dilution) %>% 
-                          do(graphs=plot(.$tpcs[[1]],main=paste(.$isolate.id,.$dilution)))
+                          do(graphs=plot(.$tpcs[[1]],main=paste(.$isolate.id,.$dilution),
+                                         ylim=c(0,1)))
 nb.res.graphs$graphs[1:3]
 ```
 
 
 ## Double exponential model:
 
-NOTE: many new features introduced into `get.nbcurve.tpc()` have not yet been added to `get.decurve.tpc`, but will be soon (5/21/19).
+Many different equations capturing the shape of thermal performance curves have been proposed (see for example Grimaud et al. 2017). The above examples use an equation proposed by Norberg et al. 2004. The current version of the `growthTools` package also allows users to fit a different parametric equation, known as the double exponential model (see Thomas et al. 2017, Global Change Biology, and Kremer et al. in prep). In brief, it models net population growth rate as the difference between two processes that depend exponentially on temperature: birth and death.
 
-Many different equations capturing the shape of thermal performance curves have been proposed (see for example Grimaud et al. 2017). The above examples use an equation proposed by Norberg et al. 2004. The current version of the package also allows users to fit a different parametric equation, known as the double exponential model (see Thomas et al. 2017, Global Change Biology, and Kremer et al. in prep). In brief, it models net population growth rate as the difference between two processes that depend exponentially on temperature: birth and death.
+Right now, model fitting using this approach is pretty slow; this model is a 5 parameter model (whereas Norberg uses 4 parameters), and several of the parameter estimates tend to covary strongly, so convergence takes many iterations of the optimization algorithm. There are ways to speed things up (by providing a smaller grid of initial parameter guesses to grid.mle2 behind the scenes), but this comes at an elevated risk of finding a local rather than globally optimal set of parameter estimates.
 
-Right now, model fitting using this approach is pretty slow; this model is a 5 parameter model (Norberg uses 4 parameters), and several of the parameter estimates tend to covary strongly, so convergence takes many iterations of the optimization algorithm. There are ways to speed things up (by providing a smaller grid of initial parameter guesses to grid.mle2 behind the scenes), but this comes at an elevated risk of finding a local rather than globally optimal set of parameter estimates.
+### Fit Multiple curves
 
-You can access this functionality the same way as fitting the Norberg curve, but using `get.decurve.tpc()` inside of the `dplyr` command:
-
-### Multiple curves
+You can access this functionality essentially the same way as fitting the Norberg curve (`get.nbcurve.tpc()`), except using `get.decurve.tpc()` inside of the `dplyr` command.
 
 ```{r,warning=F}
 # fit decurve to multiple TPCs
@@ -389,13 +407,13 @@ de.res <- sp1b %>% group_by(isolate.id,dilution) %>%
 
 ```
 
-Note that although the class of the results of `get.decurve.tpc` and `get.nbcurve.tpc` is the same (`tpc`), some of the contents of the resulting object differ. For example:
+Again, note that although the class of the results of `get.decurve.tpc` and `get.nbcurve.tpc` is the same (`tpc`), some of the contents of the resulting object differ. For example:
 
 ```{r,warning=F}
 nb.res$tpcs[[1]]$type
-de.res$tpcs[[1]]$type
-
 nb.res$tpcs[[1]]$cf
+
+de.res$tpcs[[1]]$type
 de.res$tpcs[[1]]$cf
 ```
 
@@ -414,7 +432,7 @@ And again, you can predict values on the fitted curves or make plots, just like 
 ```{r,error=FALSE,warning=F}
 head(predict(de.res$tpcs[[1]]))
 
-plot(de.res$tpcs[[1]])
+plot(de.res$tpcs[[1]],ylim=c(0,1))
 ```
 
 Finally, it should also be straightforward to fit both types of model to your data, then try to decide which model performs best, using criteria such as R2 or AIC. For now though, here's a basic visual comparison: 
@@ -434,7 +452,7 @@ ggplot(res2[res2$variable=='rsqr',],aes(x=type,y=value))+
 
 ## Allow for multiple grouping variables:
 
-We could also apply this general approach to a larger data set, with more species and additional grouping variables:
+We could also apply this general approach to a larger data set, with more species and additional grouping variables (caution - this can take a few minutes to run):
 
 ```{r,warning=F}
 table(example_TPC_data[,c('isolate.id','dilution')])
@@ -516,7 +534,7 @@ c1
 
 Finally, users can also save the ggplot2 object created and then subsequently modify the layout of the plot. For example, modify the axes labels to add units and remove the grid lines:
 
-```{r}
+```{r,error=FALSE,warning=FALSE}
 # demonstrate changes in layout
 c1+scale_x_continuous('Temperature (C)')+
   scale_y_continuous('Growth rate (1/day)')+
@@ -553,7 +571,7 @@ multi.curve<-ggplot(tmp2,aes(x=temperature,y=mu))+
 multi.curve
 ```
 
-Finally, it is possible to ammend these multi-curve plots with the underlying observations used as the foundation of the regressions. This takes advantage of the fact that the original observations are reported in the `data` field of `tpc` objects.
+Finally, it is possible to ammend these multi-curve plots with the underlying observations used as the foundation of the regressions. This takes advantage of the fact that the original observations are contained in the `data` field reported in `tpc` objects.
 
 ```{r,warning=F}
 # recapitulate corresponding data frame of observations:
@@ -575,12 +593,9 @@ We can also save plots to a file folder, rather than displaying them directly:
 
 
 
-# Fit Monod Curves
+# Fit Nutrient Performance Curves
 
-Microbial growth rate can also vary with the availability (concentration) of essential nutrients, such as 
-nitrogen or phosphorus. The growthTools package includes a growing set of routines for fitting canonical
-functions to these relationships (which we term 'nutrient performanc curves'), such as the Monod curve 
-(Monod 1942). The syntax is very similar to that used for fitting thermal performance curves.
+Microbial growth rate can also vary with the availability (concentration) of essential nutrients, such as nitrogen or phosphorus. The growthTools package includes a growing set of routines for fitting canonical functions to these relationships (which we term 'nutrient performance curves' or NPCs), such as the saturating Monod curve (Monod 1942). The syntax is very similar to that used for fitting thermal performance curves.
 
 ## Fit a single Monod curve:
 
@@ -591,15 +606,13 @@ dat<-data.frame(nutrients=c(0.1,0.5,1,2,5,10),mu=c(0.02,0.1,0.2,0.4,0.5,0.52))
 plot(mu~nutrients,data=dat)
 ``` 
 
-We can fit a Monod function to these data using 'mle2'. Note that currently a grid.mle2 method is not
-implemented, as these fits are lower dimension and generally more resilient than for thermal performance curves.
+We can fit a Monod function to these data using 'mle2'. Note that currently a grid.mle2 method is not implemented, as these fits are lower dimension and generally more resilient than for thermal performance curves.
 
 ```{r}
-fit.monod<-get.monod(nutrients=dat$nutrients,mu=dat$mu,method='mle2',fix_intercept = T)
+fit.monod<-get.monod.npc(nutrients=dat$nutrients,mu=dat$mu,method='mle2',fix_intercept = T)
 ```
 
-As with thermal performance curves, there are built-in methods for printing summary information from the fit,
-as well as displaying a plot of the fitted relationship.
+As with thermal performance curves, there are built-in methods for printing summary information from the fit, as well as displaying a plot of the fitted relationship.
 
 ```{r}
 print(fit.monod)
@@ -610,7 +623,7 @@ Finally, the `get.monod` function includes the option of either fixing the inter
 allowed when a nutrient is absent), or allowing the intercept term z to be independently estimated. For example:
 
 ```{r}
-fit.monod.2<-get.monod(nutrients=dat$nutrients,mu=dat$mu,method='mle2',fix_intercept = F)
+fit.monod.2<-get.monod.npc(nutrients=dat$nutrients,mu=dat$mu,method='mle2',fix_intercept = F)
 print(fit.monod)
 print(fit.monod.2)
 plot(fit.monod.2)
@@ -619,19 +632,51 @@ plot(fit.monod.2)
 
 ## Fit multiple Monod curves:
 
-Again, as with thermal performance curves, the `get.monod` function works with tools from the `tidyverse` so we
-can fit multiple data sets at once. For example:
+Again, as with thermal performance curves, the `get.monod.npc` function works with tools from the `tidyverse` so we can fit multiple data sets at once to characterize their nutrient performance curves (npc's). For example:
 
 ```{r}
 monod.tmp<-data.frame(sps=c(rep('A',6),rep('B',6)),nutrients=rep(c(0.1,0.5,1,2,5,10),2),mu=c(c(0.02,0.1,0.2,0.4,0.5,0.52),3*c(0.02,0.1,0.2,0.4,0.5,0.52)))
 
 res <- monod.tmp %>% group_by(sps) %>% 
-  do(npcs=get.monod(.$nutrients,.$mu,method='mle2'))
+  do(npcs=get.monod.npc(.$nutrients,.$mu,method='mle2'))
 
 res2 <- res %>% summarise(sps,umax=npcs$cf$umax,k=npcs$cf$k,
                           z=npcs$cf$z,s=npcs$cf$s,rsqr=npcs$rsqr)
 res2
 ```
 
+
+
+
+# Fit Light Performance Curves (LPCs)
+
+Autotrophic microbial growth rates can also vary with light level. The growthTools package includes a growing set of routines for fitting canonical functions to these relationships (which we term 'light performance curves'), such as the Eilers-Peeters model (1988). The syntax is very similar to that used for fitting thermal and nutrient performance curves.
+
+## Fit a single Eiler-Peeters curve:
+
+Here's an example of what one of these data sets on growth vs. light might look like:
+
+```{r}
+dat<-data.frame(light=c(0.1,0.5,1,2,5,10,20),mu=c(0.02,0.1,0.2,0.4,0.5,0.52,0.34))
+plot(mu~light,data=dat)
+``` 
+
+We can fit an Eiler-Peeters function to these data using 'mle2'. Note that currently a grid.mle2 method is not implemented, as these fits are lower dimension and generally more resilient than for thermal performance curves.
+
+```{r}
+fit.ep<-get.ep.lpc(light=dat$light,mu=dat$mu,method='mle2',fix_intercept = T)
+```
+
+As with thermal performance curves, there are built-in methods for printing summary information from the fit, as well as displaying a plot of the fitted relationship.
+
+```{r}
+print(fit.ep)
+plot(fit.ep)
+```
+
+
+## Fit multiple light curves:
+
+Again, as with thermal performance curves, the `get.ep.npc` function works with tools from the `tidyverse` so we can fit multiple data sets at once to characterize their light performance curves (npc's). See examples for Monod NPC.
 
 
