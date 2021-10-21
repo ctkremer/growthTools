@@ -240,7 +240,7 @@ logLik.npc<-function(x,...){
 #' 
 #' @examples 
 #' data("example_monod_data")
-#' fit<-get.monod(example_monod_data$phosphate,example_monod_data$growth.rate)
+#' fit<-get.monod.npc(example_monod_data$phosphate,example_monod_data$growth.rate)
 #' fit
 #' 
 #' # not run:
@@ -249,12 +249,12 @@ logLik.npc<-function(x,...){
 #' @export
 #' @import emdbook
 #' @import ggplot2
-get.monod<-function(nutrients,mu,method='mle2',...){
+get.monod.npc<-function(nutrients,mu,method='mle2',...){
   monod.tmp<-stats::na.omit(data.frame(nutrients,mu))
   nnutr<-length(unique(monod.tmp$nutrients))
   
   if(nnutr<=3){
-    print("Caution in get.monod - focal data set has <=3 unique nutrients, risk of overfitting is high!")
+    print("Caution in get.monod.npc - focal data set has <=3 unique nutrients, risk of overfitting is high!")
   }
 
   if(method=='grid.mle2'){
@@ -325,12 +325,12 @@ get.monod<-function(nutrients,mu,method='mle2',...){
 #' @export
 #' @import emdbook
 #' @import ggplot2
-get.monod2<-function(nutrients,mu,method='mle2',...){
+get.monod2.npc<-function(nutrients,mu,method='mle2',...){
   monod.tmp<-stats::na.omit(data.frame(nutrients,mu))
   nnutr<-length(unique(monod.tmp$nutrients))
   
   if(nnutr<=3){
-    print("Caution in get.monod - focal data set has <=3 unique nutrients, risk of overfitting is high!")
+    print("Caution in get.monod2.npc - focal data set has <=3 unique nutrients, risk of overfitting is high!")
   }
   
   if(method=='grid.mle2'){
