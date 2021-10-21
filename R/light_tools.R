@@ -28,7 +28,7 @@ ep_curve<-function(x,a,umax,Lopt,log.a=FALSE,log.umax=FALSE,log.Lopt=FALSE){
     Lopt<-exp(Lopt)
   }
   
-  res <- umax*(x/((umax*x^2)/(a*Lopt^2) + (1 - 2*(umaxL/(a*Lopt)))*x + umax/a))
+  res <- umax*(x/((umax*x^2)/(a*Lopt^2) + (1 - 2*(umax/(a*Lopt)))*x + umax/a))
   
   res
 }
@@ -214,12 +214,12 @@ plot.lpc<-function(x,plot_ci=TRUE,plot_obs=TRUE,xlim=NULL,ylim=NULL,main=NA,fpat
 #' @export
 #' @import emdbook
 #' @import ggplot2
-get.ep<-function(light,mu,method='mle2',...){
+get.ep.lpc<-function(light,mu,method='mle2',...){
   ep.tmp<-stats::na.omit(data.frame(light,mu))
   nlight<-length(unique(ep.tmp$light))
   
   if(nlight<=3){
-    print("Caution in get.ep - focal data set has <=3 unique light levels, risk of overfitting is high!")
+    print("Caution in get.ep.lpc - focal data set has <=3 unique light levels, risk of overfitting is high!")
   }
   
   if(method=='grid.mle2'){
@@ -227,7 +227,7 @@ get.ep<-function(light,mu,method='mle2',...){
   }
   
   if(method=='mle2'){
-    #a.guess <- max(monod.tmp$nutrients)[1]/3
+    a.guess <- max(ep.tmp$light)[1]/3
     umax.guess <- max(c(max(ep.tmp$mu)[1],0.01))
     Lopt.guess <- max(c(ep.tmp$light[ep.tmp$mu==max(ep.tmp$mu)],10))
     fit<-bbmle::mle2(mu~dnorm(mean=ep_curve(light,a,umax,Lopt,log.a=TRUE,log.umax=TRUE,log.Lopt = TRUE),sd=exp(s)),
@@ -239,7 +239,8 @@ get.ep<-function(light,mu,method='mle2',...){
     tmp.cfs$a<-exp(tmp.cfs$a)
     tmp.cfs$umax<-exp(tmp.cfs$umax)
     tmp.cfs$Lopt<-exp(tmp.cfs$Lopt)
-    fit0<-bbmle::mle2(mu~dnorm(mean=ep_curve(light,a,umax,Lopt,log.k=FALSE,log.umax=FALSE),sd=exp(s)),
+    fit0<-bbmle::mle2(mu~dnorm(mean=ep_curve(light,a,umax,Lopt,log.a=FALSE,log.umax=FALSE,
+                                             log.Lopt = FALSE),sd=exp(s)),
                       start=tmp.cfs,control=list(maxit=0),
                       data=ep.tmp)
   }
