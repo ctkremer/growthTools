@@ -96,11 +96,11 @@ get.gr<-function(x,y,plotQ=F,fpath=NA,id=''){
   if(plotQ){
     if(!is.na(fpath)){
       grDevices::pdf(fpath)
-      graphics::plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
+      graphics::plot(y~x,xlab='Time (days)',ylab='ln(density measure)',main=id)
       graphics::abline(lm1,col='red')
       grDevices::dev.off()
     }else{
-      graphics::plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
+      graphics::plot(y~x,xlab='Time (days)',ylab='ln(density measure)',main=id)
       graphics::abline(lm1,col='red')
     }
   }
@@ -150,12 +150,12 @@ get.gr.lag<-function(x,y,plotQ=F,fpath=NA,id=''){
     if(plotQ){
       if(!is.na(fpath)){
         grDevices::pdf(fpath)
-        graphics::plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
+        graphics::plot(y~x,xlab='Time (days)',ylab='ln(density measure)',main=id)
         graphics::curve(lag(x,cfs$a,cfs$b,cfs$B1,s=1E-10),min(x),max(x),n = 400,add=TRUE,col='blue')
         graphics::curve(lag(x,cfs$a,cfs$b,cfs$B1,s=1E-10),cfs$B1,max(x),n = 400,add=TRUE,col='red')
         grDevices::dev.off()
       }else{
-        graphics::plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
+        graphics::plot(y~x,xlab='Time (days)',ylab='ln(density measure)',main=id)
         graphics::curve(lag(x,cfs$a,cfs$b,cfs$B1,s=1E-10),min(x),max(x),n = 400,add=TRUE,col='blue')
         graphics::curve(lag(x,cfs$a,cfs$b,cfs$B1,s=1E-10),cfs$B1,max(x),n = 400,add=TRUE,col='red')
       }
@@ -210,12 +210,12 @@ get.gr.sat<-function(x,y,plotQ=F,fpath=NA,id=''){
     if(plotQ){
       if(!is.na(fpath)){
         grDevices::pdf(fpath)
-        graphics::plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
+        graphics::plot(y~x,xlab='Time (days)',ylab='ln(density measure)',main=id)
         graphics::curve(sat(x,cfs$a,cfs$b,cfs$B2,s=1E-10),min(x),max(x),add=TRUE,col='blue')
         graphics::curve(sat(x,cfs$a,cfs$b,cfs$B2,s=1E-10),min(x),cfs$B2,add=TRUE,col='red')
         grDevices::dev.off()
       }else{
-        graphics::plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
+        graphics::plot(y~x,xlab='Time (days)',ylab='ln(density measure)',main=id)
         graphics::curve(sat(x,cfs$a,cfs$b,cfs$B2,s=1E-10),min(x),max(x),add=TRUE,col='blue')
         graphics::curve(sat(x,cfs$a,cfs$b,cfs$B2,s=1E-10),min(x),cfs$B2,add=TRUE,col='red')
       }
@@ -266,12 +266,12 @@ get.gr.flr<-function(x,y,plotQ=F,fpath=NA,id=''){
     if(plotQ){
       if(!is.na(fpath)){
         grDevices::pdf(fpath)
-        graphics::plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
+        graphics::plot(y~x,xlab='Time (days)',ylab='ln(density measure)',main=id)
         graphics::curve(flr(x,cfs$a,cfs$b,cfs$B2,s=1E-10),cfs$B2,max(x),add=TRUE,col='blue')
         graphics::curve(flr(x,cfs$a,cfs$b,cfs$B2,s=1E-10),min(x),cfs$B2,add=TRUE,col='red')
         grDevices::dev.off()
       }else{
-        graphics::plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
+        graphics::plot(y~x,xlab='Time (days)',ylab='ln(density measure)',main=id)
         graphics::curve(flr(x,cfs$a,cfs$b,cfs$B2,s=1E-10),cfs$B2,max(x),add=TRUE,col='blue')
         graphics::curve(flr(x,cfs$a,cfs$b,cfs$B2,s=1E-10),min(x),cfs$B2,add=TRUE,col='red')
       }
@@ -322,12 +322,12 @@ get.gr.lagsat<-function(x,y,plotQ=F,fpath=NA,id=''){
     if(plotQ){
       if(!is.na(fpath)){
         grDevices::pdf(fpath)
-        graphics::plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
+        graphics::plot(y~x,xlab='Time (days)',ylab='ln(density measure)',main=id)
         graphics::curve(lagsat(x,cfs$a,cfs$b,cfs$B1,cfs$B2,s=1E-10),min(x),max(x),add=TRUE,col='blue')
         graphics::curve(lagsat(x,cfs$a,cfs$b,cfs$B1,cfs$B2,s=1E-10),cfs$B1,cfs$B2,add=TRUE,col='red')
         grDevices::dev.off()
       }else{
-        graphics::plot(y~x,xlab='Time (days)',ylab='ln(fluorescence)',main=id)
+        graphics::plot(y~x,xlab='Time (days)',ylab='ln(density measure)',main=id)
         graphics::curve(lagsat(x,cfs$a,cfs$b,cfs$B1,cfs$B2,s=1E-10),min(x),max(x),add=TRUE,col='blue')
         graphics::curve(lagsat(x,cfs$a,cfs$b,cfs$B1,cfs$B2,s=1E-10),cfs$B1,cfs$B2,add=TRUE,col='red')
       }
